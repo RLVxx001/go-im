@@ -1,6 +1,6 @@
 <template>
   <!-- <TopBar></TopBar> -->
-   <div style="background-color: #525257a2;width:100%">
+  <div style="background-color: #525257a2;width:100%">
   <TopBar></TopBar>
   <div style="display:flex">
     <SideBar></SideBar>
