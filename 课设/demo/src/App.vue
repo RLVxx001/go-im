@@ -7,6 +7,7 @@ import Home from "./components/Home.vue"
 import SideBar from './components/SideBar.vue'
 import Demo from './components/Demo.vue'
 import Login from './components/Login.vue'
+import Register from './components/Register.vue'
 export default{
 //  name:"App",
   components:{
@@ -18,13 +19,19 @@ export default{
     // Index,
     Home,
     Login,
+    Register,
   }
 }
 </script>
 
 <template>
-  <router-view></router-view>
-   
+  <div style="background-color: #525257a2;width:100%">
+  <TopBar></TopBar>
+  <div style="display:flex">
+    <SideBar></SideBar>
+      <router-view></router-view>
+  </div>    
+  </div>
 </template>
 
 <style>

@@ -1,25 +1,10 @@
 <template>
-  <!-- <TopBar></TopBar> -->
-  <div style="background-color: #525257a2;width:100%">
-  <TopBar></TopBar>
-  <div style="display:flex">
-    <SideBar></SideBar>
-      <router-view></router-view>
-  </div>    
+  <div>
+    <h1 style="text-align:center">欢迎来到xxx聊天室 </h1>
+    <br>
+    <h3>作者：赵佶鑫 202112900531 许城涛 202112900547</h3>
   </div>
 </template>
 <script>
-import TopBar from './TopBar.vue'
-import SideBar from './SideBar.vue'
-import Demo from './Demo.vue'
-import Login from './Login.vue'
-export default{
-  components:{
-   TopBar,
-    SideBar,
-    Demo,
-    // Index,
-    Login,
-  }
-}
+
 </script>

@@ -1,41 +1,69 @@
 <template>
-  <div style="background-color: #525257a2;width:1500px;height:800px">
-    <div style="width:400px;height:400px;position:absolute;left:550px;top:150px;">
-      <form>
+      <div style="width:400px;height:400px;position:absolute;left:550px;top:150px">
+      <form  style="color:rgba(220, 228, 253, 0.942);">
         <div class="form-group">
-          <label for="exampleInputEmail1" style="color:rgba(220, 228, 253, 0.942);">Email address</label>
-          <input type="email" class="form-control"  id="exampleInputEmail1" placeholder="Email">
+          <label for="exampleInputEmail1" style="color:rgba(220, 228, 253, 0.942);">请输入账号：</label>
+          <input type="email" class="form-control"  id="exampleInputEmail1" placeholder="账号">
         </div>
         <div class="form-group">
-          <label for="exampleInputPassword1">Password</label>
-          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+          <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">密码：</label>
+          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码">
         </div>
-        <div class="form-group">
-          <label for="exampleInputFile">File input</label>
+        <!-- <div class="form-group">
+          <label for="exampleInputFile" style="color:rgba(220, 228, 253, 0.942);">File input</label>
           <input type="file" id="exampleInputFile">
-          <p class="help-block">Example block-level help text here.</p>
-        </div>
+          <p class="help-block"  style="color:rgba(220, 228, 253, 0.942);">Example block-level help text here.</p>
+        </div> -->
         <div class="checkbox">
           <label>
-            <input type="checkbox"> Check me out
+            <input type="checkbox" style="color:rgba(220, 228, 253, 0.942);"> 记住我
           </label>
         </div>
-        <button type="submit" class="btn btn-default">Submit</button>
-      </form>
-    </div>
-  </div>
+        <button @click="click" type="submit" class="btn btn-default">登录</button>
+        <div class="form-group" style="margin-top:10px">
+          <label class="exampleInputEmail1">
+            没有账号？
+            <router-link to="/Register" class="xx1">
+              点我注册
+            </router-link>
+          </label>
+        </div>
+      </form> 
+    </div> 
+
 </template>
 
 <script>
-
-  export default{
+import TopBar from './TopBar.vue'
+import SideBar from './SideBar.vue'
+import Demo from './Demo.vue'
+import Login from './Login.vue'
+export default{
   components:{
-
+   TopBar,
+    SideBar,
+    Demo,
+    TopBar,
+    SideBar,
+    // Index,
+    // Login,
+  },
+  methods:{
+    click()
+    {
+      console.log(12312524)
+    }
   },
 }
 </script>
 
 
 <style>
+.xx1{
+  color:rgba(220, 228, 253, 0.942);
+}
 
+.xx1:hover{
+  color:rgb(98, 98, 211);
+}
 </style>
