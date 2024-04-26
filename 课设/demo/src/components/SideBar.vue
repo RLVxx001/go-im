@@ -1,21 +1,24 @@
 <template>
     <div class="side">
         <router-link to="/person" style="text-decoration: none;">
-          <div style="margin-top:50px;margin-bottom:50px;">
+          <div style="margin-top:30px;margin-bottom:50px;">
             <img class="pht" alt="" src="../assets/unkonw.png"/>
           </div>
           </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/usedOrder" style="text-decoration: none;">
+        <router-link to="/Person" style="text-decoration: none;">
            <div class="to">个人信息</div>
         </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/usedOrder" style="text-decoration: none;">
+        <router-link to="/Space" style="text-decoration: none;">
            <div class="to">个人空间</div>
         </router-link>
         <!-- <span class="slice"></span> -->
            <router-link to="/advices" style="text-decoration: none;">
         <div class="to">好友列表</div>
+           </router-link>
+            <router-link to="/advices" style="text-decoration: none;">
+        <div class="to">群聊列表</div>
            </router-link>
         <!-- <span class="slice"></span> -->
         <router-link to="/evaluate" style="text-decoration: none;">
@@ -35,7 +38,7 @@ router-link{
 }
 
 .pht{
-  size:70px;
+  size:60px;
 }
 
 .slice{
@@ -49,7 +52,7 @@ router-link{
   color:#222226;
   display: block;
   height: 800px;
-  width: 400px;
+  width: 300px;
   border:1px double linen;
   background-color: #525257a2;
 }
@@ -142,41 +145,10 @@ router-link{
 .to:hover::before{
   width: 100px;
 }
-
-.search{
-    margin-left: 50px;
-    height: 32px;
-    width: 500px;
-    background-color:#fff;
-
-    display: flex;
-}
-.inputType{
-  width:400px;
-  height: 30px;
-  text-indent: 1em;
-   line-height: 34px;
-  background-color: #fff;
-  border: 1px solid black;
-  border-top-left-radius: 17px;
-  border-bottom-left-radius: 17px;
-  font-size: 12px;
-}
 .inputType:focus{
   outline: none;   
   border: 1px solid rgb(230, 32, 213);
-}
-.button{
-  color: #fff;
-  text-align: center;
-  background: rgba(204, 51, 0, 1);
-  border-left:1px solid rgba(0, 0, 0, 0.45);
-  width:100px;
-  height: 32px;
-  line-height: 34px;
-  border-top-right-radius: 18px;
-  border-bottom-right-radius: 18px
-}
+} 
 .title-right{
      width: 380px;
     height: 48px;
