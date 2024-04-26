@@ -60,7 +60,7 @@ export default{
     // Login,
   },
   methods:{
-    check(){
+    check(){//验证
       if(this.username==""||this.passwd==""||this.passwdes==""){
         this.remind("输入框不能为空")
         return
@@ -75,10 +75,10 @@ export default{
       }
       this.sub()
     },
-    remind(data){
+    remind(data){//提醒
       alert(data)
     },
-    sub(){
+    sub(){//提交
 
     },
   }
