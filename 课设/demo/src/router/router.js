@@ -4,6 +4,8 @@ import TopBar from "../components/TopBar.vue"
 import Index from "../components/Index.vue"
 import Login from "../components/Login.vue"
 import Register from '../components/Register.vue'
+import Person from "../components/Person.vue"
+import Space from "../components/Space.vue"
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -19,7 +21,6 @@ const router = createRouter({
       path: "/TopBar",
       component: TopBar,
     },
-
     {
       path: "/Login",
       component: Login,
@@ -27,6 +28,18 @@ const router = createRouter({
     {
       path: "/Register",
       component: Register,
+    },
+    {
+      path: "/Person",
+      component: Person,
+    },
+    {
+      path: "/Space",
+      component: Space,
+    },
+    {
+      path: "/Index",
+      component: Index,
     }
   ]
 })

@@ -1,6 +1,6 @@
 <template>
     <div class="side">
-        <router-link to="/unusedOrder" style="text-decoration: none;">
+        <router-link to="/person" style="text-decoration: none;">
             <img class="pht" alt="" src="../assets/unkonw.png"/>
         </router-link>
         <!-- <span class="slice"></span> -->
@@ -33,8 +33,9 @@ router-link{
 }
 
 .pht{
-  margin-top:20px;
+  margin-top:50px;
   size:70px;
+  margin-bottom: 50px;
 }
 
 .slice{
@@ -48,7 +49,7 @@ router-link{
   color:#222226;
   display: block;
   height: 800px;
-  width: 450px;
+  width: 400px;
   border:1px double linen;
   background-color: #525257a2;
 }
@@ -86,7 +87,7 @@ router-link{
 .to{
   color:rgba(220, 228, 253, 0.942);
   width:100%;
-  height:60px;
+  height:30px;
   font-size:20px;
   margin-top:10px;
   text-align: center;
