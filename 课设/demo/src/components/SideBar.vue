@@ -2,7 +2,7 @@
     <div class="side">
         <router-link to="/person" style="text-decoration: none;">
           <div style="margin-top:30px;margin-bottom:50px;">
-            <img class="pht" alt="" src="../assets/unkonw.png"/>
+            <img style="width:120px;height:120px;" alt="" src="../assets/unkonw.png"/>
           </div>
           </router-link>
         <!-- <span class="slice"></span> -->
@@ -48,13 +48,17 @@ router-link{
 }
 
 .side{
+  margin-top:20px;
+  margin-left:250px;
   text-align: center;
   color:#222226;
   display: block;
-  height: 800px;
-  width: 300px;
-  border:1px double linen;
+  height: 600px;
+  width: 200px;
+  margin-bottom: 20px;;
+  border:2px double rgb(138, 137, 137);
   background-color: #525257a2;
+  border-radius:18px;
 }
 
 .login{
@@ -92,7 +96,7 @@ router-link{
   color:rgba(220, 228, 253, 0.942);
   width:100%;
   height:40px;
-  font-size:25px;
+  font-size:20px;
   margin-top:20px;
   text-align: center;
   line-height: 40px;
@@ -120,6 +124,7 @@ router-link{
             display: inline-block;
             /* 通过定位使下划线在最低层 */
             position: absolute;
+            border-radius: 18px;;
             bottom: -6px;
             width: 0;
             /* 加上一个过渡效果，使之丝滑一些 */

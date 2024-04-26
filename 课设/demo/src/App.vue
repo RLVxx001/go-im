@@ -29,8 +29,10 @@ export default{
   <TopBar></TopBar>
   <div style="display:flex">
     <SideBar></SideBar>
+    <div style="width:800px;height:600px;background-color:#525257a2;margin-left:20px;margin-top:20px;border-radius:18px;border:2px double rgb(138, 137, 137);">
       <router-view></router-view>
-  </div>    
+    </div>
+    </div>    
   </div>
 </template>
 

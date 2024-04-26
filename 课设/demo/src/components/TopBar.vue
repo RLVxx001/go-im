@@ -72,9 +72,7 @@ router-link{
   display: flex;
   height: 60px;
   width: 100%;
-  border:1px double linen;
   background-color: #525257a2;
- 
 }
 
 .title-left-image{
@@ -86,7 +84,7 @@ router-link{
   position: relative;
   margin-top: 10px;
   color:rgba(220, 228, 253, 0.942);
-  width:110px;
+  width:130px;
   height:60px;
   font-size:20px;
   text-align: center;
@@ -114,6 +112,7 @@ router-link{
             display: inline-block;
             /* 通过定位使下划线在最低层 */
             position: absolute;
+            border-radius: 18px;
             bottom: 15px;
             width: 0;
             /* 加上一个过渡效果，使之丝滑一些 */
