@@ -1,19 +1,24 @@
 <template>
     <div class="side">
         <router-link to="/person" style="text-decoration: none;">
-            <img class="pht" alt="" src="../assets/unkonw.png"/>
-        </router-link>
+          <div style="margin-top:30px;margin-bottom:50px;">
+            <img style="width:120px;height:120px;" alt="" src="../assets/unkonw.png"/>
+          </div>
+          </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/usedOrder" style="text-decoration: none;">
+        <router-link to="/Person" style="text-decoration: none;">
            <div class="to">个人信息</div>
         </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/usedOrder" style="text-decoration: none;">
+        <router-link to="/Space" style="text-decoration: none;">
            <div class="to">个人空间</div>
         </router-link>
         <!-- <span class="slice"></span> -->
            <router-link to="/advices" style="text-decoration: none;">
         <div class="to">好友列表</div>
+           </router-link>
+            <router-link to="/advices" style="text-decoration: none;">
+        <div class="to">群聊列表</div>
            </router-link>
         <!-- <span class="slice"></span> -->
         <router-link to="/evaluate" style="text-decoration: none;">
@@ -33,9 +38,7 @@ router-link{
 }
 
 .pht{
-  margin-top:50px;
-  size:70px;
-  margin-bottom: 50px;
+  size:60px;
 }
 
 .slice{
@@ -45,13 +48,17 @@ router-link{
 }
 
 .side{
+  margin-top:20px;
+  margin-left:250px;
   text-align: center;
   color:#222226;
   display: block;
-  height: 800px;
-  width: 400px;
-  border:1px double linen;
+  height: 600px;
+  width: 200px;
+  margin-bottom: 20px;;
+  border:2px double rgb(138, 137, 137);
   background-color: #525257a2;
+  border-radius:18px;
 }
 
 .login{
@@ -85,11 +92,12 @@ router-link{
 }
 
 .to{
+  position: relative;
   color:rgba(220, 228, 253, 0.942);
   width:100%;
-  height:30px;
+  height:40px;
   font-size:20px;
-  margin-top:10px;
+  margin-top:20px;
   text-align: center;
   line-height: 40px;
   /*background: -webkit-linear-gradient(135deg,
@@ -107,6 +115,21 @@ router-link{
             -webkit-animation: flowCss 12s infinite linear;*/
 
 }
+
+.to::before{
+  content: '';
+            height: 4px;
+            background: rgb(137, 203, 233);
+            /* 伪元素默认样式 display: inline;所以需要转成inline-block宽高才会生效 */
+            display: inline-block;
+            /* 通过定位使下划线在最低层 */
+            position: absolute;
+            border-radius: 18px;;
+            bottom: -6px;
+            width: 0;
+            /* 加上一个过渡效果，使之丝滑一些 */
+            transition: width 0.36s;
+}
 /*
 @-webkit-keyframes flowCss {
             0% {
@@ -121,43 +144,16 @@ router-link{
 */
 .to:hover{
   /*-webkit-animation: flowCss 4s infinite linear;*/
-  color:rgb(61, 129, 188)
+  color:rgb(57, 144, 220)
 }
 
-.search{
-    margin-left: 50px;
-    height: 32px;
-    width: 500px;
-    background-color:#fff;
-
-    display: flex;
-}
-.inputType{
-  width:400px;
-  height: 30px;
-  text-indent: 1em;
-   line-height: 34px;
-  background-color: #fff;
-  border: 1px solid black;
-  border-top-left-radius: 17px;
-  border-bottom-left-radius: 17px;
-  font-size: 12px;
+.to:hover::before{
+  width: 100px;
 }
 .inputType:focus{
   outline: none;   
   border: 1px solid rgb(230, 32, 213);
-}
-.button{
-  color: #fff;
-  text-align: center;
-  background: rgba(204, 51, 0, 1);
-  border-left:1px solid rgba(0, 0, 0, 0.45);
-  width:100px;
-  height: 32px;
-  line-height: 34px;
-  border-top-right-radius: 18px;
-  border-bottom-right-radius: 18px
-}
+} 
 .title-right{
      width: 380px;
     height: 48px;
