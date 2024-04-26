@@ -38,6 +38,7 @@ import TopBar from './TopBar.vue'
 import SideBar from './SideBar.vue'
 import Demo from './Demo.vue'
 import Login from './Login.vue'
+import axios from 'axios';  
 export default{
   components:{
    TopBar,
@@ -57,8 +58,15 @@ export default{
   methods:{
     click()
     {
-      console.log(this.username)
-      console.log(this.passwd)
+      axios.get("http://localhost:8080/login")
+      .then(response =>{
+        console.log("--------")
+        console.log(response.data)
+        
+      }).catch(err=>{
+        console.log("----1111----")
+        console.error(err)
+      })
     }
   },
 }

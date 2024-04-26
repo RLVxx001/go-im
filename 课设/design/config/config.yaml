@@ -1,0 +1,12 @@
+
+# MySQL数据源配置
+DatabaseSettings:
+  DatabaseURIL: "tcp(127.0.0.1:3306)"
+  DatabaseURIR: "parseTime=True&loc=Local"
+  DatabaseName: "go_database" # 数据库名
+  Username: "root"
+  Password: "15159579836x"
+
+JwtSettings:
+  SecretKey: "chat.com" #JWTkey
+
