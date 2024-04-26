@@ -1,39 +1,24 @@
 <template>
     <div class="side">
-        <router-link to="/unusedOrder" style="text-decoration: none;">
-            <div class="to">首页</div>
+        <router-link to="/person" style="text-decoration: none;">
+            <img class="pht" alt="" src="../assets/unkonw.png"/>
+        </router-link>
+        <!-- <span class="slice"></span> -->
+        <router-link to="/usedOrder" style="text-decoration: none;">
+           <div class="to">个人信息</div>
         </router-link>
         <!-- <span class="slice"></span> -->
         <router-link to="/usedOrder" style="text-decoration: none;">
            <div class="to">个人空间</div>
         </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/usedOrder" style="text-decoration: none;">
-           <div class="to">导航三</div>
-        </router-link>
-        <!-- <span class="slice"></span> -->
            <router-link to="/advices" style="text-decoration: none;">
-        <div class="to">导航四</div>
+        <div class="to">好友列表</div>
            </router-link>
         <!-- <span class="slice"></span> -->
         <router-link to="/evaluate" style="text-decoration: none;">
-           <div class="to">导航五</div>
+           <div class="to">退出登录</div>
         </router-link>
-       <!-- <div class="search">
-         <div contenteditable class="inputType" placeholder='请输入文字'></div>
-        <div class="button">搜索</div>
-       </div> -->
-       <router-link to="/Login" style="text-decoration: none;">
-       <div class="to">
-          登录
-       </div>
-      </router-link>
-      <router-link to="/Register" style="text-decoration: none;">
-       <div class="to">
-          注册
-       </div>
-      </router-link>
-      <!-- <router-view></router-view> -->
    </div>
 </template>
 <script>
@@ -47,6 +32,12 @@ router-link{
   text-decoration: none;
 }
 
+.pht{
+  margin-top:50px;
+  size:70px;
+  margin-bottom: 50px;
+}
+
 .slice{
   line-height: 40px;
   font-size: 20px;
@@ -58,7 +49,7 @@ router-link{
   color:#222226;
   display: block;
   height: 800px;
-  width: 150px;
+  width: 400px;
   border:1px double linen;
   background-color: #525257a2;
 }
@@ -96,7 +87,7 @@ router-link{
 .to{
   color:rgba(220, 228, 253, 0.942);
   width:100%;
-  height:60px;
+  height:30px;
   font-size:20px;
   margin-top:10px;
   text-align: center;
