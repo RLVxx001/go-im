@@ -3,11 +3,11 @@
       <form  style="color:rgba(220, 228, 253, 0.942);">
         <div class="form-group">
           <label for="exampleInputEmail1" style="color:rgba(220, 228, 253, 0.942);">邮箱：</label>
-          <input type="email" class="form-control"  id="exampleInputEmail1" placeholder="邮箱">
+          <input type="email" class="form-control"  id="exampleInputEmail1" placeholder="邮箱" v-model="email">
         </div>
         <div class="form-group">
           <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">用户名：</label>
-          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="用户名">
+          <input type="text" class="form-control" id="exampleInputPassword1" placeholder="用户名" v-model="username">
         </div>
         <!-- <div class="form-group">
           <label for="exampleInputFile" style="color:rgba(220, 228, 253, 0.942);">File input</label>
@@ -16,13 +16,13 @@
         </div> -->
         <div class="form-group">
           <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">密码：</label>
-          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码">
+          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码" v-model="passwd">
         </div>
         <div class="form-group">
           <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">确认密码</label>
-          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="再次输入密码">
+          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="再次输入密码" v-model="passwdes">
         </div>
-        <button type="submit" class="btn btn-default">注册</button>
+        <button class="btn btn-default" @click="check">注册</button>
         <div class="form-group" style="margin-top:10px">
           <label class="exampleInputEmail1">
             已有账号？
@@ -42,6 +42,14 @@ import SideBar from './SideBar.vue'
 import Demo from './Demo.vue'
 import Login from './Login.vue'
 export default{
+  data(){
+    return {
+      email:"",
+      username:"",
+      passwd:"",
+      passwdes:"",
+    }
+  },
   components:{
    TopBar,
     SideBar,
@@ -50,6 +58,29 @@ export default{
     SideBar,
     // Index,
     // Login,
+  },
+  methods:{
+    check(){//验证
+      if(this.username==""||this.passwd==""||this.passwdes==""){
+        this.remind("输入框不能为空")
+        return
+      }
+      if(this.passwd!=this.passwdes){
+        this.remind("密码不同")
+        return
+      }
+      if(this.username.length<5||this.username.length>20){
+        this.remind("账号必须在5-20位")
+        return
+      }
+      this.sub()
+    },
+    remind(data){//提醒
+      alert(data)
+    },
+    sub(){//提交
+
+    },
   }
 }
 </script>

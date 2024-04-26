@@ -3,11 +3,11 @@
       <form  style="color:rgba(220, 228, 253, 0.942);">
         <div class="form-group">
           <label for="exampleInputEmail1" style="color:rgba(220, 228, 253, 0.942);">请输入账号：</label>
-          <input type="email" class="form-control"  id="exampleInputEmail1" placeholder="账号">
+          <input type="text" class="form-control"  id="exampleInputEmail1" placeholder="账号" v-model="username">
         </div>
         <div class="form-group">
           <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">密码：</label>
-          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码">
+          <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码" v-model="passwd">
         </div>
         <!-- <div class="form-group">
           <label for="exampleInputFile" style="color:rgba(220, 228, 253, 0.942);">File input</label>
@@ -19,7 +19,7 @@
             <input type="checkbox" style="color:rgba(220, 228, 253, 0.942);"> 记住我
           </label>
         </div>
-        <button @click="click" type="submit" class="btn btn-default">登录</button>
+        <button @click="click" class="btn btn-default">登录</button>
         <div class="form-group" style="margin-top:10px">
           <label class="exampleInputEmail1">
             没有账号？
@@ -48,10 +48,17 @@ export default{
     // Index,
     // Login,
   },
+  data(){
+    return {
+      username:"",
+      passwd:"",
+    }
+  },
   methods:{
     click()
     {
-      console.log(12312524)
+      console.log(this.username)
+      console.log(this.passwd)
     }
   },
 }
