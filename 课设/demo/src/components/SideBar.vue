@@ -1,8 +1,10 @@
 <template>
     <div class="side">
         <router-link to="/person" style="text-decoration: none;">
+          <div style="margin-top:50px;margin-bottom:50px;">
             <img class="pht" alt="" src="../assets/unkonw.png"/>
-        </router-link>
+          </div>
+          </router-link>
         <!-- <span class="slice"></span> -->
         <router-link to="/usedOrder" style="text-decoration: none;">
            <div class="to">个人信息</div>
@@ -33,9 +35,7 @@ router-link{
 }
 
 .pht{
-  margin-top:50px;
   size:70px;
-  margin-bottom: 50px;
 }
 
 .slice{
@@ -85,11 +85,12 @@ router-link{
 }
 
 .to{
+  position: relative;
   color:rgba(220, 228, 253, 0.942);
   width:100%;
-  height:30px;
-  font-size:20px;
-  margin-top:10px;
+  height:40px;
+  font-size:25px;
+  margin-top:20px;
   text-align: center;
   line-height: 40px;
   /*background: -webkit-linear-gradient(135deg,
@@ -107,6 +108,20 @@ router-link{
             -webkit-animation: flowCss 12s infinite linear;*/
 
 }
+
+.to::before{
+  content: '';
+            height: 4px;
+            background: rgb(137, 203, 233);
+            /* 伪元素默认样式 display: inline;所以需要转成inline-block宽高才会生效 */
+            display: inline-block;
+            /* 通过定位使下划线在最低层 */
+            position: absolute;
+            bottom: -6px;
+            width: 0;
+            /* 加上一个过渡效果，使之丝滑一些 */
+            transition: width 0.36s;
+}
 /*
 @-webkit-keyframes flowCss {
             0% {
@@ -121,7 +136,11 @@ router-link{
 */
 .to:hover{
   /*-webkit-animation: flowCss 4s infinite linear;*/
-  color:rgb(61, 129, 188)
+  color:rgb(57, 144, 220)
+}
+
+.to:hover::before{
+  width: 100px;
 }
 
 .search{
