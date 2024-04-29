@@ -11,37 +11,50 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: "/Home",
+      redirect: "/home",
     },
     {
-      path: "/Home",
+      path: "/home",
       component: Home,
+      meta:{requiresAuth:true}
     },
     {
-      path: "/TopBar",
+      path: "/topBar",
       component: TopBar,
+      meta:{requiresAuth:true}
     },
     {
-      path: "/Login",
+      path: "/login",
       component: Login,
     },
     {
-      path: "/Register",
+      path: "/register",
       component: Register,
     },
     {
-      path: "/Person",
+      path: "/person",
       component: Person,
+      meta:{requiresAuth:true}
     },
     {
-      path: "/Space",
+      path: "/space",
       component: Space,
+      meta:{requiresAuth:true}
     },
     {
-      path: "/Index",
+      path: "/index",
       component: Index,
+      meta:{requiresAuth:true}
     }
   ]
 })
-
+router.beforeEach((to,from)=>{
+  const token=localStorage.getItem('token')
+  if(to.meta.requiresAuth&&!token){
+      // return {
+      //     path:'/login',
+      //     query:{redirect:to.fullPath}
+      // }
+  }
+})
 export default router

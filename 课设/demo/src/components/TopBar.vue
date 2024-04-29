@@ -7,7 +7,7 @@
          <input contenteditable class="inputType" placeholder='内容'/>
         <button class="button">搜索</button>
        <!-- </div> -->
-        <router-link to="/Home" style="text-decoration: none;">
+        <router-link to="/home" style="text-decoration: none;">
             <div class="to1">热门群聊</div>
         </router-link>
         <!-- <span class="slice"></span> -->
@@ -30,12 +30,12 @@
          <div contenteditable class="inputType" placeholder='请输入文字'></div>
         <div class="button">搜索</div>
        </div> -->
-       <router-link to="/Login" style="text-decoration: none;">
+       <router-link to="/login" style="text-decoration: none;">
        <div class="to1">
           登录
        </div>
       </router-link>
-      <router-link to="/Register" style="text-decoration: none;">
+      <router-link to="/register" style="text-decoration: none;">
        <div class="to1">
           注册
        </div>

@@ -6,11 +6,11 @@
           </div>
           </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/Person" style="text-decoration: none;">
+        <router-link to="/person" style="text-decoration: none;">
            <div class="to">个人信息</div>
         </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/Space" style="text-decoration: none;">
+        <router-link to="/space" style="text-decoration: none;">
            <div class="to">个人空间</div>
         </router-link>
         <!-- <span class="slice"></span> -->

@@ -1,9 +1,12 @@
 <template>
       <div style="width:400px;height:400px;position:absolute;left:550px;top:150px">
       <form  style="color:rgba(220, 228, 253, 0.942);">
-        <div class="form-group">
+        <div class="form-group" >
           <label for="exampleInputEmail1" style="color:rgba(220, 228, 253, 0.942);">请输入账号：</label>
-          <input type="text" class="form-control"  id="exampleInputEmail1" placeholder="账号" v-model="username">
+          <div style="display: flex;">
+            <input type="text" class="form-control"  id="exampleInputEmail1" placeholder="账号" v-on:input='checkname($event)' v-bind:value='username'>
+            <span v-if="ckname" style="color: red;">!!!!!</span>
+          </div>
         </div>
         <div class="form-group">
           <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">密码：</label>
@@ -53,6 +56,7 @@ export default{
     return {
       username:"",
       passwd:"",
+      ckname:false,
     }
   },
   methods:{
@@ -67,6 +71,16 @@ export default{
         console.log("----1111----")
         console.error(err)
       })
+    },
+    checkname(event){
+      this.username=event.target.value
+      console.log(this.username)
+      if(this.username!=""&&(this.username.length<5||this.username.length>20)){
+        this.ckname=true
+      }
+      else{
+        this.ckname=false
+      }
     }
   },
 }
