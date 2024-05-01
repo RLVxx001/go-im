@@ -11,13 +11,13 @@
             <div class="to1">热门群聊</div>
         </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/usedOrder" style="text-decoration: none;">
+        <!-- <router-link to="/usedOrder" style="text-decoration: none;">
            <div class="to1">社区</div>
-        </router-link>
+        </router-link> -->
         <!-- <span class="slice"></span> -->
-        <router-link to="/usedOrder" style="text-decoration: none;">
+        <!-- <router-link to="/usedOrder" style="text-decoration: none;">
            <div class="to1">发现新朋友</div>
-        </router-link>
+        </router-link> -->
         <!-- <span class="slice"></span> -->
            <!-- <router-link to="/advices" style="text-decoration: none;">
         <div class="to1">31245</div>
@@ -71,7 +71,9 @@ router-link{
   color:#222226;
   display: flex;
   height: 60px;
-  width: 100%;
+  width: 1017px;
+  border-radius: 18px;
+  margin-left: 17%;
   background-color: #525257a2;
 }
 

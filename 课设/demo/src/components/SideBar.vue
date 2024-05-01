@@ -14,7 +14,7 @@
            <div class="to">个人空间</div>
         </router-link>
         <!-- <span class="slice"></span> -->
-           <router-link to="/advices" style="text-decoration: none;">
+           <router-link to="/friendlist" style="text-decoration: none;">
         <div class="to">好友列表</div>
            </router-link>
             <router-link to="/advices" style="text-decoration: none;">
@@ -49,7 +49,7 @@ router-link{
 
 .side{
   margin-top:20px;
-  margin-left:250px;
+  margin-left:17%;
   text-align: center;
   color:#222226;
   display: block;
