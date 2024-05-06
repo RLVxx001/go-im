@@ -12,7 +12,7 @@ type Service struct {
 // 实例化service
 func NewUserService(r Repository) *Service {
 	r.Migration()
-	r.InsertSampleData()
+	//r.InsertSampleData()
 	return &Service{
 		r: r,
 	}
