@@ -18,12 +18,23 @@ func NewUserService(r Repository, messageRepository MessageRepository) *Service 
 
 // 创建用户-用户链接
 func (c *Service) Create(u *UsertoUser) error {
-	return c.r.Create(u)
+	//校验
+	if _, err := c.r.Fid(u.UserOwner, u.UserTarget); err == nil {
+		return ErrNotCreate
+	}
+
+	if err := c.r.Create(u); err != nil {
+		return ErrNotCreate
+	}
+	return nil
 }
 
 // 更改操作
 func (c *Service) Update(u *UsertoUser) error {
-	return c.r.Update(u)
+	if err := c.r.Update(u); err != nil {
+		return ErrNotUpdate
+	}
+	return nil
 }
 
 // 发送消息
@@ -55,7 +66,7 @@ func (c *Service) Send(u *UsertoUser, m *UserMessage) error {
 }
 
 // 撤回
-func (c *Service) revocation(u *UsertoUser, m *UserMessage) error {
+func (c *Service) Revocation(u *UsertoUser, m *UserMessage) error {
 	//校验
 	if _, err := c.r.Fid(u.UserOwner, u.UserTarget); err != nil {
 		return ErrNotRevocation
@@ -69,4 +80,34 @@ func (c *Service) revocation(u *UsertoUser, m *UserMessage) error {
 		return ErrNotRevocation
 	}
 	return nil
+}
+
+// 个人删除消息操作（不可逆）
+func (c *Service) DeleteMessage(u *UsertoUser, m *UserMessage) error {
+	//校验
+	if _, err := c.r.Fid(u.UserOwner, u.UserTarget); err != nil {
+		return ErrNotDelete
+	}
+
+	if u.ID != m.UsertoUserId {
+		return ErrNotDelete
+	}
+
+	if err := c.messageRepository.Delete(m); err != nil {
+		return ErrNotDelete
+	}
+
+	return nil
+}
+
+// 查找消息
+func (c *Service) Fid(u *UsertoUser) (*UsertoUser, error) {
+	//校验
+	u1, err := c.r.Fid(u.UserOwner, u.UserTarget)
+	if err != nil {
+		return nil, ErrNotFid
+	}
+	u1.UserMassages = c.messageRepository.Fid(u1.ID)
+
+	return u1, nil
 }

@@ -63,6 +63,15 @@ func (c *Service) CheckEmailUser(email, password string) (User, error) {
 	return user, nil
 }
 
+// id查找用户
+func (c *Service) GetById(id uint) (User, error) {
+	user, err := c.r.GetById(id)
+	if err != nil {
+		return User{}, ErrUserNotFound
+	}
+	return user, nil
+}
+
 // email查找用户
 func (c *Service) GetEmailUser(email string) (User, error) {
 	user, err := c.r.GetByEmail(email)

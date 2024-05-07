@@ -32,7 +32,7 @@ func (r *MessageRepository) Create(u *UserMessage) error {
 
 // 删除消息
 func (r *MessageRepository) Delete(u *UserMessage) error {
-	tx := r.db.Delete(u)
+	tx := r.db.Model(u).Delete(u)
 	return tx.Error
 }
 
@@ -43,7 +43,7 @@ func (r *MessageRepository) Deletes(key uint) error {
 }
 
 // 查询消息
-func (r *MessageRepository) Fid(utouid int) []UserMessage {
+func (r *MessageRepository) Fid(utouid uint) []UserMessage {
 	var us []UserMessage
 	r.db.Where("UsertoUserId=?", utouid).Find(&us)
 	return us

@@ -9,7 +9,7 @@ type UsertoUser struct {
 	gorm.Model
 	UserOwner    uint   //所属用户
 	UserTarget   uint   //接受用户id
-	Remarks      string //备注
+	Remarks      string `gorm:"type:varchar(500)"` //备注
 	IsDeleted    bool   //是否被删除
 	Shielded     bool   //是否被拉黑
 	UserMassages []UserMessage
