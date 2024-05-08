@@ -1,7 +1,7 @@
 
 <template>
     <div class="top">
-      <img src="../assets/123.jpg" alt="" class="logo"/>
+      <img src="../assets/unkonw.png" alt="" class="logo"/>
       <!-- <div class="to1"></div> -->
       <!-- <div class="search"> -->
          <input contenteditable class="inputType" placeholder='内容'/>
@@ -15,9 +15,6 @@
            <div class="to1">社区</div>
         </router-link> -->
         <!-- <span class="slice"></span> -->
-        <!-- <router-link to="/usedOrder" style="text-decoration: none;">
-           <div class="to1">发现新朋友</div>
-        </router-link> -->
         <!-- <span class="slice"></span> -->
            <!-- <router-link to="/advices" style="text-decoration: none;">
         <div class="to1">31245</div>
@@ -74,7 +71,11 @@ router-link{
   width: 1017px;
   border-radius: 18px;
   margin-left: 17%;
+  width: 1020px;;
   background-color: #525257a2;
+  border-radius:18px;
+  margin-left:250px;
+  margin-bottom: -15px;
 }
 
 .title-left-image{
@@ -148,7 +149,7 @@ router-link{
     display: flex;
 }
 .inputType{
-    margin-left: 210px;
+    margin-left: 110px;
     margin-top:15px;
   width:500px;
   height: 32px;

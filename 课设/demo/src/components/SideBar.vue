@@ -2,7 +2,7 @@
     <div class="side">
         <router-link to="/person" style="text-decoration: none;">
           <div style="margin-top:30px;margin-bottom:50px;">
-            <img style="width:120px;height:120px;" alt="" src="../assets/unkonw.png"/>
+            <img style="width:120px;height:120px;border-radius:50%" alt="" src="../assets/123.jpg"/>
           </div>
           </router-link>
         <!-- <span class="slice"></span> -->

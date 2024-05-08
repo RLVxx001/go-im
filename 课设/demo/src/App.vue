@@ -26,13 +26,16 @@ export default{
 
 <template>
   <div style="background-color: #525257a2;width:100%">
-  <div style="height:10px;"></div>
-  <TopBar></TopBar>
-  <div style="display:flex;margin-top:-15px;">
-    <SideBar></SideBar>
-    <div style="width:810px;height:600px;background-color:#525257a2;margin-left:10px;margin-top:20px;border-radius:18px;border:2px double rgb(138, 137, 137);">
-      <router-view></router-view>
+
+    <div style="height:10px;"></div>
+    <TopBar></TopBar>
+    <div style="display:flex;margin-top:-15px;">
     </div>
+    <div style="display:flex;">
+      <SideBar></SideBar>
+      <div style="width:810px;height:600px;background-color:#525257a2;margin-left:10px;margin-top:20px;border-radius:18px;border:2px double rgb(138, 137, 137);">
+        <router-view></router-view>
+      </div>
     </div>    
   </div>
 </template>

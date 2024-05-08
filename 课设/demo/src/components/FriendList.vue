@@ -67,7 +67,7 @@
   
 }
 
-.btn{
+.bTn{
   margin-top:14px;
   color: rgb(207, 230, 244);
   font-size:17px;
