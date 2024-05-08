@@ -40,6 +40,16 @@ func (r *Repository) GetByName(name string) (User, error) {
 	return user, nil
 }
 
+// 根据id查询用户
+func (r *Repository) GetById(id uint) (User, error) {
+	var user User
+	err := r.db.Where("ID = ?", id).First(&user).Error
+	if err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
 // 根据邮件查询用户
 func (r *Repository) GetByEmail(email string) (User, error) {
 	var user User

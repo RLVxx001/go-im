@@ -12,7 +12,7 @@ type Service struct {
 // 实例化service
 func NewUserService(r Repository) *Service {
 	r.Migration()
-	r.InsertSampleData()
+	//r.InsertSampleData()
 	return &Service{
 		r: r,
 	}
@@ -58,6 +58,15 @@ func (c *Service) CheckEmailUser(email, password string) (User, error) {
 	}
 	match := hash.CheckPasswordHash(password+user.Salt, user.Password)
 	if !match {
+		return User{}, ErrUserNotFound
+	}
+	return user, nil
+}
+
+// id查找用户
+func (c *Service) GetById(id uint) (User, error) {
+	user, err := c.r.GetById(id)
+	if err != nil {
 		return User{}, ErrUserNotFound
 	}
 	return user, nil

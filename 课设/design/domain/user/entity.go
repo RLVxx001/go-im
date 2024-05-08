@@ -4,15 +4,15 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	Username  string `gorm:"type:varchar(30)"`
-	Account   string `gorm:"type:varchar(30)"`
-	Password  string `gorm:"type:varchar(100)"`
-	Password2 string `gorm:"-"`
-	Salt      string `gorm:"type:varchar(100)"`
-	Email     string `gorm:"type:varchar(100)"`
-	Token     string `gorm:"type:varchar(500)"`
-	IsDeleted bool
-	IsAdmin   bool
+	Username  string `gorm:"type:varchar(30)"`  //用户名
+	Account   string `gorm:"type:varchar(30)"`  //账号名
+	Password  string `gorm:"type:varchar(100)"` //密码
+	Password2 string `gorm:"-"`                 //验证密码（不计入表）
+	Salt      string `gorm:"type:varchar(100)"` //token密钥
+	Email     string `gorm:"type:varchar(100)"` //邮件
+	Token     string `gorm:"type:varchar(500)"` //token
+	IsDeleted bool   //是否被删除
+	IsAdmin   bool   //是否是管理
 }
 
 func NewUser(username, account, password, password2, email string) *User {
