@@ -4,11 +4,13 @@ import "design/domain/usertoUser"
 
 // 创建用户请求结构体
 type UserRequest struct {
-	UserOwner  uint   `json:"userOwner"`  //所属用户
-	UserTarget uint   `json:"userTarget"` //接受用户id
-	Remarks    string `json:"remarks"`    //备注
-	IsDeleted  bool   `json:"isDeleted"`  //是否被删除
-	Shielded   bool   `json:"shielded"`   //是否被拉黑
+	UserOwner    uint          `json:"userOwner"`  //所属用户
+	UserTarget   uint          `json:"userTarget"` //接受用户id
+	Remarks      string        `json:"remarks"`    //备注
+	IsDeleted    bool          `json:"isDeleted"`  //是否被删除
+	Shielded     bool          `json:"shielded"`   //是否被拉黑
+	Massage      string        `json:"massage"`    //消息
+	UserMassages []UserMessage `json:"UserMassages"`
 }
 
 type UserMessage struct {
@@ -39,11 +41,35 @@ func ToUserResponse(u *usertoUser.UsertoUser) UserResponse {
 	}
 }
 
+func ToUsertoUser(u UserRequest) *usertoUser.UsertoUser {
+	return &usertoUser.UsertoUser{
+		UserOwner:    u.UserOwner,
+		UserTarget:   u.UserTarget,
+		Remarks:      u.Remarks,
+		IsDeleted:    u.IsDeleted,
+		Shielded:     u.Shielded,
+		UserMassages: ToMessage(u.UserMassages),
+	}
+}
+
 // 数组转化
 func ToUserMessage(us []usertoUser.UserMessage) []UserMessage {
 	users := make([]UserMessage, len(us))
 	for i, j := range us {
 		users[i] = UserMessage{
+			Message:      j.Message,
+			UsertoUserId: j.UsertoUserId,
+			Key:          j.Key,
+		}
+
+	}
+	return users
+}
+
+func ToMessage(us []UserMessage) []usertoUser.UserMessage {
+	users := make([]usertoUser.UserMessage, len(us))
+	for i, j := range us {
+		users[i] = usertoUser.UserMessage{
 			Message:      j.Message,
 			UsertoUserId: j.UsertoUserId,
 			Key:          j.Key,

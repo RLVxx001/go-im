@@ -81,8 +81,21 @@ func (c *Service) GetEmailUser(email string) (User, error) {
 	return user, nil
 }
 
+// 验证用户
+func (c *Service) CheckUser(text, password string) (User, error) {
+	user1, err := c.CheckUserName(text, password)
+	if err == nil {
+		return user1, nil
+	}
+	user2, err := c.CheckUserEmail(text, password)
+	if err == nil {
+		return user2, nil
+	}
+	return User{}, ErrUserNotFound
+}
+
 // 用户名验证用户
-func (c *Service) CheckUser(name, password string) (User, error) {
+func (c *Service) CheckUserName(name, password string) (User, error) {
 	user, err := c.r.GetByName(name)
 	if err != nil {
 		return User{}, ErrUserNotFound
@@ -94,7 +107,20 @@ func (c *Service) CheckUser(name, password string) (User, error) {
 	return user, nil
 }
 
-// 用户名验证用户
+// Email验证用户
+func (c *Service) CheckUserEmail(name, password string) (User, error) {
+	user, err := c.r.GetByEmail(name)
+	if err != nil {
+		return User{}, ErrUserNotFound
+	}
+	match := hash.CheckPasswordHash(password+user.Salt, user.Password)
+	if !match {
+		return User{}, ErrUserNotFound
+	}
+	return user, nil
+}
+
+// 用户名查找用户
 func (c *Service) GetUser(name string) (User, error) {
 	user, err := c.r.GetByName(name)
 	if err != nil {

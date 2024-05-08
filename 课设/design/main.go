@@ -1,7 +1,12 @@
 package main
 
 import (
+	"design/api"
+	"design/utils/jwt"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strings"
 )
 
 type W struct {
@@ -35,46 +40,48 @@ func main() {
 			c.AbortWithStatus(200)
 		}
 	})
-	g.GET("/login", Login)
-	g.Run()
+	g.Use(jwtMiddleware())
+	api.RegisterHandlers(g)
+	g.Run(":8081")
 }
 
-//// 中间件：检查JWT，但仅当请求不是登录或注册时
-//func jwtMiddleware() gin.HandlerFunc {
-//	return func(c *gin.Context) {
-//		// 检查请求路径是否是登录或注册
-//		if strings.HasPrefix(c.Request.URL.Path, "/login") || strings.HasPrefix(c.Request.URL.Path, "/register") {
-//			// 如果是登录或注册请求，则直接跳过JWT验证
-//			c.Next()
-//			return
-//		}
-//
-//		// 从请求头或请求体（取决于您的JWT存储方式）中获取JWT令牌
-//		tokenString := c.Request.Header.Get("Authorization") // 假设JWT在Authorization头中，格式为"Bearer <token>"
-//		if tokenString == "" {
-//			// 如果没有找到JWT，返回错误
-//			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "JWT token missing"})
-//			return
-//		}
-//
-//		// 移除"Bearer "前缀（如果存在）
-//		const bearerPrefix = "Bearer "
-//		if len(tokenString) > len(bearerPrefix) && strings.EqualFold(tokenString[:len(bearerPrefix)], bearerPrefix) {
-//			tokenString = tokenString[len(bearerPrefix):]
-//		}
-//
-//		// 解析JWT令牌
-//		token, err := parseJWT(tokenString)
-//		if err != nil {
-//			// 如果解析失败，返回错误
-//			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid JWT token"})
-//			return
-//		}
-//
-//		// 如果JWT验证成功，您可以将解析后的用户信息（如ID）设置到上下文中供后续使用
-//		// c.Set("userId", userID) // 假设您从JWT中解析出了userID
-//
-//		// 继续处理请求
-//		c.Next()
-//	}
-//}
+// 中间件：检查JWT，但仅当请求不是登录或注册时
+func jwtMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 检查请求路径是否是登录或注册
+		if strings.HasPrefix(c.Request.URL.Path, "/user/login") || strings.HasPrefix(c.Request.URL.Path, "/register") {
+			// 如果是登录或注册请求，则直接跳过JWT验证
+			fmt.Println("跳过JWT验证")
+			c.Next()
+			return
+		}
+
+		// 从请求头或请求体（取决于您的JWT存储方式）中获取JWT令牌
+		tokenString := c.Request.Header.Get("Authorization") // 假设JWT在Authorization头中，格式为"Bearer <token>"
+		if tokenString == "" {
+			// 如果没有找到JWT，返回错误
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "JWT token missing"})
+			return
+		}
+
+		// 移除"Bearer "前缀（如果存在）
+		const bearerPrefix = "Bearer "
+		if len(tokenString) > len(bearerPrefix) && strings.EqualFold(tokenString[:len(bearerPrefix)], bearerPrefix) {
+			tokenString = tokenString[len(bearerPrefix):]
+		}
+
+		// 解析JWT令牌
+		token := jwt.VerifyToken(tokenString, "chat.com")
+		if token == nil {
+			// 如果解析失败，返回错误
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid JWT token"})
+			return
+		}
+
+		// 如果JWT验证成功，您可以将解析后的用户信息（如ID）设置到上下文中供后续使用
+		c.Set("userId", token.UserId) // 假设您从JWT中解析出了userID
+		fmt.Println("通过JWT验证")
+		// 继续处理请求
+		c.Next()
+	}
+}

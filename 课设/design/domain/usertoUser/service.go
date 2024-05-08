@@ -1,5 +1,7 @@
 package usertoUser
 
+import "log"
+
 // 用户消息结构体service结构体
 type Service struct {
 	r                 Repository
@@ -17,20 +19,33 @@ func NewUserService(r Repository, messageRepository MessageRepository) *Service 
 }
 
 // 创建用户-用户链接
-func (c *Service) Create(u *UsertoUser) error {
+func (c *Service) Create(u *UsertoUser) (*UsertoUser, error) {
 	//校验
-	if _, err := c.r.Fid(u.UserOwner, u.UserTarget); err == nil {
-		return ErrNotCreate
+	us, err := c.r.Fid(u.UserOwner, u.UserTarget)
+	if err == nil {
+		if us.IsDeleted {
+			us.IsDeleted = false
+			if err := c.r.Update(us); err != nil {
+				return nil, ErrNotCreate
+			}
+			return us, nil
+		}
+		return nil, ErrNotCreate
 	}
 
 	if err := c.r.Create(u); err != nil {
-		return ErrNotCreate
+		return nil, ErrNotCreate
 	}
-	return nil
+	return u, nil
 }
 
 // 更改操作
 func (c *Service) Update(u *UsertoUser) error {
+	fid, err := c.r.Fid(u.UserOwner, u.UserTarget)
+	if err != nil {
+		return ErrNotUpdate
+	}
+	u.ID = fid.ID
 	if err := c.r.Update(u); err != nil {
 		return ErrNotUpdate
 	}
@@ -38,27 +53,31 @@ func (c *Service) Update(u *UsertoUser) error {
 }
 
 // 发送消息
-func (c *Service) Send(u *UsertoUser, m *UserMessage) error {
+func (c *Service) Send(u *UsertoUser, st string) error {
 	if u.IsDeleted {
 		return ErrNotUser
 	}
 	u1, err1 := c.r.Fid(u.UserOwner, u.UserTarget)
-	if err1 != nil {
+	if err1 != nil || u1.IsDeleted {
 		return ErrNotSend
 	}
 	u2, err2 := c.r.Fid(u.UserTarget, u.UserOwner)
 	if err2 != nil {
 		return ErrNotSend
 	}
-	m.UsertoUserId = u1.ID
+
+	m := NewUserMessage(u.ID, st)
 	if err := c.messageRepository.Create(m); err != nil { //创建发送者消息
 		return ErrNotSend
 	}
 	m.Key = m.ID
+	m.IsRead = true
 	if err := c.messageRepository.Update(m); err != nil { //修改发送者消息KEY
 		return ErrNotSend
 	}
 	m.UsertoUserId = u2.ID
+	m.IsRead = false
+	m.ID = 0
 	if err := c.messageRepository.Create(m); err != nil { //创建接收者消息
 		return ErrNotSend
 	}
@@ -66,13 +85,14 @@ func (c *Service) Send(u *UsertoUser, m *UserMessage) error {
 }
 
 // 撤回
-func (c *Service) Revocation(u *UsertoUser, m *UserMessage) error {
+func (c *Service) Revocation(u *UsertoUser) error {
 	//校验
 	if _, err := c.r.Fid(u.UserOwner, u.UserTarget); err != nil {
 		return ErrNotRevocation
 	}
 
-	if u.ID != m.UsertoUserId {
+	m := u.UserMassages[0]
+	if _, err := c.messageRepository.FidKey(u.ID, m.Key); err != nil {
 		return ErrNotRevocation
 	}
 
@@ -83,17 +103,15 @@ func (c *Service) Revocation(u *UsertoUser, m *UserMessage) error {
 }
 
 // 个人删除消息操作（不可逆）
-func (c *Service) DeleteMessage(u *UsertoUser, m *UserMessage) error {
+func (c *Service) DeleteMessage(u *UsertoUser) error {
 	//校验
 	if _, err := c.r.Fid(u.UserOwner, u.UserTarget); err != nil {
 		return ErrNotDelete
 	}
 
-	if u.ID != m.UsertoUserId {
-		return ErrNotDelete
-	}
+	m := u.UserMassages[0]
 
-	if err := c.messageRepository.Delete(m); err != nil {
+	if err := c.messageRepository.Delete(u.ID, m.Key); err != nil {
 		return ErrNotDelete
 	}
 
@@ -101,7 +119,7 @@ func (c *Service) DeleteMessage(u *UsertoUser, m *UserMessage) error {
 }
 
 // 查找消息
-func (c *Service) Fid(u *UsertoUser) (*UsertoUser, error) {
+func (c *Service) FidMessage(u *UsertoUser) (*UsertoUser, error) {
 	//校验
 	u1, err := c.r.Fid(u.UserOwner, u.UserTarget)
 	if err != nil {
@@ -110,4 +128,21 @@ func (c *Service) Fid(u *UsertoUser) (*UsertoUser, error) {
 	u1.UserMassages = c.messageRepository.Fid(u1.ID)
 
 	return u1, nil
+}
+
+// 查找用户-用户实体
+func (c *Service) Fid(u1, u2 uint) (*UsertoUser, error) {
+	us, err := c.r.Fid(u1, u2)
+	if err != nil {
+		return nil, ErrNotUsers
+	}
+	return us, nil
+}
+
+// 已读消息
+func (c *Service) ReadMessage(u *UserMessage) {
+	u.IsRead = true
+	if err := c.messageRepository.Update(u); err != nil {
+		log.Println(err)
+	}
 }

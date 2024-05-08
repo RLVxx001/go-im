@@ -14,10 +14,10 @@ func Validate(text string) bool {
 }
 
 func ValidateUserName(name string) bool {
-	return Validate(name)
+	return !Validate(name)
 }
 
 func ValidatePassword(password string) bool {
-	return Validate(password)
+	return !Validate(password)
 
 }

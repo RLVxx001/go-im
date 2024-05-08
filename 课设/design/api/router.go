@@ -1,14 +1,22 @@
 package api
 
 import (
+	userApi "design/api/user"
+	usertoUserApi "design/api/usertoUser"
 	"design/config"
+	"design/domain/user"
+	"design/domain/usertoUser"
 	"design/utils/database_handler"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"log"
 )
 
 // Databases 结构体
 type Databases struct {
+	userRepository              *user.Repository
+	usertouserRepository        *usertoUser.Repository
+	usertouserMessageRepository *usertoUser.MessageRepository
 }
 
 // 配置文件全局对象
@@ -27,5 +35,37 @@ func CreateDBs() *Databases {
 
 	db := database_handler.NewMySQLDB(dns)
 	fmt.Printf("%v", db)
-	return &Databases{}
+	return &Databases{
+		userRepository:              user.NewUserRepository(db),
+		usertouserRepository:        usertoUser.NewRepository(db),
+		usertouserMessageRepository: usertoUser.NewMessageRepository(db),
+	}
+}
+
+// 注册所有控制器
+func RegisterHandlers(r *gin.Engine) {
+
+	dbs := *CreateDBs()
+	RegisterUserHandlers(r, dbs)
+	RegisterUsertoUserHandlers(r, dbs)
+}
+
+// 注册用户控制器
+func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
+	userService := user.NewUserService(*dbs.userRepository)
+	userController := userApi.NewUserController(userService, AppConfig)
+	userGroup := r.Group("/user")
+	userGroup.POST("", userController.CreateUser)
+	userGroup.POST("/login", userController.Login)
+}
+
+// 注册用户-用户控制器
+func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
+	service := usertoUser.NewUserService(*dbs.usertouserRepository, *dbs.usertouserMessageRepository)
+	controller := usertoUserApi.NewController(service)
+	Group := r.Group("/usertoUser")
+	Group.POST("", controller.Create)
+	Group.POST("/Revocation", controller.Revocation)
+	Group.POST("/Send", controller.Send)
+	Group.POST("/Update", controller.Update)
 }

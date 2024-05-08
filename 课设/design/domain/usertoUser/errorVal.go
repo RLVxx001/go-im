@@ -12,4 +12,5 @@ var (
 	ErrNotFid        = errors.New("查找异常")
 	ErrNotCreate     = errors.New("创建异常")
 	ErrNotUpdate     = errors.New("修改异常")
+	ErrNotUsers      = errors.New("无该用户好友")
 )

@@ -10,8 +10,8 @@ type MessageRepository struct {
 }
 
 // 实例化
-func NewMessageRepository(db *gorm.DB) *Repository {
-	return &Repository{
+func NewMessageRepository(db *gorm.DB) *MessageRepository {
+	return &MessageRepository{
 		db: db,
 	}
 }
@@ -31,8 +31,8 @@ func (r *MessageRepository) Create(u *UserMessage) error {
 }
 
 // 删除消息
-func (r *MessageRepository) Delete(u *UserMessage) error {
-	tx := r.db.Model(u).Delete(u)
+func (r *MessageRepository) Delete(utouid, key uint) error {
+	tx := r.db.Where("UsertoUserId=?", utouid).Where("Key=?", key).Delete(&UserMessage{})
 	return tx.Error
 }
 
@@ -47,6 +47,16 @@ func (r *MessageRepository) Fid(utouid uint) []UserMessage {
 	var us []UserMessage
 	r.db.Where("UsertoUserId=?", utouid).Find(&us)
 	return us
+}
+
+// 查询消息
+func (r *MessageRepository) FidKey(utouid, key uint) (UserMessage, error) {
+	var us UserMessage
+	err := r.db.Where("UsertoUserId=?", utouid).Where("Key=?", key).First(&us).Error
+	if err != nil {
+		return UserMessage{}, err
+	}
+	return us, nil
 }
 
 // 更改消息

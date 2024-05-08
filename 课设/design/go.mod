@@ -3,6 +3,7 @@ module design
 go 1.21.5
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.1
 	github.com/spf13/viper v1.18.2
 	golang.org/x/crypto v0.16.0
