@@ -32,13 +32,13 @@ func (r *MessageRepository) Create(u *UserMessage) error {
 
 // 删除消息
 func (r *MessageRepository) Delete(utouid, key uint) error {
-	tx := r.db.Where("UsertoUserId=?", utouid).Where("Key=?", key).Delete(&UserMessage{})
+	tx := r.db.Where("UsertoUserId=?", utouid).Where("`Key`=?", key).Delete(&UserMessage{})
 	return tx.Error
 }
 
 // 撤回消息
 func (r *MessageRepository) Deletes(key uint) error {
-	tx := r.db.Where("Key=?", key).Delete(&UserMessage{})
+	tx := r.db.Where("`Key`=?", key).Delete(&UserMessage{})
 	return tx.Error
 }
 
@@ -52,7 +52,7 @@ func (r *MessageRepository) Fid(utouid uint) []UserMessage {
 // 查询消息
 func (r *MessageRepository) FidKey(utouid, key uint) (UserMessage, error) {
 	var us UserMessage
-	err := r.db.Where("UsertoUserId=?", utouid).Where("Key=?", key).First(&us).Error
+	err := r.db.Where("UsertoUserId=?", utouid).Where("`Key`=?", key).First(&us).Error
 	if err != nil {
 		return UserMessage{}, err
 	}

@@ -1,8 +1,11 @@
 package jwt
 
 import (
+	"design/config"
 	"encoding/json"
+	"errors"
 	"log"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -15,6 +18,8 @@ type DecodedToken struct {
 	Iss      string `json:"iss"` // Iss 表示该 JWT 的签发者
 	IsAdmin  bool   `json:"isAdmin"`
 }
+
+var ErrNotToken = errors.New("JWT token missing")
 
 // GenerateToken 函数用于生成 JSON Web Token (JWT)。
 func GenerateToken(claims *jwt.Token, secret string) (token string) {
@@ -59,4 +64,24 @@ func VerifyToken(token string, secret string) *DecodedToken {
 	}
 
 	return &decodedToken
+}
+
+func Decoded(tokenString string) (string, error) {
+	if tokenString == "" {
+		return "", ErrNotToken
+	}
+
+	// 移除"Bearer "前缀（如果存在）
+	const bearerPrefix = "Bearer "
+	if len(tokenString) > len(bearerPrefix) && strings.EqualFold(tokenString[:len(bearerPrefix)], bearerPrefix) {
+		tokenString = tokenString[len(bearerPrefix):]
+	}
+
+	// 解析JWT令牌
+	token := VerifyToken(tokenString, config.SecretKey)
+	if token == nil {
+		// 如果解析失败，返回错误
+		return "", ErrNotToken
+	}
+	return token.UserId, nil
 }

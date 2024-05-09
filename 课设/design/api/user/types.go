@@ -15,7 +15,7 @@ type CreateUserResponse struct {
 
 // 登录请求
 type LoginRequest struct {
-	Text     string `json:"Name"`
+	Text     string `json:"username"`
 	Password string `json:"password"`
 }
 

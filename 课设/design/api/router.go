@@ -27,6 +27,7 @@ func CreateDBs() *Databases {
 	cfgFile := "./config/config.yaml"
 	conf, err := config.GetAllConfigValues(cfgFile)
 	AppConfig = conf
+	config.SecretKey = AppConfig.SecretKey
 	if err != nil {
 		log.Fatalf("读取配置文件失败. %v", err.Error())
 	}
@@ -62,10 +63,14 @@ func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
 // 注册用户-用户控制器
 func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	service := usertoUser.NewUserService(*dbs.usertouserRepository, *dbs.usertouserMessageRepository)
-	controller := usertoUserApi.NewController(service)
+	userService := user.NewUserService(*dbs.userRepository)
+	controller := usertoUserApi.NewController(service, userService)
 	Group := r.Group("/usertoUser")
-	Group.POST("", controller.Create)
-	Group.POST("/Revocation", controller.Revocation)
-	Group.POST("/Send", controller.Send)
-	Group.POST("/Update", controller.Update)
+	Group.GET("", controller.Create)
+	Group.POST("/revocation", controller.Revocation)
+	Group.POST("/delete", controller.Delete)
+	Group.GET("/send", controller.Send)
+
+	Group.POST("/update", controller.Update)
+
 }

@@ -1,6 +1,8 @@
 package usertoUser
 
-import "log"
+import (
+	"log"
+)
 
 // 用户消息结构体service结构体
 type Service struct {
@@ -53,35 +55,35 @@ func (c *Service) Update(u *UsertoUser) error {
 }
 
 // 发送消息
-func (c *Service) Send(u *UsertoUser, st string) error {
-	if u.IsDeleted {
-		return ErrNotUser
-	}
+func (c *Service) Send(u *UsertoUser, st string) (*UserMessage, *UserMessage, error) {
 	u1, err1 := c.r.Fid(u.UserOwner, u.UserTarget)
+
 	if err1 != nil || u1.IsDeleted {
-		return ErrNotSend
-	}
-	u2, err2 := c.r.Fid(u.UserTarget, u.UserOwner)
-	if err2 != nil {
-		return ErrNotSend
+		return nil, nil, ErrNotSend
 	}
 
-	m := NewUserMessage(u.ID, st)
-	if err := c.messageRepository.Create(m); err != nil { //创建发送者消息
-		return ErrNotSend
+	u2, err2 := c.r.Fid(u.UserTarget, u.UserOwner)
+	if err2 != nil {
+		return nil, nil, ErrNotSend
 	}
+
+	m := NewUserMessage(u1.ID, st)
+	if err := c.messageRepository.Create(m); err != nil { //创建发送者消息
+		return nil, nil, ErrNotSend
+	}
+
 	m.Key = m.ID
 	m.IsRead = true
 	if err := c.messageRepository.Update(m); err != nil { //修改发送者消息KEY
-		return ErrNotSend
+		return nil, nil, ErrNotSend
 	}
-	m.UsertoUserId = u2.ID
-	m.IsRead = false
-	m.ID = 0
-	if err := c.messageRepository.Create(m); err != nil { //创建接收者消息
-		return ErrNotSend
+	m1 := NewUserMessage(u2.ID, m.Message)
+	m1.Key = m.Key
+
+	if err := c.messageRepository.Create(m1); err != nil { //创建接收者消息
+		return nil, nil, ErrNotSend
 	}
-	return nil
+	return m, m1, nil
 }
 
 // 撤回
@@ -92,6 +94,7 @@ func (c *Service) Revocation(u *UsertoUser) error {
 	}
 
 	m := u.UserMassages[0]
+
 	if _, err := c.messageRepository.FidKey(u.ID, m.Key); err != nil {
 		return ErrNotRevocation
 	}

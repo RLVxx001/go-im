@@ -6,8 +6,17 @@ import (
 )
 
 var cfgReader *configReader
+var SecretKey string
 
 type (
+	Token struct {
+		Type  string `json:"type"`
+		Token string `json:"token"`
+	}
+	TokenResponse struct {
+		Type    string `json:"type"`
+		Message string `json:"Message"`
+	}
 	Configuration struct {
 		DatabaseSettings
 		JwtSettings

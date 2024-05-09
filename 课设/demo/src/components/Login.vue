@@ -22,7 +22,7 @@
             <input type="checkbox" style="color:rgba(220, 228, 253, 0.942);"> 记住我
           </label>
         </div>
-        <button @click="click" class="btn btn-default">登录</button>
+        <button @click="send" class="btn btn-default">登录</button>
         <div class="form-group" style="margin-top:10px">
           <label class="exampleInputEmail1">
             没有账号？
@@ -56,8 +56,8 @@ export default{
   },
   data(){
     return {
-      username:"",
-      passwd:"",
+      username:'',
+      passwd:'',
       ckname:false,
     }
   },
@@ -83,16 +83,48 @@ export default{
       else{
         this.ckname=false
       }
-    }
-  },
-  data(){
-    return{
-      val:"1234654",
+    },
+    send(){
+      this.ws.send(
+      JSON.stringify({
+              userTarget: this.username-0,
+              remarks: this.passwd+'',
+              remarks1: this.passwd+''
+          }
+      ));
     }
   },
   created() {
-    bus.emit("countChange",this.val)
-  },
+    console.log("开启socket链接-----"+'ws://')
+  localStorage.setItem('token','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTUzNTc2MjUsImlhdCI6MTcxNTI3MTIyNSwiaXNBZG1pbiI6ZmFsc2UsImlzcyI6IiIsInVzZXJJZCI6IjciLCJ1c2VybmFtZSI6Inh4MDAwNSJ9.1gBQEaI79OSpBRs99uZ1QjoHOog-Exkl3x9Z6xnYdTI')
+  this.ws = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser');  
+  this.ws.onopen = (event) => {  
+    // 当 WebSocket 连接打开时，发送认证消息  
+    this.authenticate();  
+  };  
+  
+  this.ws.onmessage = (event) => {  
+    // 处理从服务器接收到的消息  
+    const msg = JSON.parse(event.data);  
+    console.log(msg);  
+  };  
+  
+  // 其他 WebSocket 事件处理...  
+  
+  // 认证方法  
+  this.authenticate = () => {  
+    if (this.ws.readyState == WebSocket.OPEN && localStorage.token) {  
+      console.log("发送验证信息")
+      this.ws.send(  
+        JSON.stringify({  
+          type: 'auth', // 消息类型，用于区分是普通消息还是认证消息  
+          token: localStorage.token,  
+          // 其他可能需要的认证信息...  
+        })  
+      );  
+    } 
+  }
+  }
 }
 </script>
 

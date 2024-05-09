@@ -31,15 +31,15 @@ func (r *Repository) Create(u *UsertoUser) error {
 
 // 更改操作
 func (r *Repository) Update(u *UsertoUser) error {
-	return r.db.Save(u).Error
+	return r.db.Omit("CreatedAt").Save(u).Error
 }
 
 // 查找
 func (r *Repository) Fid(u, tou uint) (*UsertoUser, error) {
-	var usertoUser *UsertoUser
-	err := r.db.Where("UserOwner=?", u).Where("UserTarget=?", tou).First(usertoUser).Error
+	var usertoUser UsertoUser
+	err := r.db.Where("UserOwner=?", u).Where("UserTarget=?", tou).First(&usertoUser).Error
 	if err != nil {
 		return nil, err
 	}
-	return usertoUser, nil
+	return &usertoUser, nil
 }
