@@ -30,7 +30,13 @@
   </div>
 </template>
 <script>
-
+  export default{
+    data(){
+      return{
+        UserList:[],
+      }
+    }
+  }
 </script>
 <style>
 .List{
@@ -48,9 +54,7 @@
   background-color: #a7a7aca2;
 }
 
-.Top{
-  height:30px;
-}
+
 
 .Chat
 {

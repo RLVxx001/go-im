@@ -42,6 +42,8 @@ import SideBar from './SideBar.vue'
 import Demo from './Demo.vue'
 import Login from './Login.vue'
 import axios from 'axios';  
+
+import bus from "../EventBus/eventbus";
 export default{
   components:{
    TopBar,
@@ -82,6 +84,14 @@ export default{
         this.ckname=false
       }
     }
+  },
+  data(){
+    return{
+      val:"1234654",
+    }
+  },
+  created() {
+    bus.emit("countChange",this.val)
   },
 }
 </script>

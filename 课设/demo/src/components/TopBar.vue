@@ -70,7 +70,7 @@ router-link{
   height: 60px;
   width: 1017px;
   border-radius: 18px;
-  margin-left: 17%;
+  margin-left: 19%;
   width: 1020px;;
   background-color: #525257a2;
   border-radius:18px;

@@ -49,7 +49,6 @@ router-link{
 
 .side{
   margin-top:20px;
-  margin-left:17%;
   text-align: center;
   color:#222226;
   display: block;
