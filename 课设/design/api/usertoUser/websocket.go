@@ -34,6 +34,21 @@ func SocketCreate() {
 		}
 	}
 }
+
+// 处理撤回消息请求
+func SocketRevocation() {
+	for {
+		msg := <-broadcastRe
+		for _, client := range clientRes[msg.User] {
+			err := client.WriteJSON(msg)
+			if err != nil {
+				log.Printf("error: %v\n", err)
+				deleteWs(client, msg.User, clientRes)
+			}
+		}
+	}
+}
+
 func deleteWs(ws *websocket.Conn, id uint, clients map[uint][]*websocket.Conn) {
 	for index, i := range clients[id] {
 		if i == ws {

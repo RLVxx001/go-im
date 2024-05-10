@@ -18,9 +18,12 @@ func HandleError(g *gin.Context, err error) {
 }
 
 // ws错误处理
-func WsError(ws *websocket.Conn, err error) error {
+func WsError(ws *websocket.Conn, err error, pe string) error {
 
-	err1 := ws.WriteJSON(ErrorResponse{err.Error()})
+	err1 := ws.WriteJSON(ErrorResponse{
+		Message: err.Error(),
+		Type:    pe,
+	})
 	if err1 != nil {
 		return err1
 	}

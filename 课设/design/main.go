@@ -47,6 +47,7 @@ func main() {
 	{ //启动websocket辅助函数
 		go usertoUser.SocketSend()
 		go usertoUser.SocketCreate()
+		go usertoUser.SocketRevocation()
 	}
 	g.Run(":8080")
 }

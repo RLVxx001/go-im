@@ -12,6 +12,9 @@ var broadcast = make(chan UserMessage)
 var clientNews = make(map[uint][]*websocket.Conn) //创建
 var broadcastNew = make(chan UserResponse)        //
 
+var clientRes = make(map[uint][]*websocket.Conn) //撤回
+var broadcastRe = make(chan UserMessage)
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -30,15 +33,15 @@ type UserRequest struct {
 	IsDeleted    bool          `json:"isDeleted"`  //是否被删除
 	Shielded     bool          `json:"shielded"`   //是否被拉黑
 	Massage      string        `json:"massage"`    //消息
-	UserMassages []UserMessage `json:"UserMassages"`
+	UserMassages []UserMessage `json:"userMassages"`
 }
 
 type UserMessage struct {
 	Message      string `json:"message"`      //消息
 	UsertoUserId uint   `json:"usertoUserId"` //所属用户-用户id
 	Key          uint   `json:"key"`          //消息标识
-	User         uint   `json:"user"`         //消息发送者id
-	UserTarget   uint   //发送给消息者id
+	User         uint   `json:"user"`         //消息消费者id
+	UserTarget   uint   //消息发送者id
 }
 
 // 创建用户响应
@@ -48,7 +51,7 @@ type UserResponse struct {
 	Remarks      string        `json:"remarks"`    //备注
 	IsDeleted    bool          `json:"isDeleted"`  //是否被删除
 	Shielded     bool          `json:"shielded"`   //是否被拉黑
-	UserMassages []UserMessage `json:"UserMassages"`
+	UserMassages []UserMessage `json:"userMassages"`
 }
 
 // 类型转化

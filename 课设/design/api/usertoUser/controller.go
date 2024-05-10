@@ -36,7 +36,7 @@ func (c *Controller) Create(g *gin.Context) {
 		var token config.Token
 		err = ws.ReadJSON(&token)
 		if err != nil {
-			err := ws.WriteJSON(config.TokenResponse{"auth", "解析结构体失败"})
+			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 			if err != nil {
 				return
 			}
@@ -45,7 +45,7 @@ func (c *Controller) Create(g *gin.Context) {
 		if token.Type == "auth" {
 			id, err := jwt.Decoded(token.Token)
 			if err != nil {
-				err := ws.WriteJSON(config.TokenResponse{"auth", "token解析失败"})
+				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 				if err != nil {
 					return
 				}
@@ -62,7 +62,7 @@ func (c *Controller) Create(g *gin.Context) {
 		err = ws.ReadJSON(&req)
 		fmt.Printf("req: %v\n", req)
 		if err != nil {
-			err := ws.WriteJSON(config.TokenResponse{"auth", "解析结构体失败"})
+			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 			if err != nil {
 				return
 			}
@@ -73,12 +73,12 @@ func (c *Controller) Create(g *gin.Context) {
 		//fmt.Printf("%v\n", req)
 
 		if _, err := c.userServer.GetById(req.UserOwner); err != nil {
-			ws.WriteJSON(config.TokenResponse{"auth", "用户登录过期"})
+			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
 
 		if _, err := c.userServer.GetById(req.UserTarget); err != nil {
-			err1 := api_helper.WsError(ws, err)
+			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
 				return
 			}
@@ -87,7 +87,7 @@ func (c *Controller) Create(g *gin.Context) {
 		//创建链接
 		user1, err := c.server.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, req.Remarks))
 		if err != nil {
-			err1 := api_helper.WsError(ws, err)
+			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
 				return
 			}
@@ -96,7 +96,7 @@ func (c *Controller) Create(g *gin.Context) {
 		var user2 *usertoUser.UsertoUser = nil
 		user2, err = c.server.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, req.Remarks1))
 		if err != nil {
-			err1 := api_helper.WsError(ws, err)
+			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
 				return
 			}
@@ -122,7 +122,7 @@ func (c *Controller) Send(g *gin.Context) {
 		var token config.Token
 		err = ws.ReadJSON(&token)
 		if err != nil {
-			err := ws.WriteJSON(config.TokenResponse{"auth", "解析结构体失败"})
+			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 			if err != nil {
 				return
 			}
@@ -131,7 +131,7 @@ func (c *Controller) Send(g *gin.Context) {
 		if token.Type == "auth" {
 			id, err := jwt.Decoded(token.Token)
 			if err != nil {
-				err := ws.WriteJSON(config.TokenResponse{"auth", "token解析失败"})
+				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 				if err != nil {
 					return
 				}
@@ -151,23 +151,25 @@ func (c *Controller) Send(g *gin.Context) {
 		fmt.Printf("req:%v\n", req)
 		if err != nil {
 			log.Printf("error: %v\n", err)
-			deleteWs(ws, userid, clients)
+			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
+			if err != nil {
+				return
+			}
 			continue
 		}
+		req.UserOwner = userid
 		if _, err := c.userServer.GetById(req.UserOwner); err != nil {
-			ws.WriteJSON(config.TokenResponse{"auth", "用户登录过期"})
+			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
-		req.UserOwner = userid
 
 		utou := ToUsertoUser(req)
 		fmt.Printf("%v\n", utou)
 		m, m1, err := c.server.Send(utou, req.Massage)
 		if err != nil {
-			err1 := api_helper.WsError(ws, err)
+			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
 				log.Printf("error: %v", err1)
-				deleteWs(ws, userid, clients)
 				break
 			}
 		}
@@ -181,6 +183,7 @@ func (c *Controller) Send(g *gin.Context) {
 
 // 修改用户-用户信息
 func (c *Controller) Update(g *gin.Context) {
+
 	var req UserRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
@@ -198,28 +201,88 @@ func (c *Controller) Update(g *gin.Context) {
 
 // 撤回消息
 func (c *Controller) Revocation(g *gin.Context) {
-	var req UserRequest
-	if err := g.ShouldBind(&req); err != nil {
-		api_helper.HandleError(g, api_helper.ErrInvalidBody)
-		return
-	}
-	if len(req.UserMassages) == 0 {
-		api_helper.HandleError(g, api_helper.ErrInvalidBody)
-		return
-	}
-	req.UserOwner = api_helper.GetUserId(g)
-	utou := ToUsertoUser(req)
-	fidutou, err := c.server.Fid(utou.UserOwner, utou.UserTarget)
+	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)
 	if err != nil {
-		api_helper.HandleError(g, err)
-		return
+		log.Fatal(err)
 	}
-	utou.ID = fidutou.ID
-	if err := c.server.Revocation(utou); err != nil {
-		api_helper.HandleError(g, err)
-		return
+	var userid uint
+	defer deleteWs(ws, userid, clientRes)
+	fmt.Println("链接中--------")
+	for {
+		var token config.Token
+		err = ws.ReadJSON(&token)
+		if err != nil {
+			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
+			if err != nil {
+				return
+			}
+			continue
+		}
+		if token.Type == "auth" {
+			id, err := jwt.Decoded(token.Token)
+			if err != nil {
+				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+				if err != nil {
+					return
+				}
+				continue
+			}
+			userid = uint(pagination.ParseInt(id, -1))
+			break
+		}
 	}
-	g.JSON(http.StatusOK, nil)
+
+	fmt.Println("验证成功：userid:", userid)
+	clientRes[userid] = append(clientRes[userid], ws) //添加
+	for {
+		var req UserRequest
+		err := ws.ReadJSON(&req)
+		fmt.Printf("req:%v\n", req)
+		if err != nil {
+			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
+			if err != nil {
+				return
+			}
+			continue
+		}
+		if len(req.UserMassages) == 0 {
+			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
+			if err != nil {
+				return
+			}
+			continue
+		}
+		req.UserOwner = userid
+		if _, err := c.userServer.GetById(req.UserOwner); err != nil {
+			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+			return
+		}
+		utou := ToUsertoUser(req)
+		fidutou, err := c.server.Fid(utou.UserOwner, utou.UserTarget)
+		if err != nil {
+			err := api_helper.WsError(ws, err, "")
+			if err != nil {
+				return
+			}
+			continue
+		}
+		utou.ID = fidutou.ID
+		if err := c.server.Revocation(utou); err != nil {
+			err := api_helper.WsError(ws, err, "")
+			if err != nil {
+				return
+			}
+			continue
+		}
+
+		for _, j := range utou.UserMassages {
+			broadcastRe <- UserMessage{"", utou.ID, j.Key, req.UserOwner, req.UserOwner} //发送者
+			// Send the newly received message to the broadcast channel
+			broadcastRe <- UserMessage{"", utou.ID, j.Key, req.UserTarget, req.UserOwner} //送达者
+			break                                                                         //暂时先处理一个
+		}
+	}
+
 }
 
 // 用户单方面删除消息

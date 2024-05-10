@@ -67,7 +67,7 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	controller := usertoUserApi.NewController(service, userService)
 	Group := r.Group("/usertoUser")
 	Group.GET("", controller.Create)
-	Group.POST("/revocation", controller.Revocation)
+	Group.GET("/revocation", controller.Revocation)
 	Group.POST("/delete", controller.Delete)
 	Group.GET("/send", controller.Send)
 
