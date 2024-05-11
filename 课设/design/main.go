@@ -4,9 +4,9 @@ import (
 	"design/api"
 	"design/api/usertoUser"
 	"design/utils/jwt"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -24,6 +24,10 @@ func Login(c *gin.Context) {
 
 func main() {
 	g := gin.Default()
+	// 为 multipart forms 设置较低的内存限制 (默认是 32 MiB)
+	g.MaxMultipartMemory = 8 << 20 // 8 MiB
+	g.LoadHTMLGlob("templates/*")
+	g.Static("/static", "./public")
 	g.Use(func(c *gin.Context) {
 		// 允许所有来源进行访问，这里仅作为示例，实际生产环境中应当严格限制允许的来源
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -60,7 +64,7 @@ func jwtMiddleware() gin.HandlerFunc {
 			c.Request.Header.Get("Connection") == "Upgrade" &&
 			websocket.IsWebSocketUpgrade(c.Request) {
 			// 如果是WebSocket升级请求，则不执行后续中间件，直接处理WebSocket连接
-			fmt.Println("websocket链接.......")
+			log.Println("websocket链接.......")
 			c.Set("userId", 7)
 			c.Next()
 			// 注意：这里的c.Next()实际上不会被执行，因为我们会在下面处理WebSocket连接
@@ -69,9 +73,10 @@ func jwtMiddleware() gin.HandlerFunc {
 		}
 
 		// 检查请求路径是否是登录或注册
-		if strings.HasPrefix(c.Request.URL.Path, "/user/login") || strings.HasPrefix(c.Request.URL.Path, "/register") {
+		if strings.HasPrefix(c.Request.URL.Path, "/user/login") ||
+			strings.HasPrefix(c.Request.URL.Path, "/user") {
 			// 如果是登录或注册请求，则直接跳过JWT验证
-			fmt.Println("跳过JWT验证")
+			log.Println("跳过JWT验证")
 			c.Next()
 			return
 		}
@@ -87,7 +92,7 @@ func jwtMiddleware() gin.HandlerFunc {
 		}
 		// 如果JWT验证成功，您可以将解析后的用户信息（如ID）设置到上下文中供后续使用
 		c.Set("userId", UserId) // 假设您从JWT中解析出了userID
-		fmt.Println("通过JWT验证")
+		log.Println("通过JWT验证")
 		// 继续处理请求
 		c.Next()
 	}

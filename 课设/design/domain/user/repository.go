@@ -93,3 +93,8 @@ func (r *Repository) InsertSampleData() {
 func (r *Repository) Update(u *User) error {
 	return r.db.Save(&u).Error
 }
+
+// 更新头像
+func (r *Repository) UpdateImg(img string, id uint) error {
+	return r.db.Model(&User{}).Where("ID=?", id).Update("Img", img).Error
+}

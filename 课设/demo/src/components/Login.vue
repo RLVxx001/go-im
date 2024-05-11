@@ -22,7 +22,7 @@
             <input type="checkbox" style="color:rgba(220, 228, 253, 0.942);"> 记住我
           </label>
         </div>
-        <button @click="send" class="btn btn-default">登录</button>
+        <button @click="sub" class="btn btn-default">登录</button>
         <div class="form-group" style="margin-top:10px">
           <label class="exampleInputEmail1">
             没有账号？
@@ -62,9 +62,12 @@ export default{
     }
   },
   methods:{
-    click()
+    sub()
     {
-      axios.get("http://localhost:8080/login")
+      axios.post('http://localhost:8080/user/login',{
+        username:this.username,
+        password:this.passwd
+      })
       .then(response =>{
         console.log("--------")
         console.log(response.data)

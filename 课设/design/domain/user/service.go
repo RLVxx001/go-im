@@ -142,3 +142,8 @@ func (c *Service) GetUserList(account string) (User, error) {
 func (c *Service) UpdateUser(user *User) error {
 	return c.r.Update(user)
 }
+
+// 上传头像
+func (c *Service) UpdateImg(img string, id uint) error {
+	return c.r.UpdateImg(img, id)
+}

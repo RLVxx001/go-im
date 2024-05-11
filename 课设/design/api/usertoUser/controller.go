@@ -356,7 +356,11 @@ func (c *Controller) Fids(g *gin.Context) {
 	}
 	var userResponses []UserResponse
 	for _, j := range fids {
-		userResponses = append(userResponses, ToUserResponse(&j))
+		response := ToUserResponse(&j)
+		response.ToUser.Username = j.ToUser.Username
+		response.ToUser.Account = j.ToUser.Account
+		response.ToUser.Img = j.ToUser.Img
+		userResponses = append(userResponses, response)
 	}
 
 	g.JSON(http.StatusOK, userResponses)

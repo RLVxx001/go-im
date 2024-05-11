@@ -1,6 +1,7 @@
 package usertoUser
 
 import (
+	"design/api/user"
 	"design/domain/usertoUser"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -48,12 +49,13 @@ type UserMessage struct {
 
 // 创建用户响应
 type UserResponse struct {
-	UserOwner    uint          `json:"userOwner"`  //所属用户
-	UserTarget   uint          `json:"userTarget"` //接受用户id
-	Remarks      string        `json:"remarks"`    //备注
-	IsDeleted    bool          `json:"isDeleted"`  //是否被删除
-	Shielded     bool          `json:"shielded"`   //是否被拉黑
-	UserMassages []UserMessage `json:"userMassages"`
+	UserOwner    uint               `json:"userOwner"`  //所属用户
+	UserTarget   uint               `json:"userTarget"` //接受用户id
+	Remarks      string             `json:"remarks"`    //备注
+	IsDeleted    bool               `json:"isDeleted"`  //是否被删除
+	Shielded     bool               `json:"shielded"`   //是否被拉黑
+	ToUser       user.LoginResponse `json:"ToUser"`     //对方信息
+	UserMassages []UserMessage      `json:"userMassages"`
 }
 
 // 类型转化

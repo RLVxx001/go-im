@@ -1,17 +1,19 @@
 package usertoUser
 
 import (
+	"design/domain/user"
 	"gorm.io/gorm"
 )
 
 // UsertoUser 用户-用户表
 type UsertoUser struct {
 	gorm.Model
-	UserOwner    uint   //所属用户
-	UserTarget   uint   //接受用户id
-	Remarks      string `gorm:"type:varchar(500)"` //备注
-	IsDeleted    bool   //是否被删除
-	Shielded     bool   //是否被拉黑
+	UserOwner    uint      //所属用户
+	UserTarget   uint      //接受用户id
+	ToUser       user.User `gorm:"-"`                 //对方用户信息不计入表
+	Remarks      string    `gorm:"type:varchar(500)"` //备注
+	IsDeleted    bool      //是否被删除
+	Shielded     bool      //是否被拉黑
 	UserMassages []UserMessage
 }
 

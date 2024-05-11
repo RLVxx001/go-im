@@ -5,10 +5,14 @@ import (
 	"design/domain/user"
 	"design/utils/api_helper"
 	jwtHelper "design/utils/jwt"
+	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -64,16 +68,19 @@ func (c *Controller) CreateUser(g *gin.Context) {
 // @Failure 400  {object} api_helper.ErrorResponse
 // @Router /user/login [post]
 func (c *Controller) Login(g *gin.Context) {
+
 	var req LoginRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 
 	}
+
 	currentUser, err := c.userService.CheckUser(req.Text, req.Password)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
+
 	decodedClaims := jwtHelper.VerifyToken(currentUser.Token, c.appConfig.SecretKey)
 	if decodedClaims == nil {
 		jwtClaims := jwt.NewWithClaims(
@@ -97,14 +104,93 @@ func (c *Controller) Login(g *gin.Context) {
 	}
 
 	g.JSON(
-		http.StatusOK, LoginResponse{Username: currentUser.Username, UserId: currentUser.ID, Token: currentUser.Token})
+		http.StatusOK, LoginResponse{
+			Username: currentUser.Username,
+			UserId:   currentUser.ID,
+			Token:    currentUser.Token,
+			Account:  currentUser.Account,
+			Email:    currentUser.Email,
+			Img:      currentUser.Img,
+		})
 }
 
 // 验证token
 func (c *Controller) VerifyToken(g *gin.Context) {
-	token := g.GetHeader("Authorization")
-	decodedClaims := jwtHelper.VerifyToken(token, c.appConfig.SecretKey)
+	currentUser, err := c.userService.GetById(api_helper.GetUserId(g))
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	g.JSON(
+		http.StatusOK, LoginResponse{
+			Username: currentUser.Username,
+			UserId:   currentUser.ID,
+			Token:    currentUser.Token,
+			Account:  currentUser.Account,
+			Email:    currentUser.Email,
+			Img:      currentUser.Img,
+		})
 
-	g.JSON(http.StatusOK, decodedClaims)
+}
 
+// 上传头像
+func (c *Controller) Upload(g *gin.Context) {
+
+	if _, err := c.userService.GetById(api_helper.GetUserId(g)); err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	file, header, err := g.Request.FormFile("file")
+	if err != nil {
+		api_helper.HandleError(g, errors.New("Failed to retrieve file"))
+		return
+	}
+	ext := filepath.Ext(header.Filename) //获取文件后缀
+	if ext != ".jpg" && ext != ".webp" && ext != ".png" {
+		api_helper.HandleError(g, errors.New("文件格式不符合"))
+		return
+	}
+	now := time.Now()
+	timestampSeconds := now.Unix()
+
+	header.Filename = fmt.Sprintf("%dto%d%s", api_helper.GetUserId(g), timestampSeconds, ext)
+
+	// 指定上传目录，比如 "uploads"
+	uploadDir := "./public/images"
+
+	// 确保上传目录存在
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		api_helper.HandleError(g, errors.New("Failed to create upload directory"))
+		return
+	}
+
+	// 构建文件的完整路径
+	filePath := filepath.Join(uploadDir, header.Filename)
+
+	// 创建文件用于写入
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		api_helper.HandleError(g, errors.New("Failed to create file"))
+		return
+	}
+	defer outFile.Close()
+
+	// 复制文件内容
+	if _, err := io.Copy(outFile, file); err != nil {
+		api_helper.HandleError(g, errors.New("Failed to copy file"))
+		return
+	}
+	if err := c.userService.UpdateImg(filePath, api_helper.GetUserId(g)); err != nil {
+		api_helper.HandleError(g, errors.New("头像更换失败"))
+		return
+	}
+	// 上传成功
+	g.JSON(
+		http.StatusOK, LoginResponse{
+			Img: filePath,
+		})
+}
+
+func (c *Controller) GoUpload(g *gin.Context) {
+	g.HTML(200, "upload.html", nil)
 }

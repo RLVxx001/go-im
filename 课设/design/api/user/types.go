@@ -26,4 +26,5 @@ type LoginResponse struct {
 	UserId   uint   `json:"userId"`
 	Email    string `json:"email"`
 	Token    string `json:"token"`
+	Img      string `json:"img"`
 }
