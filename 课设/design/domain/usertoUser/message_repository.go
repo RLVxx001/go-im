@@ -32,13 +32,19 @@ func (r *MessageRepository) Create(u *UserMessage) error {
 
 // 删除消息
 func (r *MessageRepository) Delete(utouid, key uint) error {
-	tx := r.db.Where("UsertoUserId=?", utouid).Where("`Key`=?", key).Delete(&UserMessage{})
+	tx := r.db.Unscoped().Where("UsertoUserId=?", utouid).Where("`Key`=?", key).Delete(&UserMessage{})
+	return tx.Error
+}
+
+// 批量删除消息
+func (r *MessageRepository) Deletes(utouid uint) error {
+	tx := r.db.Unscoped().Where("UsertoUserId=?", utouid).Delete(&UserMessage{})
 	return tx.Error
 }
 
 // 撤回消息
-func (r *MessageRepository) Deletes(key uint) error {
-	tx := r.db.Where("`Key`=?", key).Delete(&UserMessage{})
+func (r *MessageRepository) Revocation(key uint) error {
+	tx := r.db.Unscoped().Where("`Key`=?", key).Delete(&UserMessage{})
 	return tx.Error
 }
 
@@ -62,4 +68,13 @@ func (r *MessageRepository) FidKey(utouid, key uint) (UserMessage, error) {
 // 更改消息
 func (r *MessageRepository) Update(u *UserMessage) error {
 	return r.db.Save(u).Error
+}
+
+// 已读消息
+func (r *MessageRepository) ReadMessage(id uint) error {
+	return r.db.Model(&UserMessage{}).
+		Where("IsRead=?", false).
+		Where("UsertoUserId=?", id).
+		Update("IsRead", true).
+		Error
 }

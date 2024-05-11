@@ -99,7 +99,7 @@ func (c *Service) Revocation(u *UsertoUser) error {
 		return ErrNotRevocation
 	}
 
-	if err := c.messageRepository.Deletes(m.Key); err != nil {
+	if err := c.messageRepository.Revocation(m.Key); err != nil {
 		return ErrNotRevocation
 	}
 	return nil
@@ -108,13 +108,30 @@ func (c *Service) Revocation(u *UsertoUser) error {
 // 个人删除消息操作（不可逆）
 func (c *Service) DeleteMessage(u *UsertoUser) error {
 	//校验
-	if _, err := c.r.Fid(u.UserOwner, u.UserTarget); err != nil {
-		return ErrNotDelete
+	u1, err := c.r.Fid(u.UserOwner, u.UserTarget)
+	if err != nil {
+		return ErrNotUsers
 	}
-
+	u.ID = u1.ID
 	m := u.UserMassages[0]
 
 	if err := c.messageRepository.Delete(u.ID, m.Key); err != nil {
+		return ErrNotDelete
+	}
+
+	return nil
+}
+
+// 个人删除消息群操作（不可逆）
+func (c *Service) DeleteMessages(u *UsertoUser) error {
+	//校验
+	u1, err := c.r.Fid(u.UserOwner, u.UserTarget)
+	if err != nil {
+		return ErrNotUsers
+	}
+	u.ID = u1.ID
+
+	if err := c.messageRepository.Deletes(u.ID); err != nil {
 		return ErrNotDelete
 	}
 
@@ -143,9 +160,8 @@ func (c *Service) Fid(u1, u2 uint) (*UsertoUser, error) {
 }
 
 // 已读消息
-func (c *Service) ReadMessage(u *UserMessage) {
-	u.IsRead = true
-	if err := c.messageRepository.Update(u); err != nil {
+func (c *Service) ReadMessage(id uint) {
+	if err := c.messageRepository.ReadMessage(id); err != nil {
 		log.Println(err)
 	}
 }

@@ -322,13 +322,23 @@ func (c *Controller) Delete(g *gin.Context) {
 	}
 	req.UserOwner = api_helper.GetUserId(g)
 	utou := ToUsertoUser(req)
-	fidutou, err := c.server.Fid(utou.UserOwner, utou.UserTarget)
-	if err != nil {
+	if err := c.server.DeleteMessage(utou); err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
-	utou.ID = fidutou.ID
-	if err := c.server.DeleteMessage(utou); err != nil {
+	g.JSON(http.StatusOK, nil)
+}
+
+// 用户单方面删除消息群
+func (c *Controller) Deletes(g *gin.Context) {
+	var req UserRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	req.UserOwner = api_helper.GetUserId(g)
+	utou := ToUsertoUser(req)
+	if err := c.server.DeleteMessages(utou); err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
@@ -353,7 +363,7 @@ func (c *Controller) Fids(g *gin.Context) {
 }
 
 // 查看消息
-func (c *Controller) ReadMessage(g *gin.Context) {
+func (c *Controller) Read(g *gin.Context) {
 	var req UserRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
@@ -366,5 +376,6 @@ func (c *Controller) ReadMessage(g *gin.Context) {
 		return
 	}
 
-	c.server.ReadMessage()
+	c.server.ReadMessage(fid.ID)
+	g.JSON(http.StatusOK, nil)
 }

@@ -68,9 +68,10 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	Group := r.Group("/usertoUser")
 	Group.GET("", controller.Create)
 	Group.GET("/revocation", controller.Revocation)
-	Group.POST("/delete", controller.Delete)
 	Group.GET("/send", controller.Send)
-
-	Group.POST("/update", controller.Update)
 	Group.GET("/fid", controller.Fids)
+	Group.POST("/update", controller.Update)
+	Group.POST("/read", controller.Read)
+	Group.POST("/delete", controller.Delete)
+	Group.POST("/deletes", controller.Deletes)
 }
