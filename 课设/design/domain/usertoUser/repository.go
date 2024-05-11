@@ -43,3 +43,13 @@ func (r *Repository) Fid(u, tou uint) (*UsertoUser, error) {
 	}
 	return &usertoUser, nil
 }
+
+// 查找
+func (r *Repository) Fids(u uint) ([]UsertoUser, error) {
+	var users []UsertoUser
+	err := r.db.Where("UserOwner=?", u).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}

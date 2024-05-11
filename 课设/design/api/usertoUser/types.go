@@ -4,6 +4,7 @@ import (
 	"design/domain/usertoUser"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"time"
 )
 
 var clients = make(map[uint][]*websocket.Conn) //消息专用
@@ -37,11 +38,12 @@ type UserRequest struct {
 }
 
 type UserMessage struct {
-	Message      string `json:"message"`      //消息
-	UsertoUserId uint   `json:"usertoUserId"` //所属用户-用户id
-	Key          uint   `json:"key"`          //消息标识
-	User         uint   `json:"user"`         //消息消费者id
-	UserTarget   uint   //消息发送者id
+	Message      string    `json:"message"`      //消息
+	UsertoUserId uint      `json:"usertoUserId"` //所属用户-用户id
+	Key          uint      `json:"key"`          //消息标识
+	User         uint      `json:"user"`         //消息消费者id
+	UserOwner    uint      //消息发送者id
+	CreatedAt    time.Time `json:"createdAt"`
 }
 
 // 创建用户响应
@@ -85,6 +87,7 @@ func ToUserMessage(us []usertoUser.UserMessage) []UserMessage {
 			Message:      j.Message,
 			UsertoUserId: j.UsertoUserId,
 			Key:          j.Key,
+			CreatedAt:    j.CreatedAt,
 		}
 
 	}

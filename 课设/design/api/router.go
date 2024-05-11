@@ -72,5 +72,5 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	Group.GET("/send", controller.Send)
 
 	Group.POST("/update", controller.Update)
-
+	Group.GET("/fid", controller.Fids)
 }

@@ -149,3 +149,15 @@ func (c *Service) ReadMessage(u *UserMessage) {
 		log.Println(err)
 	}
 }
+
+// 查询单用户下的所有信息
+func (c *Service) Fids(userid uint) ([]UsertoUser, error) {
+	users, err := c.r.Fids(userid)
+	if err != nil {
+		return nil, ErrNotFid
+	}
+	for i, j := range users {
+		users[i].UserMassages = c.messageRepository.Fid(j.ID)
+	}
+	return users, nil
+}

@@ -84,48 +84,7 @@ export default{
         this.ckname=false
       }
     },
-    send(){
-      let list=[]
-      list.push({key:this.passwd-0})
-      this.ws.send(
-      JSON.stringify({
-              userTarget: this.username-0,
-              userMassages:list
-          }
-      ));
-    }
   },
-  created() {
-    console.log("开启socket链接-----"+'ws://')
-  localStorage.setItem('token','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTUzNTc2MjUsImlhdCI6MTcxNTI3MTIyNSwiaXNBZG1pbiI6ZmFsc2UsImlzcyI6IiIsInVzZXJJZCI6IjciLCJ1c2VybmFtZSI6Inh4MDAwNSJ9.1gBQEaI79OSpBRs99uZ1QjoHOog-Exkl3x9Z6xnYdTI')
-  this.ws = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
-  this.ws.onopen = (event) => {  
-    // 当 WebSocket 连接打开时，发送认证消息  
-    this.authenticate();  
-  };  
-  
-  this.ws.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);  
-    console.log(msg);  
-  };  
-  
-  // 其他 WebSocket 事件处理...  
-  
-  // 认证方法  
-  this.authenticate = () => {  
-    if (this.ws.readyState == WebSocket.OPEN && localStorage.token) {  
-      console.log("发送验证信息")
-      this.ws.send(  
-        JSON.stringify({  
-          type: 'auth', // 消息类型，用于区分是普通消息还是认证消息  
-          token: localStorage.token,  
-          // 其他可能需要的认证信息...  
-        })  
-      );  
-    } 
-  }
-  }
 }
 </script>
 

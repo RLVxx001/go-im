@@ -174,9 +174,23 @@ func (c *Controller) Send(g *gin.Context) {
 			}
 		}
 
-		broadcast <- UserMessage{m.Message, m.UsertoUserId, m.Key, req.UserOwner, req.UserOwner} //发送者
+		broadcast <- UserMessage{
+			Message:      m.Message,
+			UsertoUserId: m.UsertoUserId,
+			Key:          m.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m.CreatedAt,
+		} //发送者
 		// Send the newly received message to the broadcast channel
-		broadcast <- UserMessage{m1.Message, m1.UsertoUserId, m1.Key, req.UserTarget, req.UserOwner} //送达者
+		broadcast <- UserMessage{
+			Message:      m1.Message,
+			UsertoUserId: m1.UsertoUserId,
+			Key:          m1.Key,
+			User:         req.UserTarget,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m1.CreatedAt,
+		} //送达者
 	}
 
 }
@@ -276,10 +290,20 @@ func (c *Controller) Revocation(g *gin.Context) {
 		}
 
 		for _, j := range utou.UserMassages {
-			broadcastRe <- UserMessage{"", utou.ID, j.Key, req.UserOwner, req.UserOwner} //发送者
+			broadcastRe <- UserMessage{
+				UsertoUserId: utou.ID,
+				Key:          j.Key,
+				User:         req.UserOwner,
+				UserOwner:    req.UserOwner,
+			} //发送者
 			// Send the newly received message to the broadcast channel
-			broadcastRe <- UserMessage{"", utou.ID, j.Key, req.UserTarget, req.UserOwner} //送达者
-			break                                                                         //暂时先处理一个
+			broadcastRe <- UserMessage{
+				UsertoUserId: utou.ID,
+				Key:          j.Key,
+				User:         req.UserTarget,
+				UserOwner:    req.UserOwner,
+			} //送达者
+			break //暂时先处理一个
 		}
 	}
 
@@ -309,4 +333,38 @@ func (c *Controller) Delete(g *gin.Context) {
 		return
 	}
 	g.JSON(http.StatusOK, nil)
+}
+
+// 查找好友信息
+func (c *Controller) Fids(g *gin.Context) {
+	userid := api_helper.GetUserId(g)
+	fids, err := c.server.Fids(userid)
+
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	var userResponses []UserResponse
+	for _, j := range fids {
+		userResponses = append(userResponses, ToUserResponse(&j))
+	}
+
+	g.JSON(http.StatusOK, userResponses)
+}
+
+// 查看消息
+func (c *Controller) ReadMessage(g *gin.Context) {
+	var req UserRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	req.UserOwner = api_helper.GetUserId(g)
+	fid, err := c.server.Fid(req.UserOwner, req.UserTarget)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+
+	c.server.ReadMessage()
 }
