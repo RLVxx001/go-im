@@ -2,9 +2,11 @@ package api
 
 import (
 	userApi "design/api/user"
+	userApplicationApi "design/api/userApplication"
 	usertoUserApi "design/api/usertoUser"
 	"design/config"
 	"design/domain/user"
+	"design/domain/userApplication"
 	"design/domain/usertoUser"
 	"design/utils/database_handler"
 	"fmt"
@@ -17,6 +19,7 @@ type Databases struct {
 	userRepository              *user.Repository
 	usertouserRepository        *usertoUser.Repository
 	usertouserMessageRepository *usertoUser.MessageRepository
+	userApplication             *userApplication.Repository
 }
 
 // 配置文件全局对象
@@ -35,11 +38,12 @@ func CreateDBs() *Databases {
 	var dns = fmt.Sprintf("%s:%s@%s/%s?%s", m.Username, m.Password, m.DatabaseURIL, m.DatabaseName, m.DatabaseURIR)
 
 	db := database_handler.NewMySQLDB(dns)
-	fmt.Printf("%v", db)
+	log.Printf("%v", db)
 	return &Databases{
 		userRepository:              user.NewUserRepository(db),
 		usertouserRepository:        usertoUser.NewRepository(db),
 		usertouserMessageRepository: usertoUser.NewMessageRepository(db),
+		userApplication:             userApplication.NewRepository(db),
 	}
 }
 
@@ -49,14 +53,15 @@ func RegisterHandlers(r *gin.Engine) {
 	dbs := *CreateDBs()
 	RegisterUserHandlers(r, dbs)
 	RegisterUsertoUserHandlers(r, dbs)
+	RegisterUserApplicationHandlers(r, dbs)
 }
 
 // 注册用户控制器
 func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
-	userService := user.NewUserService(*dbs.userRepository)
+	userService := user.NewService(*dbs.userRepository)
 	userController := userApi.NewUserController(userService, AppConfig)
 	userGroup := r.Group("/user")
-	userGroup.POST("", userController.CreateUser)
+	userGroup.POST("/register", userController.CreateUser)
 	userGroup.POST("/login", userController.Login)
 	userGroup.GET("/verifyToken", userController.VerifyToken)
 	userGroup.GET("/upload", userController.GoUpload)
@@ -65,8 +70,8 @@ func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
 
 // 注册用户-用户控制器
 func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
-	service := usertoUser.NewUserService(*dbs.usertouserRepository, *dbs.usertouserMessageRepository)
-	userService := user.NewUserService(*dbs.userRepository)
+	service := usertoUser.NewService(*dbs.usertouserRepository, *dbs.usertouserMessageRepository)
+	userService := user.NewService(*dbs.userRepository)
 	controller := usertoUserApi.NewController(service, userService)
 	Group := r.Group("/usertoUser")
 	Group.GET("", controller.Create)
@@ -77,4 +82,14 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	Group.POST("/read", controller.Read)
 	Group.POST("/delete", controller.Delete)
 	Group.POST("/deletes", controller.Deletes)
+}
+
+// 注册用户-用户申请表
+func RegisterUserApplicationHandlers(r *gin.Engine, dbs Databases) {
+	service := userApplication.NewService(*dbs.userApplication)
+	userService := user.NewService(*dbs.userRepository)
+	controller := userApplicationApi.NewController(userService, service)
+	Group := r.Group("/userApplication")
+	Group.POST("", controller.Create)
+	Group.GET("/fid", controller.Fids)
 }

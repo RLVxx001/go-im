@@ -40,10 +40,8 @@
       <!-- <router-view></router-view> -->
    </div>
 </template>
-<script>
-export default {
-    name:'TopBar',
-}
+<script setup>
+
 </script>
 <style>
 

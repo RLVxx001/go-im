@@ -10,7 +10,7 @@ type Service struct {
 }
 
 // 实例化service
-func NewUserService(r Repository) *Service {
+func NewService(r Repository) *Service {
 	r.Migration()
 	//r.InsertSampleData()
 	return &Service{

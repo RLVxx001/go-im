@@ -36,54 +36,57 @@
 
 </template>
 
-<script>
-import TopBar from './TopBar.vue'
-import SideBar from './SideBar.vue'
-import Demo from './Demo.vue'
-import Login from './Login.vue'
-export default{
-  data(){
-    return {
-      email:"",
-      username:"",
-      passwd:"",
-      passwdes:"",
-    }
-  },
-  components:{
-   TopBar,
-    SideBar,
-    Demo,
-    TopBar,
-    SideBar,
-    // Index,
-    // Login,
-  },
-  methods:{
-    check(){//验证
-      if(this.username==""||this.passwd==""||this.passwdes==""){
-        this.remind("输入框不能为空")
-        return
-      }
-      if(this.passwd!=this.passwdes){
-        this.remind("密码不同")
-        return
-      }
-      if(this.username.length<5||this.username.length>20){
-        this.remind("账号必须在5-20位")
-        return
-      }
-      this.sub()
-    },
-    remind(data){//提醒
-      alert(data)
-    },
-    sub(){//提交
+<script setup>  
+import { ref } from 'vue';  
+import TopBar from './TopBar.vue';  
+import SideBar from './SideBar.vue';  
+import Demo from './Demo.vue';  
+import Login from './Login.vue';  
+import axios from 'axios';  
+  
+// 响应式数据  
+const email = ref('');  
+const username = ref('');  
+const password = ref('');  
+const passwordes = ref('');  
+  
+// 方法  
+function check(){  
+  if (username.value === '' || password.value === '') {  
+    alert('输入框不能为空');  
+    return;  
+  }  
+  // 如果需要二次确认密码  
+  /* if (password.value !== password2.value) {  
+    alert('密码不同');  
+    return;  
+  } */  
+  if (username.value.length < 5 || username.value.length > 20) {  
+    alert('账号必须在5-20位');  
+    return;  
+  }  
+  submit();  
+};  
+  
+function submit() {  
 
-    },
-  }
-}
-</script>
+    axios.post('http://localhost:8080/user/register', {  
+      username: username.value,  
+      password: password.value,  
+      password2: passwordes.value,  
+      email: email.value  
+    }).then(response=>{
+      console.log('--------');  
+      console.log(response.data);  
+      localStorage.setItem('username', response.data.username); 
+      this.$router.push('login')
+    }).catch (err=> {  
+      console.log('----1111----');  
+      console.error(err.response.data);  
+    })
+};  
+// 在模板中可以直接使用 email, username, check, submit 等变量和方法  
+</script>  
 
 
 <style>

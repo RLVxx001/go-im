@@ -1,33 +1,17 @@
-<script>
-// import TopBarVue from './components/TopBar.vue'
-// import HelloWorld from './components/HelloWorld.vue'
-import TopBar from './components/TopBar.vue'
-// import Index from "./components/Index.vue"
-import Home from "./components/Home.vue"
-import SideBar from './components/SideBar.vue'
-import Demo from './components/Demo.vue'
-import Login from './components/Login.vue'
-import Register from './components/Register.vue'
-import bus from "./EventBus/eventbus";
-export default{
-//  name:"App",
-  components:{
-    // Header,
-    // Footer,
-    TopBar,
-    SideBar,
-    Demo,
-    // Index,
-    Home,
-    Login,
-    Register,
-  },
-  provide(){
-    return{
-      color:"red"
-    }
-  },
-}
+<script setup>  
+import { provide } from 'vue';  
+import TopBar from './components/TopBar.vue';  
+import Home from './components/Home.vue';  
+import SideBar from './components/SideBar.vue';  
+import Demo from './components/Demo.vue';  
+import Login from './components/Login.vue';  
+import Register from './components/Register.vue';  
+import bus from "./EventBus/eventbus"; // 确保这个 eventbus 适用于你的项目  
+  
+// 在 <script setup> 中，组件默认是局部注册的，所以不需要在 components 对象中声明  
+  
+// 提供 color 属性  
+provide('color', 'red');
 </script>
 
 <template>

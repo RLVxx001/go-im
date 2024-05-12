@@ -21,7 +21,7 @@
           sd
           </div>
         </div>
-        <div style="width:1px;backgroud-color:black"></div>
+        <div style="width:1px; background-color: black;"></div>
         <div class="Chat">
 
         </div>
@@ -29,88 +29,89 @@
     </div>
   </div>
 </template>
-<script>
-  export default{
-    data(){
-      return{
-        UserList:[],
-      }
-    },
-    methods:{
-      send(){
-        let list=[]
-        list.push({key:this.passwd-0})
-        if(this.ws.readyState == WebSocket.OPEN){
-          this.ws.send(
-          JSON.stringify({
-                  userTarget: this.username-0,
-                  userMassages:list
-              }
-          ));
+<script setup>
+
+const messageWs = ref(null); 
+const newWs = ref(null); 
+const RevocationWs = ref(null); 
+
+function send(){
+  let list=[]
+  list.push({key:this.passwd-0})
+  if(messageWs.value.readyState == WebSocket.OPEN){
+    messageWs.value.send(
+    JSON.stringify({
+            userTarget: this.username-0,
+            userMassages:list
         }
-      },
-      createMessageWs(){
-        console.log("开启socket链接-----"+'ws://')
-        localStorage.setItem('token','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTUzNTc2MjUsImlhdCI6MTcxNTI3MTIyNSwiaXNBZG1pbiI6ZmFsc2UsImlzcyI6IiIsInVzZXJJZCI6IjciLCJ1c2VybmFtZSI6Inh4MDAwNSJ9.1gBQEaI79OSpBRs99uZ1QjoHOog-Exkl3x9Z6xnYdTI')
-        this.messageWs = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
-        this.messageWs.onopen = (event) => {  
-          // 当 WebSocket 连接打开时，发送认证消息  
-          this.authenticate(this.messageWs);  
-        };  
-        this.messageWs.onmessage = (event) => {  
-          // 处理从服务器接收到的消息  
-          const msg = JSON.parse(event.data);  
-          console.log(msg);  
-        };
-      },
-      createNewWs(){
-        console.log("开启socket链接-----"+'ws://')
-        this.newWs = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
-        this.newWs.onopen = (event) => {  
-          // 当 WebSocket 连接打开时，发送认证消息  
-          this.authenticate(this.newWs);  
-        };  
-        
-        this.newWs.onmessage = (event) => {  
-          // 处理从服务器接收到的消息  
-          const msg = JSON.parse(event.data);  
-          console.log(msg);  
-        };
-      },
-      createRevocationWs(){
-        console.log("开启socket链接-----"+'ws://')
-        this.RevocationWs = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
-        this.RevocationWs.onopen = (event) => {  
-          // 当 WebSocket 连接打开时，发送认证消息  
-          this.authenticate(this.RevocationWs);  
-        };  
-        
-        this.RevocationWs.onmessage = (event) => {  
-          // 处理从服务器接收到的消息  
-          const msg = JSON.parse(event.data);  
-          console.log(msg);  
-        };
-      },
-      authenticate(ws){// 认证方法 
-        if (this.ws.readyState == WebSocket.OPEN && localStorage.token) {  
-          console.log("发送验证信息")
-          this.ws.send(  
-            JSON.stringify({  
-              type: 'auth', // 消息类型，用于区分是普通消息还是认证消息  
-              token: localStorage.token,  
-              // 其他可能需要的认证信息...  
-            })  
-          );  
-        }
-      },
-    },
-    created() {
-      localStorage.setItem('token','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTUzNTc2MjUsImlhdCI6MTcxNTI3MTIyNSwiaXNBZG1pbiI6ZmFsc2UsImlzcyI6IiIsInVzZXJJZCI6IjciLCJ1c2VybmFtZSI6Inh4MDAwNSJ9.1gBQEaI79OSpBRs99uZ1QjoHOog-Exkl3x9Z6xnYdTI')
-      this.createMessageWs()
-      this.createNewWs()
-      this.createRevocationWs()
-    },
+    ));
   }
+}
+
+function createMessageWs(){
+  console.log("开启socket链接-----"+'ws://')
+  localStorage.setItem('token','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTUzNTc2MjUsImlhdCI6MTcxNTI3MTIyNSwiaXNBZG1pbiI6ZmFsc2UsImlzcyI6IiIsInVzZXJJZCI6IjciLCJ1c2VybmFtZSI6Inh4MDAwNSJ9.1gBQEaI79OSpBRs99uZ1QjoHOog-Exkl3x9Z6xnYdTI')
+  messageWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
+  messageWs.value.onopen = (event) => {  
+    // 当 WebSocket 连接打开时，发送认证消息  
+    authenticate(this.messageWs);  
+  };  
+  messageWs.value.onmessage = (event) => {  
+    // 处理从服务器接收到的消息  
+    const msg = JSON.parse(event.data);  
+    console.log(msg);  
+  };
+}
+
+function createNewWs(){
+  console.log("开启socket链接-----"+'ws://')
+  newWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
+  newWs.value.onopen = (event) => {  
+    // 当 WebSocket 连接打开时，发送认证消息  
+    authenticate(this.newWs);  
+  };  
+  
+  newWs.value.onmessage = (event) => {  
+    // 处理从服务器接收到的消息  
+    const msg = JSON.parse(event.data);  
+    console.log(msg);  
+  };
+}
+
+
+function createRevocationWs(){
+  console.log("开启socket链接-----"+'ws://')
+  RevocationWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
+  RevocationWs.value.onopen = (event) => {  
+    // 当 WebSocket 连接打开时，发送认证消息  
+    authenticate(this.RevocationWs);  
+  };  
+  
+  RevocationWs.value.onmessage = (event) => {  
+    // 处理从服务器接收到的消息  
+    const msg = JSON.parse(event.data);  
+    console.log(msg);  
+  };
+}
+
+function authenticate(ws){// 认证方法 
+  if (ws.readyState == WebSocket.OPEN && localStorage.token) {  
+    console.log("发送验证信息")
+    ws.value.send(  
+      JSON.stringify({  
+        type: 'auth', // 消息类型，用于区分是普通消息还是认证消息  
+        token: localStorage.token,  
+        // 其他可能需要的认证信息...  
+      })  
+    );  
+  }
+}
+
+onMounted(() => {
+  createMessageWs()
+  createNewWs()
+  createRevocationWs()
+})
 </script>
 <style>
 .List{

@@ -74,7 +74,7 @@ func jwtMiddleware() gin.HandlerFunc {
 
 		// 检查请求路径是否是登录或注册
 		if strings.HasPrefix(c.Request.URL.Path, "/user/login") ||
-			strings.HasPrefix(c.Request.URL.Path, "/user") {
+			strings.HasPrefix(c.Request.URL.Path, "/user/register") {
 			// 如果是登录或注册请求，则直接跳过JWT验证
 			log.Println("跳过JWT验证")
 			c.Next()

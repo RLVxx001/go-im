@@ -22,7 +22,7 @@
             <input type="checkbox" style="color:rgba(220, 228, 253, 0.942);"> 记住我
           </label>
         </div>
-        <button @click="sub" class="btn btn-default">登录</button>
+        <el-button plain @click="sub" class="btn btn-default">登录</el-button>
         <div class="form-group" style="margin-top:10px">
           <label class="exampleInputEmail1">
             没有账号？
@@ -36,60 +36,61 @@
 
 </template>
 
-<script>
-import TopBar from './TopBar.vue'
-import SideBar from './SideBar.vue'
-import Demo from './Demo.vue'
-import Login from './Login.vue'
+<script setup>  
+import { ref, onMounted } from 'vue';  
+import { defineExpose } from 'vue'; // 如果你需要在模板外的地方访问组件内部变量或方法，可以使用 defineExpose  
+import TopBar from './TopBar.vue';  
+import SideBar from './SideBar.vue';  
+import Demo from './Demo.vue';  
+import Login from './Login.vue';  
 import axios from 'axios';  
-
-import bus from "../EventBus/eventbus";
-export default{
-  components:{
-   TopBar,
-    SideBar,
-    Demo,
-    TopBar,
-    SideBar,
-    // Index,
-    // Login,
-  },
-  data(){
-    return {
-      username:'',
-      passwd:'',
-      ckname:false,
-    }
-  },
-  methods:{
-    sub()
-    {
-      axios.post('http://localhost:8080/user/login',{
-        username:this.username,
-        password:this.passwd
-      })
-      .then(response =>{
-        console.log("--------")
-        console.log(response.data)
-        
-      }).catch(err=>{
-        console.log("----1111----")
-        console.error(err)
-      })
-    },
-    checkname(event){
-      this.username=event.target.value
-      console.log(this.username)
-      if(this.username!=""&&(this.username.length<5||this.username.length>20)){
-        this.ckname=true
-      }
-      else{
-        this.ckname=false
-      }
-    },
-  },
-}
-</script>
+import bus from "../EventBus/eventbus"; // 请注意确保你的 eventbus 正确工作并支持你想要的功能  
+  
+// 响应式状态  
+const username = ref('');  
+const passwd = ref('');  
+const ckname = ref(false);  
+  
+// 方法  
+function sub() {  
+  localStorage.setItem("username", username.value);  
+  axios.post('http://localhost:8080/user/login', {  
+    username: username.value,  
+    password: passwd.value  
+  })  
+  .then(response => {  
+    console.log("--------");  
+    console.log(response.data);  
+  })  
+  .catch(err => {  
+    console.log("----1111----");  
+    console.error(err.response.data);  
+    // 注意：在 <script setup> 中，你可能需要自定义通知函数或使用其他库/插件来显示通知  
+    // 这里只是一个示例，你可能需要调整  
+    alert('账号或者密码错误');  
+  });  
+}  
+  
+function checkname(event) {  
+  username.value = event.target.value;  
+  if (username.value !== '' && (username.value.length < 5 || username.value.length > 20)) {  
+    ckname.value = true;  
+  } else {  
+    ckname.value = false;  
+  }  
+}  
+  
+// 组件挂载后执行的操作  
+onMounted(() => {  
+  username.value = localStorage.getItem('username') || '';  
+});  
+  
+// 如果你需要在模板外的地方访问组件内部变量或方法，可以使用 defineExpose  
+defineExpose({  
+  // 可以选择暴露给外部的方法或变量  
+  // 例如：sub, checkname, ...  
+});  
+</script> 
 
 
 <style>

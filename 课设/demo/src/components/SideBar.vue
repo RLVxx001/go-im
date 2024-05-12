@@ -26,10 +26,8 @@
         </router-link>
    </div>
 </template>
-<script>
-export default {
-    name:'TopBar',
-}
+<script setup>
+
 </script>
 <style>
 

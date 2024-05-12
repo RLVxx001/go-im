@@ -4,29 +4,8 @@
     {{color}}
   </div>
 </template>
-<script>
-import bus from "../EventBus/eventbus.js";
-  import App from "../App.vue"
-  
-  export default{
-    inject: ["color"],
-    data(){
-      return{
-        val:"123"
-      }
-    },
-  components:{
-    // Header,
-    // Footer,
-    // App,
-  },
-  created() {
-    console.log(this.val);
-    bus.on("countChange", (v) => {
-      this.val = v;
-    });
-  },
-}
+<script setup>
+
 </script>
 <style>
 .xx2{

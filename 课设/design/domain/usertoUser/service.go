@@ -11,7 +11,7 @@ type Service struct {
 }
 
 // 实例化service
-func NewUserService(r Repository, messageRepository MessageRepository) *Service {
+func NewService(r Repository, messageRepository MessageRepository) *Service {
 	r.Migration()
 	messageRepository.Migration()
 	return &Service{
