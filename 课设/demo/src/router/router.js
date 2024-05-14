@@ -51,7 +51,15 @@ const router = createRouter({
       path: "/friendlist",
       component: FriendList,
       meta: { requiresAuth: true }
-    }
+    },
+    {  
+      path: '/advices',  
+      component: Home  
+    },  
+    {  
+      path: '/evaluate',  
+      component: Home  
+    },  
   ]
 })
 router.beforeEach((to, from) => {

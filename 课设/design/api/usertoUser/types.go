@@ -35,7 +35,7 @@ type UserRequest struct {
 	IsDeleted    bool          `json:"isDeleted"`  //是否被删除
 	Shielded     bool          `json:"shielded"`   //是否被拉黑
 	Massage      string        `json:"massage"`    //消息
-	UserMassages []UserMessage `json:"userMassages"`
+	UserMessages []UserMessage `json:"userMessages"`
 }
 
 type UserMessage struct {
@@ -55,7 +55,7 @@ type UserResponse struct {
 	IsDeleted    bool               `json:"isDeleted"`  //是否被删除
 	Shielded     bool               `json:"shielded"`   //是否被拉黑
 	ToUser       user.LoginResponse `json:"ToUser"`     //对方信息
-	UserMassages []UserMessage      `json:"userMassages"`
+	UserMessages []UserMessage      `json:"userMessages"`
 }
 
 // 类型转化
@@ -66,7 +66,7 @@ func ToUserResponse(u *usertoUser.UsertoUser) UserResponse {
 		Remarks:      u.Remarks,
 		IsDeleted:    u.IsDeleted,
 		Shielded:     u.Shielded,
-		UserMassages: ToUserMessage(u.UserMassages),
+		UserMessages: ToUserMessage(u.UserMessages),
 	}
 }
 
@@ -77,7 +77,7 @@ func ToUsertoUser(u UserRequest) *usertoUser.UsertoUser {
 		Remarks:      u.Remarks,
 		IsDeleted:    u.IsDeleted,
 		Shielded:     u.Shielded,
-		UserMassages: ToMessage(u.UserMassages),
+		UserMessages: ToMessage(u.UserMessages),
 	}
 }
 

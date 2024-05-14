@@ -17,6 +17,18 @@ func HandleError(g *gin.Context, err error) {
 	return
 }
 
+// 错误处理
+func HandleErrorToken(g *gin.Context, err error) {
+
+	g.JSON(
+		http.StatusBadRequest, ErrorResponse{
+			Message: err.Error(),
+			Type:    "token",
+		})
+	g.Abort()
+	return
+}
+
 // ws错误处理
 func WsError(ws *websocket.Conn, err error, pe string) error {
 

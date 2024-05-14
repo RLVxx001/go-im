@@ -35,6 +35,7 @@ func (c *Controller) Create(g *gin.Context) {
 	for {
 		var token config.Token
 		err = ws.ReadJSON(&token)
+		fmt.Printf("%v\n", token)
 		if err != nil {
 			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 			if err != nil {
@@ -45,7 +46,7 @@ func (c *Controller) Create(g *gin.Context) {
 		if token.Type == "auth" {
 			id, err := jwt.Decoded(token.Token)
 			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
 				if err != nil {
 					return
 				}
@@ -131,7 +132,7 @@ func (c *Controller) Send(g *gin.Context) {
 		if token.Type == "auth" {
 			id, err := jwt.Decoded(token.Token)
 			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
 				if err != nil {
 					return
 				}
@@ -235,7 +236,7 @@ func (c *Controller) Revocation(g *gin.Context) {
 		if token.Type == "auth" {
 			id, err := jwt.Decoded(token.Token)
 			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
 				if err != nil {
 					return
 				}
@@ -259,7 +260,7 @@ func (c *Controller) Revocation(g *gin.Context) {
 			}
 			continue
 		}
-		if len(req.UserMassages) == 0 {
+		if len(req.UserMessages) == 0 {
 			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 			if err != nil {
 				return
@@ -289,7 +290,7 @@ func (c *Controller) Revocation(g *gin.Context) {
 			continue
 		}
 
-		for _, j := range utou.UserMassages {
+		for _, j := range utou.UserMessages {
 			broadcastRe <- UserMessage{
 				UsertoUserId: utou.ID,
 				Key:          j.Key,
@@ -316,7 +317,7 @@ func (c *Controller) Delete(g *gin.Context) {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}
-	if len(req.UserMassages) == 0 {
+	if len(req.UserMessages) == 0 {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}

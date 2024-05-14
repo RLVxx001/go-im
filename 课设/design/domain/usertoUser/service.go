@@ -93,7 +93,7 @@ func (c *Service) Revocation(u *UsertoUser) error {
 		return ErrNotRevocation
 	}
 
-	m := u.UserMassages[0]
+	m := u.UserMessages[0]
 
 	if _, err := c.messageRepository.FidKey(u.ID, m.Key); err != nil {
 		return ErrNotRevocation
@@ -113,7 +113,7 @@ func (c *Service) DeleteMessage(u *UsertoUser) error {
 		return ErrNotUsers
 	}
 	u.ID = u1.ID
-	m := u.UserMassages[0]
+	m := u.UserMessages[0]
 
 	if err := c.messageRepository.Delete(u.ID, m.Key); err != nil {
 		return ErrNotDelete
@@ -145,7 +145,7 @@ func (c *Service) FidMessage(u *UsertoUser) (*UsertoUser, error) {
 	if err != nil {
 		return nil, ErrNotFid
 	}
-	u1.UserMassages = c.messageRepository.Fid(u1.ID)
+	u1.UserMessages = c.messageRepository.Fid(u1.ID)
 
 	return u1, nil
 }
@@ -173,7 +173,7 @@ func (c *Service) Fids(userid uint) ([]UsertoUser, error) {
 		return nil, ErrNotFid
 	}
 	for i, j := range users {
-		users[i].UserMassages = c.messageRepository.Fid(j.ID)
+		users[i].UserMessages = c.messageRepository.Fid(j.ID)
 	}
 	return users, nil
 }

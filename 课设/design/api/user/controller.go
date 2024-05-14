@@ -118,7 +118,7 @@ func (c *Controller) Login(g *gin.Context) {
 func (c *Controller) VerifyToken(g *gin.Context) {
 	currentUser, err := c.userService.GetById(api_helper.GetUserId(g))
 	if err != nil {
-		api_helper.HandleError(g, err)
+		api_helper.HandleErrorToken(g, err)
 		return
 	}
 	g.JSON(
@@ -137,7 +137,7 @@ func (c *Controller) VerifyToken(g *gin.Context) {
 func (c *Controller) Upload(g *gin.Context) {
 
 	if _, err := c.userService.GetById(api_helper.GetUserId(g)); err != nil {
-		api_helper.HandleError(g, err)
+		api_helper.HandleErrorToken(g, err)
 		return
 	}
 	file, header, err := g.Request.FormFile("file")
@@ -189,8 +189,4 @@ func (c *Controller) Upload(g *gin.Context) {
 		http.StatusOK, LoginResponse{
 			Img: filePath,
 		})
-}
-
-func (c *Controller) GoUpload(g *gin.Context) {
-	g.HTML(200, "upload.html", nil)
 }

@@ -37,22 +37,26 @@
 </template>
 
 <script setup>  
-import { ref } from 'vue';  
+import { ref} from 'vue';  
 import TopBar from './TopBar.vue';  
 import SideBar from './SideBar.vue';  
 import Demo from './Demo.vue';  
 import Login from './Login.vue';  
 import axios from 'axios';  
+import { ElNotification } from 'element-plus'
+import { useRouter } from 'vue-router' 
+
+const router = useRouter()
   
 // 响应式数据  
 const email = ref('');  
 const username = ref('');  
-const password = ref('');  
-const passwordes = ref('');  
+const passwd = ref('');  
+const passwdes = ref('');  
   
 // 方法  
 function check(){  
-  if (username.value === '' || password.value === '') {  
+  if (username.value == '' || passwd.value == '') {  
     alert('输入框不能为空');  
     return;  
   }  
@@ -67,22 +71,32 @@ function check(){
   }  
   submit();  
 };  
-  
-function submit() {  
 
+function submit() {  
+  
     axios.post('http://localhost:8080/user/register', {  
       username: username.value,  
-      password: password.value,  
-      password2: passwordes.value,  
+      password: passwd.value,  
+      password2: passwdes.value,  
       email: email.value  
     }).then(response=>{
       console.log('--------');  
       console.log(response.data);  
-      localStorage.setItem('username', response.data.username); 
-      this.$router.push('login')
+      localStorage.setItem('username',response.data.username)
+      ElNotification({
+        title: 'Success',
+        message: '注册成功',
+        type: 'success',
+      })
+      router.push('login')
     }).catch (err=> {  
       console.log('----1111----');  
-      console.error(err.response.data);  
+      console.error(err.response.data); 
+      ElNotification({
+        title: 'error',
+        message: err.response.data.errorMessage,
+        type: 'error',
+      })
     })
 };  
 // 在模板中可以直接使用 email, username, check, submit 等变量和方法  

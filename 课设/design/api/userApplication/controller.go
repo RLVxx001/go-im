@@ -32,7 +32,7 @@ func (c *Controller) Create(g *gin.Context) {
 	//校验用户是否合法
 	req.UserOwner = api_helper.GetUserId(g)
 	if _, err := c.userService.GetById(req.UserOwner); err != nil {
-		api_helper.HandleError(g, err)
+		api_helper.HandleErrorToken(g, err)
 		return
 	}
 	if _, err := c.userService.GetById(req.UserTarget); err != nil {
@@ -70,7 +70,7 @@ func (c *Controller) Fids(g *gin.Context) {
 	//校验用户是否合法
 	req.UserOwner = api_helper.GetUserId(g)
 	if _, err := c.userService.GetById(req.UserOwner); err != nil {
-		api_helper.HandleError(g, err)
+		api_helper.HandleErrorToken(g, err)
 		return
 	}
 

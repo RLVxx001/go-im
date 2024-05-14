@@ -64,7 +64,6 @@ func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
 	userGroup.POST("/register", userController.CreateUser)
 	userGroup.POST("/login", userController.Login)
 	userGroup.GET("/verifyToken", userController.VerifyToken)
-	userGroup.GET("/upload", userController.GoUpload)
 	userGroup.POST("/upload", userController.Upload)
 }
 

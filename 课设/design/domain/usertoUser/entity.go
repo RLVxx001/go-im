@@ -14,7 +14,7 @@ type UsertoUser struct {
 	Remarks      string    `gorm:"type:varchar(500)"` //备注
 	IsDeleted    bool      //是否被删除
 	Shielded     bool      //是否被拉黑
-	UserMassages []UserMessage
+	UserMessages []UserMessage
 }
 
 // UserMessage 用户消息

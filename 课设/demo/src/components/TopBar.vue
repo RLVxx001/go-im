@@ -27,20 +27,30 @@
          <div contenteditable class="inputType" placeholder='请输入文字'></div>
         <div class="button">搜索</div>
        </div> -->
-       <router-link to="/login" style="text-decoration: none;">
-       <div class="to1">
-          登录
-       </div>
-      </router-link>
-      <router-link to="/register" style="text-decoration: none;">
-       <div class="to1">
-          注册
-       </div>
-      </router-link>
+       {{ username }}
+       <template v-if="!username">
+          <router-link  to="/login" style="text-decoration: none;">
+          <div class="to1">
+            登录
+          </div>
+        </router-link>
+        <router-link to="/register" style="text-decoration: none;">
+          <div class="to1">
+            注册
+          </div>
+        </router-link>
+      </template>
       <!-- <router-view></router-view> -->
    </div>
 </template>
 <script setup>
+
+import { ref, computed } from 'vue'
+import { useUserStore } from '../store/user';
+const userStore=useUserStore()
+
+const username = computed(() => userStore.username);  
+const token = computed(() => userStore.token); 
 
 </script>
 <style>

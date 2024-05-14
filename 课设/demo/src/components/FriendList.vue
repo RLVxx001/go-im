@@ -2,23 +2,43 @@
   <div style="color:rgba(220, 228, 253, 0.942);">
     <div style="display:flex">
       <div class="List">
-        <!-- <div class="find">
-          <input  class="inputT" placeholder='内容'/>
-          <button class="btn">搜索</button>
-        </div> -->
-        <div style="height:25px;font-size:17px;">
-          <img src="#" style="margin-right:20px;margin-left:10px;"/>
-            sdsdsds
-        </div>
-        <div style="height:25px;font-size:17px;">
-          <img src="#" style="margin-right:20px;margin-left:10px;"/>
-            sdsdsds
-        </div>
+        <el-scrollbar height="400px">
+          <p v-for="(item,index) in usertoUsers" 
+          :key="index" class="scrollbar-demo-item" >
+            <img src="#" style="margin-right:20px; margin-left:10px; " @click="goindex(index)"/>
+            {{ item.remarks }}{{ item.userTarget }}
+          </p>
+        </el-scrollbar>
       </div>
       <div>
-        <div class="Message">
-          <div class="Top">
-          sd
+        <div class="Message" >
+          {{ index }}
+          <div class="Top" v-if="index!=-1">
+            <el-scrollbar height="400px"  ref="scrollbarRef" always>
+              <div ref="innerRef">
+                <p v-for="(message,i) in usertoUsers[index].userMessages" 
+                :key="i" class="scrollbar-demo-item"
+                 :class="getMessageClass(message.isSent)" @scroll="scroll">
+                  <div v-if="message.isSent" style="display: flex;">
+                    <div class="bubble">
+                      <div class="message" v-html="message.message"></div>
+                    </div>
+                    <div class="avatar">
+                      <img src="#" class="avatar-image"/>
+                    </div>
+                  </div>
+                  <div v-else  style="display: flex;">
+                    <div class="avatar">
+                      <img src="#" class="avatar-image"/>
+                    </div>
+                    <div class="bubble">
+                      <div class="message" v-html="message.message"></div>
+                    </div>
+                  </div>
+                </p>
+              </div>
+              
+            </el-scrollbar>
           </div>
         </div>
         <div style="width:1px; background-color: black;"></div>
@@ -29,32 +49,37 @@
     </div>
   </div>
 </template>
-<script setup>
+<script lang="ts" setup>
+import ImageViewer from "@luohc92/vue3-image-viewer";
+import '@luohc92/vue3-image-viewer/dist/style.css';
+import { ref, onMounted ,h,reactive,nextTick } from 'vue'; 
+import { ElNotification,ElScrollbar } from 'element-plus'
+import service from '../axios-instance'
+
 
 const messageWs = ref(null); 
 const newWs = ref(null); 
 const RevocationWs = ref(null); 
 
 function send(){
-  let list=[]
-  list.push({key:this.passwd-0})
-  if(messageWs.value.readyState == WebSocket.OPEN){
-    messageWs.value.send(
-    JSON.stringify({
-            userTarget: this.username-0,
-            userMassages:list
-        }
-    ));
-  }
+  // let list=[]
+  // list.push({key:passwd-0})
+  // if(messageWs.value.readyState == WebSocket.OPEN){
+  //   messageWs.value.send(
+  //   JSON.stringify({
+  //           userTarget: username-0,
+  //           userMassages:list
+  //       }
+  //   ));
+  // }
 }
 
 function createMessageWs(){
   console.log("开启socket链接-----"+'ws://')
-  localStorage.setItem('token','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTUzNTc2MjUsImlhdCI6MTcxNTI3MTIyNSwiaXNBZG1pbiI6ZmFsc2UsImlzcyI6IiIsInVzZXJJZCI6IjciLCJ1c2VybmFtZSI6Inh4MDAwNSJ9.1gBQEaI79OSpBRs99uZ1QjoHOog-Exkl3x9Z6xnYdTI')
-  messageWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
+  messageWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/send');  
   messageWs.value.onopen = (event) => {  
     // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(this.messageWs);  
+    authenticate(messageWs);  
   };  
   messageWs.value.onmessage = (event) => {  
     // 处理从服务器接收到的消息  
@@ -65,10 +90,10 @@ function createMessageWs(){
 
 function createNewWs(){
   console.log("开启socket链接-----"+'ws://')
-  newWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
+  newWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser');  
   newWs.value.onopen = (event) => {  
     // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(this.newWs);  
+    authenticate(newWs);  
   };  
   
   newWs.value.onmessage = (event) => {  
@@ -84,7 +109,7 @@ function createRevocationWs(){
   RevocationWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
   RevocationWs.value.onopen = (event) => {  
     // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(this.RevocationWs);  
+    authenticate(RevocationWs);  
   };  
   
   RevocationWs.value.onmessage = (event) => {  
@@ -95,7 +120,7 @@ function createRevocationWs(){
 }
 
 function authenticate(ws){// 认证方法 
-  if (ws.readyState == WebSocket.OPEN && localStorage.token) {  
+  if (ws.value.readyState == WebSocket.OPEN && localStorage.token) {  
     console.log("发送验证信息")
     ws.value.send(  
       JSON.stringify({  
@@ -107,15 +132,195 @@ function authenticate(ws){// 认证方法
   }
 }
 
+
+
+//消息框样式动态选择
+const getMessageClass = (isSent) => {
+  return isSent ? 'message-container-right' : 'message-container-left';
+};
+
+
+let usertoUsers=reactive([
+  {remarks:'1',userTarget:'2',userMessages:[
+    {message:'您的选择错误啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊'},{message:'11111',isSent:true},{message:'11111',isSent:true},{message:'11111'},{message:'11111'},
+    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
+    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
+    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
+    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
+    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
+    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
+    {message:'11111'},{message:'11111'},{message:'11111'},{message:'您的选择错误啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊',isSent:true},{message:'您的选择错误啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊'},
+  ]},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+  {remarks:'1',userTarget:'2'},
+])
+
+const innerRef = ref<HTMLDivElement>()
+const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
+let index=ref(0)
+function goindex(val){
+  console.log(val)
+  index.value=val
+  gobottom()
+}
+function gobottom(){//抵达最底部
+  nextTick(() => {  
+    scrollbarRef.value!.setScrollTop(innerRef.value!.clientHeight - 350)
+  })
+}
+function getusers(){
+  console.log('发送请求')
+   service.get('http://localhost:8080/usertoUser/fid')
+   .then(res=>{
+    console.log(res.data)
+    usertoUsers=res.data
+    console.log(usertoUsers)
+    index.value=0
+   }).catch(err=>{
+      console.error(err)
+      let data=err.response.data
+      if(data.type=='token'){
+        localStorage.removeItem('token')
+      }
+      ElNotification({
+        title: 'Error',
+        message: err,
+        type: 'error',
+      })
+   })
+}
+
 onMounted(() => {
-  createMessageWs()
-  createNewWs()
-  createRevocationWs()
+  // createMessageWs()
+  // createNewWs()
+  // createRevocationWs()
+  // getusers()
+  goindex(0)
 })
 </script>
+<style scoped>
+.scrollbar-demo-item {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  margin: 25px;
+  text-align: center;
+  border-radius: 4px;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  width: 50%;
+}
+</style>
 <style>
+
+.avatar {
+  margin-left: 10px; /* 修改这里将头像放在消息框的右边 */
+}
+ 
+.avatar-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+ 
+.bubble {
+  background-color: #e8e8e8;
+  color: #000;
+  padding: 10px;
+  border-radius: 5px;
+}
+.message {
+  text-align: left;
+  margin: 0;
+}
+.message-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.message-container-right {
+  justify-content: flex-end;
+}
+ 
+.message-container-left {
+  justify-content: flex-start;
+}
 .List{
-  width:200px;
+  width:100px;
   height:596px;
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;

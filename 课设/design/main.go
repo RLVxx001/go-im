@@ -26,7 +26,6 @@ func main() {
 	g := gin.Default()
 	// 为 multipart forms 设置较低的内存限制 (默认是 32 MiB)
 	g.MaxMultipartMemory = 8 << 20 // 8 MiB
-	g.LoadHTMLGlob("templates/*")
 	g.Static("/static", "./public")
 	g.Use(func(c *gin.Context) {
 		// 允许所有来源进行访问，这里仅作为示例，实际生产环境中应当严格限制允许的来源
@@ -60,18 +59,16 @@ func main() {
 func jwtMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 检查请求是否是WebSocket升级请求
-		if c.Request.Header.Get("Upgrade") == "websocket" &&
-			c.Request.Header.Get("Connection") == "Upgrade" &&
+		if c.Request.Header.Get("Connection") == "Upgrade" &&
+			c.Request.Header.Get("Upgrade") == "websocket" &&
 			websocket.IsWebSocketUpgrade(c.Request) {
 			// 如果是WebSocket升级请求，则不执行后续中间件，直接处理WebSocket连接
 			log.Println("websocket链接.......")
-			c.Set("userId", 7)
 			c.Next()
 			// 注意：这里的c.Next()实际上不会被执行，因为我们会在下面处理WebSocket连接
 			// 你需要自定义逻辑来处理WebSocket连接
 			return
 		}
-
 		// 检查请求路径是否是登录或注册
 		if strings.HasPrefix(c.Request.URL.Path, "/user/login") ||
 			strings.HasPrefix(c.Request.URL.Path, "/user/register") {
@@ -87,7 +84,7 @@ func jwtMiddleware() gin.HandlerFunc {
 		UserId, err := jwt.Decoded(tokenString)
 		if err != nil {
 			// 如果解析失败，返回错误
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err, "type": "token"})
 			return
 		}
 		// 如果JWT验证成功，您可以将解析后的用户信息（如ID）设置到上下文中供后续使用
