@@ -2,39 +2,45 @@
   <div style="color:rgba(220, 228, 253, 0.942);">
     <div style="display:flex">
       <div class="List">
-        <el-scrollbar height="400px">
+        <div style="width:10px;height:50px"></div>
+        <el-scrollbar style="height:500px;width:200px">
           <p v-for="(item,index) in usertoUsers" 
-          :key="index" class="scrollbar-demo-item" >
-            <img src="#" style="margin-right:20px; margin-left:10px; " @click="goindex(index)"/>
+          :key="index" style="margin-top:-10px;line-height:60px;width:200px;height:60px;color:rgb(104, 103, 103)" class="friend">
+            <img src="#" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
             {{ item.remarks }}{{ item.userTarget }}
           </p>
         </el-scrollbar>
       </div>
+      <div style="border:1px;heihght:600px;width:1px;float:left"></div>
       <div>
         <div class="Message" >
           {{ index }}
-          <div class="Top" v-if="index!=-1">
-            <el-scrollbar height="400px"  ref="scrollbarRef" always>
+          <div class="Top" style="width:607" v-if="index!=-1">
+            <el-scrollbar style="width:607px;height:400px"  ref="scrollbarRef" always>
               <div ref="innerRef">
                 <p v-for="(message,i) in usertoUsers[index].userMessages" 
-                :key="i" class="scrollbar-demo-item"
+                :key="i" 
                  :class="getMessageClass(message.isSent)" @scroll="scroll">
                   <div v-if="message.isSent" style="display: flex;">
-                    <div class="bubble">
-                      <div class="message" v-html="message.message"></div>
+                      <div style="width:700px;height:30px"></div>
+                    <div class="bubble" style="background-color:rgb(222, 221, 221)">
+                      <div class="message" v-html="message.message" style="margin-right:10px"></div>
                     </div>
                     <div class="avatar">
-                      <img src="#" class="avatar-image"/>
+                      <img src="#" class="avatar-image" style="margin-right:20px" />
                     </div>
                   </div>
                   <div v-else  style="display: flex;">
                     <div class="avatar">
-                      <img src="#" class="avatar-image"/>
+                      <img src="#" class="avatar-image" style="margin-left:20px"/>
                     </div>
-                    <div class="bubble">
+                    <div class="bubble" style="background-color:rgb(222, 221, 221);margin-left:10px">
                       <div class="message" v-html="message.message"></div>
                     </div>
+                    
+                      <div style="width:400px;height:30px"></div>
                   </div>
+                <br>
                 </p>
               </div>
               
@@ -43,7 +49,8 @@
         </div>
         <div style="width:1px; background-color: black;"></div>
         <div class="Chat">
-
+          <textarea style="width:607px;height:100px;margin-top:30px;background-color:rgb(141, 141, 141);border:0px"></textarea>
+          <button style="color:rgba(220, 228, 253, 0.942);background-color:#82838372;width:60px;height:30px;margin-left:500px">发送</button>
         </div>
       </div>
     </div>
@@ -281,7 +288,7 @@ onMounted(() => {
   border-radius: 4px;
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
-  width: 50%;
+  width: 100%;
 }
 </style>
 <style>
@@ -298,7 +305,6 @@ onMounted(() => {
 }
  
 .bubble {
-  background-color: #e8e8e8;
   color: #000;
   padding: 10px;
   border-radius: 5px;
@@ -313,35 +319,38 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 .message-container-right {
-  justify-content: flex-end;
+  float:right;
+  /*justify-content: flex-end;*/
 }
  
 .message-container-left {
-  justify-content: flex-start;
+  float:left;
+  /*justify-content: flex-start;*/
 }
 .List{
-  width:100px;
+  width:310px;
   height:596px;
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;
-  background-color: #b9b8b8a2;
 }
 
 .Message{
   width:607px;
   height:420px;
   border-top-right-radius: 18px;
-  background-color: #a7a7aca2;
+  background-color: #82838372;
 }
 
-
+.friend:hover{
+  background-color:#cdcdcda2;
+}
 
 .Chat
 {
   height:176px;
-  background-color: #c8c8c9a2;
   width: 607px;;
   border-bottom-right-radius: 18px;;
+  background-color: #8e8f8f;
 }
 
 .find{
