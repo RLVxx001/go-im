@@ -33,6 +33,7 @@ type GroupUser struct {
 	UserId  uint      //用户id
 	IsAdmin uint      //是否管理
 	IsGag   bool      //是否被禁言
+	Text    string    //群备注
 	User    user.User `gorm:"-"` //用户实体
 }
 

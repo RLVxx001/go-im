@@ -14,13 +14,13 @@ import (
 )
 
 type Controller struct {
-	server     *usertoUser.Service
-	userServer *user.Service
+	service     *usertoUser.Service
+	userService *user.Service
 }
 
 // 实例化
-func NewController(server *usertoUser.Service, userServer *user.Service) *Controller {
-	return &Controller{server: server, userServer: userServer}
+func NewController(service *usertoUser.Service, userService *user.Service) *Controller {
+	return &Controller{service: service, userService: userService}
 }
 
 // 创建用户-用户链接
@@ -72,12 +72,12 @@ func (c *Controller) Create(g *gin.Context) {
 		req.UserOwner = userid
 		//fmt.Printf("%v\n", req)
 
-		if _, err := c.userServer.GetById(req.UserOwner); err != nil {
+		if _, err := c.userService.GetById(req.UserOwner); err != nil {
 			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
 
-		if _, err := c.userServer.GetById(req.UserTarget); err != nil {
+		if _, err := c.userService.GetById(req.UserTarget); err != nil {
 			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
 				return
@@ -85,7 +85,7 @@ func (c *Controller) Create(g *gin.Context) {
 			continue
 		}
 		//创建链接
-		user1, err := c.server.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, req.Remarks))
+		user1, err := c.service.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, req.Remarks))
 		if err != nil {
 			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
@@ -94,7 +94,7 @@ func (c *Controller) Create(g *gin.Context) {
 			continue
 		}
 		var user2 *usertoUser.UsertoUser = nil
-		user2, err = c.server.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, req.Remarks1))
+		user2, err = c.service.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, req.Remarks1))
 		if err != nil {
 			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
@@ -102,6 +102,9 @@ func (c *Controller) Create(g *gin.Context) {
 			}
 			continue
 		}
+		c.service.Send(user1, "你好，我是"+req.Remarks) //相互发送一条消息
+		c.service.Send(user2, "你好，我是"+req.Remarks)
+
 		broadcastNew <- ToUserResponse(user1) //发送者
 		// Send the newly received message to the broadcast channel
 		broadcastNew <- ToUserResponse(user2) //送达者
@@ -158,14 +161,14 @@ func (c *Controller) Send(g *gin.Context) {
 			continue
 		}
 		req.UserOwner = userid
-		if _, err := c.userServer.GetById(req.UserOwner); err != nil {
+		if _, err := c.userService.GetById(req.UserOwner); err != nil {
 			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
 
 		utou := ToUsertoUser(req)
 		fmt.Printf("%v\n", utou)
-		m, m1, err := c.server.Send(utou, req.Message)
+		m, m1, err := c.service.Send(utou, req.Message)
 		if err != nil {
 			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
@@ -206,7 +209,7 @@ func (c *Controller) Update(g *gin.Context) {
 	req.UserOwner = api_helper.GetUserId(g)
 	utou := ToUsertoUser(req)
 
-	if err := c.server.Update(utou); err != nil {
+	if err := c.service.Update(utou); err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
@@ -267,12 +270,12 @@ func (c *Controller) Revocation(g *gin.Context) {
 			continue
 		}
 		req.UserOwner = userid
-		if _, err := c.userServer.GetById(req.UserOwner); err != nil {
+		if _, err := c.userService.GetById(req.UserOwner); err != nil {
 			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
 		utou := ToUsertoUser(req)
-		fidutou, err := c.server.Fid(utou.UserOwner, utou.UserTarget)
+		fidutou, err := c.service.Fid(utou.UserOwner, utou.UserTarget)
 		if err != nil {
 			err := api_helper.WsError(ws, err, "")
 			if err != nil {
@@ -281,7 +284,7 @@ func (c *Controller) Revocation(g *gin.Context) {
 			continue
 		}
 		utou.ID = fidutou.ID
-		if err := c.server.Revocation(utou); err != nil {
+		if err := c.service.Revocation(utou); err != nil {
 			err := api_helper.WsError(ws, err, "")
 			if err != nil {
 				return
@@ -322,7 +325,7 @@ func (c *Controller) Delete(g *gin.Context) {
 	}
 	req.UserOwner = api_helper.GetUserId(g)
 	utou := ToUsertoUser(req)
-	if err := c.server.DeleteMessage(utou); err != nil {
+	if err := c.service.DeleteMessage(utou); err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
@@ -338,7 +341,7 @@ func (c *Controller) Deletes(g *gin.Context) {
 	}
 	req.UserOwner = api_helper.GetUserId(g)
 	utou := ToUsertoUser(req)
-	if err := c.server.DeleteMessages(utou); err != nil {
+	if err := c.service.DeleteMessages(utou); err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
@@ -348,7 +351,7 @@ func (c *Controller) Deletes(g *gin.Context) {
 // 查找好友信息
 func (c *Controller) Fids(g *gin.Context) {
 	userid := api_helper.GetUserId(g)
-	fids, err := c.server.Fids(userid)
+	fids, err := c.service.Fids(userid)
 
 	if err != nil {
 		api_helper.HandleError(g, err)
@@ -357,7 +360,7 @@ func (c *Controller) Fids(g *gin.Context) {
 	var userResponses []UserResponse
 	for _, j := range fids {
 		response := ToUserResponse(&j)
-		us, err := c.userServer.GetById(j.UserTarget)
+		us, err := c.userService.GetById(j.UserTarget)
 		if err == nil {
 			j.ToUser = us
 		}
@@ -378,12 +381,12 @@ func (c *Controller) Read(g *gin.Context) {
 		return
 	}
 	req.UserOwner = api_helper.GetUserId(g)
-	fid, err := c.server.Fid(req.UserOwner, req.UserTarget)
+	fid, err := c.service.Fid(req.UserOwner, req.UserTarget)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
 
-	c.server.ReadMessage(fid.ID)
+	c.service.ReadMessage(fid.ID)
 	g.JSON(http.StatusOK, nil)
 }

@@ -62,9 +62,19 @@ func (r *MessageRepository) Fid(id, userid uint) []GroupMessage {
 }
 
 // 查询消息
-func (r *MessageRepository) FidKey(id, key uint) (GroupMessage, error) {
+func (r *MessageRepository) FidKey(id, key uint) ([]GroupMessage, error) {
+	var us []GroupMessage
+	err := r.db.Where("GroupId=?", id).Where("MessageKey=?", key).Find(&us).Error
+	if err != nil {
+		return nil, err
+	}
+	return us, nil
+}
+
+// 根据id查询消息
+func (r *MessageRepository) FidId(messageId uint) (GroupMessage, error) {
 	var us GroupMessage
-	err := r.db.Where("GroupId=?", id).Where("MessageKey=?", key).First(&us).Error
+	err := r.db.Where("ID=?", messageId).First(&us).Error
 	if err != nil {
 		return GroupMessage{}, err
 	}
