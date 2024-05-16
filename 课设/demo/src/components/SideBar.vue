@@ -17,17 +17,20 @@
            <router-link to="/friendlist" style="text-decoration: none;">
         <div class="to">好友列表</div>
            </router-link>
-            <router-link to="/advices" style="text-decoration: none;">
+            <router-link to="/grouplist" style="text-decoration: none;">
         <div class="to">群聊列表</div>
            </router-link>
+           <router-link to="/newfriend" style="text-decoration: none;">
+        <div class="to">验证信息</div>
+           </router-link>
         <!-- <span class="slice"></span> -->
-        <router-link to="/evaluate" style="text-decoration: none;">
-           <div class="to">退出登录</div>
-        </router-link>
+           <div v-if="token==1" class="to">退出登录</div>
+           <div v-else class="to">用户登录</div>
    </div>
 </template>
 <script setup>
-
+// var token = localStorage.getItem("token")
+var token = 1;
 </script>
 <style>
 

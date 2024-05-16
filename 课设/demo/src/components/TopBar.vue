@@ -4,7 +4,7 @@
       <img src="../assets/unkonw.png" alt="" class="logo"/>
       <!-- <div class="to1"></div> -->
       <!-- <div class="search"> -->
-         <input contenteditable class="inputType" placeholder='内容'/>
+         <input contenteditable class="inputType" placeholder='账号' style="width:320px"/>
         <button class="button">搜索</button>
        <!-- </div> -->
         <router-link to="/home" style="text-decoration: none;">

@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div style="color:rgba(220, 228, 253, 0.942);">
     <div style="display:flex">
       <div class="List">
@@ -14,7 +14,7 @@
       <div style="border:1px;height:600px;width:1px;float:left"></div>
       <div>
         <div class="Message" >
-          {{ index }}233
+          {{ index }}
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1">
             <el-scrollbar style="width:607px;height:400px" ref="scrollbarRef" always>
@@ -48,7 +48,7 @@
         </div>
         <div style="width:1px; background-color: black;"></div>
         <div class="Chat">
-          <textarea style="width:607px;height:120px;margin-top:30px;background-color:rgb(141, 141, 141);border:0px" v-model="message"></textarea>
+          <textarea style="width:607px;height:100px;margin-top:30px;background-color:rgb(141, 141, 141);border:0px" v-model="message"></textarea>
           <button style="color:rgba(220, 228, 253, 0.942);background-color:#82838372;width:60px;height:30px;margin-left:500px" @click="send">发送</button>
         </div>
       </div>
@@ -276,7 +276,7 @@ onMounted(() => {
   height:596px;
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;
-  background-color:#a2a2a2;
+  background-color:#adacac;
 }
 
 .Message{
@@ -331,4 +331,7 @@ onMounted(() => {
   border-bottom-left-radius: 17px;
   font-size: 12px;
 }
-</style>
+</style> -->
+<template>
+  <div></div>
+</template>

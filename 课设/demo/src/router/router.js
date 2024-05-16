@@ -7,6 +7,9 @@ import Register from '../components/Register.vue'
 import Person from "../components/Person.vue"
 import Space from "../components/Space.vue"
 import FriendList from "../components/FriendList.vue"
+import Newfriend from "../components/Newfriend.vue"
+import Detail from "../components/Detail.vue"
+import GroupList from "../components/GroupList.vue"
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -52,14 +55,26 @@ const router = createRouter({
       component: FriendList,
       meta: { requiresAuth: true }
     },
-    {  
-      path: '/advices',  
-      component: Home  
-    },  
-    {  
-      path: '/evaluate',  
-      component: Home  
-    },  
+    {
+      path: '/advices',
+      component: Home
+    },
+    {
+      path: '/evaluate',
+      component: Home
+    },
+    {
+      path: "/newfriend",
+      component: Newfriend,
+    },
+    {
+      path: "/grouplist",
+      component: GroupList,
+    },
+    {
+      path: "/detail",
+      component: Detail,
+    }
   ]
 })
 router.beforeEach((to, from) => {
