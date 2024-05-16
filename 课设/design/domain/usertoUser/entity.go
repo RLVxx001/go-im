@@ -23,6 +23,7 @@ type UserMessage struct {
 	Message      string `gorm:"type:varchar(500)"` //消息
 	UsertoUserId uint   //所属用户-用户id
 	Key          uint   //消息标识
+	UserOwner    uint   //所属用户
 	IsRead       bool   //是否被读
 }
 
@@ -37,9 +38,10 @@ func NewUsertoUser(userOwner, userTarget uint, remarks string) *UsertoUser {
 
 }
 
-func NewUserMessage(utouid uint, message string) *UserMessage {
+func NewUserMessage(userOwner, utouid uint, message string) *UserMessage {
 	return &UserMessage{
 		Message:      message,
 		UsertoUserId: utouid,
+		UserOwner:    userOwner,
 	}
 }

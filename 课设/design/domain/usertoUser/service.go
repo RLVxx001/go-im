@@ -67,7 +67,7 @@ func (c *Service) Send(u *UsertoUser, st string) (*UserMessage, *UserMessage, er
 		return nil, nil, ErrNotSend
 	}
 
-	m := NewUserMessage(u1.ID, st)
+	m := NewUserMessage(u.UserOwner, u1.ID, st)
 	if err := c.messageRepository.Create(m); err != nil { //创建发送者消息
 		return nil, nil, ErrNotSend
 	}
@@ -77,7 +77,7 @@ func (c *Service) Send(u *UsertoUser, st string) (*UserMessage, *UserMessage, er
 	if err := c.messageRepository.Update(m); err != nil { //修改发送者消息KEY
 		return nil, nil, ErrNotSend
 	}
-	m1 := NewUserMessage(u2.ID, m.Message)
+	m1 := NewUserMessage(u.UserOwner, u2.ID, m.Message)
 	m1.Key = m.Key
 
 	if err := c.messageRepository.Create(m1); err != nil { //创建接收者消息
@@ -95,7 +95,7 @@ func (c *Service) Revocation(u *UsertoUser) error {
 
 	m := u.UserMessages[0]
 
-	if _, err := c.messageRepository.FidKey(u.ID, m.Key); err != nil {
+	if _, err := c.messageRepository.FidKey(u.UserOwner, u.ID, m.Key); err != nil {
 		return ErrNotRevocation
 	}
 

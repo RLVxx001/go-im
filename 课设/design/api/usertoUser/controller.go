@@ -31,11 +31,10 @@ func (c *Controller) Create(g *gin.Context) {
 	}
 	var userid uint
 	defer deleteWs(ws, userid, clientNews)
-	fmt.Println("链接中--------")
+	fmt.Println("创建链接中--------")
 	for {
 		var token config.Token
 		err = ws.ReadJSON(&token)
-		fmt.Printf("%v\n", token)
 		if err != nil {
 			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 			if err != nil {
@@ -118,7 +117,7 @@ func (c *Controller) Send(g *gin.Context) {
 	}
 	var userid uint
 	defer deleteWs(ws, userid, clients)
-	fmt.Println("链接中--------")
+	fmt.Println("发送链接中--------")
 	for {
 		var token config.Token
 		err = ws.ReadJSON(&token)
@@ -166,7 +165,7 @@ func (c *Controller) Send(g *gin.Context) {
 
 		utou := ToUsertoUser(req)
 		fmt.Printf("%v\n", utou)
-		m, m1, err := c.server.Send(utou, req.Massage)
+		m, m1, err := c.server.Send(utou, req.Message)
 		if err != nil {
 			err1 := api_helper.WsError(ws, err, "")
 			if err1 != nil {
@@ -222,7 +221,7 @@ func (c *Controller) Revocation(g *gin.Context) {
 	}
 	var userid uint
 	defer deleteWs(ws, userid, clientRes)
-	fmt.Println("链接中--------")
+	fmt.Println("撤回链接中--------")
 	for {
 		var token config.Token
 		err = ws.ReadJSON(&token)
@@ -358,6 +357,10 @@ func (c *Controller) Fids(g *gin.Context) {
 	var userResponses []UserResponse
 	for _, j := range fids {
 		response := ToUserResponse(&j)
+		us, err := c.userServer.GetById(j.UserTarget)
+		if err == nil {
+			j.ToUser = us
+		}
 		response.ToUser.Username = j.ToUser.Username
 		response.ToUser.Account = j.ToUser.Account
 		response.ToUser.Img = j.ToUser.Img

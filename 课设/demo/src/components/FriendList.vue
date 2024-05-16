@@ -15,16 +15,16 @@
       <div>
         <div class="Message" >
           {{ index }}
-          <div class="Top" style="width:607" v-if="index!=-1">
+          <div class="Top" style="width:auto" v-if="index!=-1">
             <el-scrollbar style="width:607px;height:400px" ref="scrollbarRef" always>
               <div ref="innerRef">
                 <p v-for="(message,i) in usertoUsers[index].userMessages" 
                 :key="i" 
-                 :class="getMessageClass(message.isSent)">
-                  <div v-if="message.isSent" style="display: flex;">
-                      <div style="width:700px;height:30px"></div>
-                    <div class="bubble" style="background-color:rgb(222, 221, 221)">
-                      <div class="message" v-html="message.message" style="margin-right:10px"></div>
+                 :class="getMessageClass(message.userOwner==usertoUsers[index].userOwner)">
+                  <div v-if="message.userOwner==usertoUsers[index].userOwner" style="display: flex;">
+                      <div style="width:300px;height:1px"></div>
+                    <div class="bubble" style="background-color:rgb(222, 221, 221);margin-right:10px;">
+                      <div class="message" v-html="message.message" style=""></div>
                     </div>
                     <div class="avatar">
                       <img src="#" class="avatar-image" style="margin-right:20px" />
@@ -37,7 +37,7 @@
                     <div class="bubble" style="background-color:rgb(222, 221, 221);margin-left:10px">
                       <div class="message" v-html="message.message"></div>
                     </div>
-                      <div style="width:400px;height:30px"></div>
+                      <div style="width:300px;height:1px"></div>
                   </div>
                 </p>
               </div>
@@ -47,8 +47,8 @@
         </div>
         <div style="width:1px; background-color: black;"></div>
         <div class="Chat">
-          <textarea style="width:607px;height:100px;margin-top:30px;background-color:rgb(141, 141, 141);border:0px"></textarea>
-          <button style="color:rgba(220, 228, 253, 0.942);background-color:#82838372;width:60px;height:30px;margin-left:500px">发送</button>
+          <textarea style="width:607px;height:100px;margin-top:30px;background-color:rgb(141, 141, 141);border:0px" v-model="message"></textarea>
+          <button style="color:rgba(220, 228, 253, 0.942);background-color:#82838372;width:60px;height:30px;margin-left:500px" @click="send">发送</button>
         </div>
       </div>
     </div>
@@ -62,21 +62,23 @@ import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 
 
-const messageWs = ref(null); 
-const newWs = ref(null); 
-const RevocationWs = ref(null); 
+let messageWs = ref(null); 
+let newWs = ref(null); 
+let RevocationWs = ref(null); 
+let message=ref('')
 
 function send(){
   // let list=[]
   // list.push({key:passwd-0})
-  // if(messageWs.value.readyState == WebSocket.OPEN){
-  //   messageWs.value.send(
-  //   JSON.stringify({
-  //           userTarget: username-0,
-  //           userMassages:list
-  //       }
-  //   ));
-  // }
+  if(messageWs.value.readyState == WebSocket.OPEN){
+    messageWs.value.send(
+    JSON.stringify({
+            userTarget: usertoUsers[index.value].userTarget-0,
+            message:message.value
+        }
+    ));
+  }
+  message.value=''
 }
 
 function createMessageWs(){
@@ -88,8 +90,34 @@ function createMessageWs(){
   };  
   messageWs.value.onmessage = (event) => {  
     // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);  
-    console.log(msg);  
+    const msg = JSON.parse(event.data);
+    if(msg.type==null||msg.type==""){//接受成功  
+      console.log(msg);  
+      for(let i=0;i<usertoUsers.length;i++){
+        if(msg.usertoUserId==usertoUsers[i].id){
+          let IsNo=true
+          usertoUsers[i].userMessages.forEach(element => {
+            if(element.key==msg.key){
+              IsNo=true
+            }
+          });
+          if(IsNo){
+            usertoUsers[i].userMessages.push(msg)
+          }
+          break
+        }
+      }
+
+      gobottom()
+    }
+    else{//失败
+      ElNotification({
+        title: '发送异常',
+        message: msg.errorMessage,
+        type: 'error',
+      })
+    }
+    
   };
 }
 
@@ -145,93 +173,7 @@ const getMessageClass = (isSent) => {
 };
 
 
-let usertoUsers=reactive([
-  {remarks:'1',userTarget:'2',userMessages:[
-    {message:'您的选择错误啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊'},{message:'11111',isSent:true},{message:'11111',isSent:true},{message:'11111'},{message:'11111'},
-    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
-    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
-    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
-    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
-    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
-    {message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},{message:'11111'},
-    {message:'11111'},{message:'11111'},{message:'11111'},{message:'您的选择错误啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊',isSent:true},{message:'您的选择错误啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊'},
-  ]},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-  {remarks:'1',userTarget:'2'},
-])
+var usertoUsers=reactive([{}])
 
 const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
@@ -243,18 +185,20 @@ function goindex(val){
 }
 function gobottom(){//抵达最底部
   nextTick(() => {  
-    console.log(innerRef.value!.clientHeight)
-    scrollbarRef.value!.setScrollTop(2000)
+    scrollbarRef.value!.setScrollTop(20000)
   })
 }
 function getusers(){
   console.log('发送请求')
    service.get('http://localhost:8080/usertoUser/fid')
    .then(res=>{
-    console.log(res.data)
-    usertoUsers=res.data
     console.log(usertoUsers)
-    index.value=0
+    console.log(res.data)
+    usertoUsers.pop()
+    res.data.forEach(element => {
+      usertoUsers.push(element)
+    });
+    gobottom()
    }).catch(err=>{
       console.error(err)
       let data=err.response.data
@@ -270,10 +214,10 @@ function getusers(){
 }
 
 onMounted(() => {
-  // createMessageWs()
-  // createNewWs()
-  // createRevocationWs()
-  // getusers()
+  createMessageWs()
+  createNewWs()
+  createRevocationWs()
+  getusers()
   goindex(0)
 })
 </script>
@@ -331,6 +275,7 @@ onMounted(() => {
   height:596px;
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;
+  background-color:#545454;
 }
 
 .Message{

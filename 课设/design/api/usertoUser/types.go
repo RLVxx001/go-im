@@ -34,7 +34,7 @@ type UserRequest struct {
 	Remarks1     string        `json:"remarks1"`   //备注1
 	IsDeleted    bool          `json:"isDeleted"`  //是否被删除
 	Shielded     bool          `json:"shielded"`   //是否被拉黑
-	Massage      string        `json:"massage"`    //消息
+	Message      string        `json:"message"`    //消息
 	UserMessages []UserMessage `json:"userMessages"`
 }
 
@@ -43,12 +43,13 @@ type UserMessage struct {
 	UsertoUserId uint      `json:"usertoUserId"` //所属用户-用户id
 	Key          uint      `json:"key"`          //消息标识
 	User         uint      `json:"user"`         //消息消费者id
-	UserOwner    uint      //消息发送者id
+	UserOwner    uint      `json:"userOwner"`    //消息发送者id
 	CreatedAt    time.Time `json:"createdAt"`
 }
 
 // 创建用户响应
 type UserResponse struct {
+	ID           uint               `json:"id"`         //频道id
 	UserOwner    uint               `json:"userOwner"`  //所属用户
 	UserTarget   uint               `json:"userTarget"` //接受用户id
 	Remarks      string             `json:"remarks"`    //备注
@@ -61,6 +62,7 @@ type UserResponse struct {
 // 类型转化
 func ToUserResponse(u *usertoUser.UsertoUser) UserResponse {
 	return UserResponse{
+		ID:           u.ID,
 		UserOwner:    u.UserOwner,
 		UserTarget:   u.UserTarget,
 		Remarks:      u.Remarks,
@@ -90,6 +92,7 @@ func ToUserMessage(us []usertoUser.UserMessage) []UserMessage {
 			UsertoUserId: j.UsertoUserId,
 			Key:          j.Key,
 			CreatedAt:    j.CreatedAt,
+			UserOwner:    j.UserOwner,
 		}
 
 	}

@@ -127,4 +127,5 @@ func (s *Server) SendMessage(id, userid uint, message string) error {
 	if groupUser.IsGag {
 		return ErrGag
 	}
+	return nil
 }

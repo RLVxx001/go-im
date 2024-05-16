@@ -56,9 +56,9 @@ func (r *MessageRepository) Fid(utouid uint) []UserMessage {
 }
 
 // 查询消息
-func (r *MessageRepository) FidKey(utouid, key uint) (UserMessage, error) {
+func (r *MessageRepository) FidKey(userid, utouid, key uint) (UserMessage, error) {
 	var us UserMessage
-	err := r.db.Where("UsertoUserId=?", utouid).Where("`Key`=?", key).First(&us).Error
+	err := r.db.Where("UsertoUserId=?", utouid).Where("`Key`=?", key).Where("UserOwner=?", userid).First(&us).Error
 	if err != nil {
 		return UserMessage{}, err
 	}
