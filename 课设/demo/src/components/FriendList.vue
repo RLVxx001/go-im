@@ -11,16 +11,16 @@
           </p>
         </el-scrollbar>
       </div>
-      <div style="border:1px;heihght:600px;width:1px;float:left"></div>
+      <div style="border:1px;height:600px;width:1px;float:left"></div>
       <div>
         <div class="Message" >
           {{ index }}
           <div class="Top" style="width:607" v-if="index!=-1">
-            <el-scrollbar style="width:607px;height:400px"  ref="scrollbarRef" always>
+            <el-scrollbar style="width:607px;height:400px" ref="scrollbarRef" always>
               <div ref="innerRef">
                 <p v-for="(message,i) in usertoUsers[index].userMessages" 
                 :key="i" 
-                 :class="getMessageClass(message.isSent)" @scroll="scroll">
+                 :class="getMessageClass(message.isSent)">
                   <div v-if="message.isSent" style="display: flex;">
                       <div style="width:700px;height:30px"></div>
                     <div class="bubble" style="background-color:rgb(222, 221, 221)">
@@ -37,10 +37,8 @@
                     <div class="bubble" style="background-color:rgb(222, 221, 221);margin-left:10px">
                       <div class="message" v-html="message.message"></div>
                     </div>
-                    
                       <div style="width:400px;height:30px"></div>
                   </div>
-                <br>
                 </p>
               </div>
               
@@ -245,7 +243,8 @@ function goindex(val){
 }
 function gobottom(){//抵达最底部
   nextTick(() => {  
-    scrollbarRef.value!.setScrollTop(innerRef.value!.clientHeight - 350)
+    console.log(innerRef.value!.clientHeight)
+    scrollbarRef.value!.setScrollTop(2000)
   })
 }
 function getusers(){
