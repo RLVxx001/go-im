@@ -1,19 +1,19 @@
 package group
 
-type Server struct {
-	r                 *Repository
-	messageRepository *MessageRepository
-	userRepository    *UserRepository
+type Service struct {
+	r                 Repository
+	messageRepository MessageRepository
+	userRepository    UserRepository
 }
 
-func NewServer(r *Repository,
-	messageRepository *MessageRepository,
-	userRepository *UserRepository) *Server {
+func NewService(r Repository,
+	messageRepository MessageRepository,
+	userRepository UserRepository) *Service {
 
 	r.Migration()
 	messageRepository.Migration()
 	userRepository.Migration()
-	return &Server{
+	return &Service{
 		r:                 r,
 		messageRepository: messageRepository,
 		userRepository:    userRepository,
@@ -21,9 +21,9 @@ func NewServer(r *Repository,
 }
 
 // 创建群
-func (s *Server) CreateGroup(group *Group) error {
+func (s *Service) CreateGroup(group *Group) error {
 	//先查询是否存在该群号
-	if _, err := s.r.GetByGroupId(group.GroupId); err != nil {
+	if _, err := s.r.GetByGroupId(group.GroupId); err == nil {
 		return ErrGroupId
 	}
 	group.ID = 0
@@ -34,7 +34,7 @@ func (s *Server) CreateGroup(group *Group) error {
 }
 
 // 更改群信息
-func (s *Server) UpdateGroup(group *Group, userid uint) error {
+func (s *Service) UpdateGroup(group *Group, userid uint) error {
 	//先查群该用户在这个群的权限
 	groupUser, err := s.userRepository.GetGroupUser(group.ID, userid)
 	if err != nil || groupUser.IsAdmin == 0 {
@@ -47,7 +47,7 @@ func (s *Server) UpdateGroup(group *Group, userid uint) error {
 }
 
 // 删除群
-func (s *Server) DeleteGroup(id, userid uint) error {
+func (s *Service) DeleteGroup(id, userid uint) error {
 	//先查群该用户在这个群的权限
 	groupUser, err := s.userRepository.GetGroupUser(id, userid)
 	if err != nil || groupUser.IsAdmin != 2 {
@@ -69,13 +69,23 @@ func (s *Server) DeleteGroup(id, userid uint) error {
 }
 
 // 更改群用户信息包括设置管理员
-func (s *Server) UpdateGroupUser(groupUser *GroupUser, userid uint) error {
+func (s *Service) UpdateGroupUser(groupUser *GroupUser, userid uint) error {
 	//先查群目标用户在这个群的权限
 	groupUser1, err1 := s.userRepository.GetGroupUser(groupUser.GroupId, groupUser.UserId)
 	if err1 != nil {
 		return ErrNotGroupUser
 	}
-	//再查群该用户在这个群的权限
+
+	//如果是修改本人的权限
+	if groupUser.UserId == userid {
+		groupUser.IsAdmin = groupUser1.IsAdmin //除了权限和禁言不能改以外
+		groupUser.IsGag = groupUser1.IsGag
+		if s.userRepository.Update(groupUser) != nil {
+			return ErrUpdate
+		}
+		return nil
+	}
+	//再查该群用户在这个群的权限
 	groupUser2, err2 := s.userRepository.GetGroupUser(groupUser.GroupId, userid)
 	if err2 != nil || (groupUser1.IsAdmin >= groupUser2.IsAdmin || groupUser.IsAdmin >= groupUser2.IsAdmin) { //如果用户不是群中用户或者权限比目标用户低
 		return ErrNotUpdate
@@ -88,44 +98,136 @@ func (s *Server) UpdateGroupUser(groupUser *GroupUser, userid uint) error {
 }
 
 // 删除群用户
-func (s *Server) DeleteGroupUser(groupUser *GroupUser, userid uint) error {
+func (s *Service) DeleteGroupUser(groupUser *GroupUser, userid uint) error {
 	//先查群目标用户在这个群的权限
 	groupUser1, err1 := s.userRepository.GetGroupUser(groupUser.GroupId, groupUser.UserId)
 	if err1 != nil {
 		return ErrNotGroupUser
+	}
+	//如果是自己想要退群
+	if groupUser.UserId == userid {
+		if s.userRepository.Delete(groupUser.GroupId, groupUser.UserId) != nil {
+			return ErrNotDelete
+		}
+		return nil
 	}
 	//再查群该用户在这个群的权限
 	groupUser2, err2 := s.userRepository.GetGroupUser(groupUser.GroupId, userid)
 	if err2 != nil || groupUser1.IsAdmin >= groupUser2.IsAdmin { //如果用户不是群中用户或者权限比目标用户低
 		return ErrNotUpdate
 	}
-	if s.userRepository.Delete(groupUser.ID, groupUser.UserId) != nil {
+	if s.userRepository.Delete(groupUser.GroupId, groupUser.UserId) != nil {
 		return ErrNotDelete
 	}
 	return nil
 }
 
 // 新增群用户
-func (s *Server) CreateGroupUser(id, userid uint) error {
+func (s *Service) CreateGroupUser(groupId, id, userid uint) error {
 	//查询该用户是否已经存在群中
-	if _, err := s.userRepository.GetGroupUser(id, userid); err == nil {
+	if _, err := s.userRepository.GetGroupUser(groupId, id); err == nil {
 		return ErrNotCreateUser
 	}
-	if s.userRepository.Create(NewGroupUser(id, userid)) != nil {
+	user, err := s.userRepository.GetGroupUser(groupId, userid)
+	if err != nil || user.IsAdmin == 0 {
+		return ErrNotUpdate
+	}
+	if s.userRepository.Create(NewGroupUser(groupId, id)) != nil {
 		return ErrCreate
 	}
 	return nil
 }
 
 // 发送信息
-func (s *Server) SendMessage(id, userid uint, message string) error {
+func (s *Service) SendMessage(id, userid uint, message string) ([]GroupMessage, error) {
 	//查询该用户是否已经存在群中
 	groupUser, err := s.userRepository.GetGroupUser(id, userid)
 	if err != nil {
-		return ErrNotGroupUser
+		return nil, ErrNotGroupUser
 	}
 	if groupUser.IsGag {
-		return ErrGag
+		return nil, ErrGag
+	}
+	users, err := s.userRepository.GetGroupUsers(id)
+	if err != nil {
+		return nil, ErrNotSend
+	}
+	var messages []GroupMessage
+	groupMessage := NewGroupMessage(userid, userid, id, message)
+	if s.messageRepository.Create(groupMessage) != nil {
+		return nil, ErrNotSend
+	}
+	groupMessage.MessageKey = groupMessage.ID
+	if s.messageRepository.Update(groupMessage) != nil {
+		return nil, ErrNotSend
+	}
+	messages = append(messages, *groupMessage)
+	for _, j := range users {
+		if j.UserId != userid {
+			k := NewGroupMessage(j.UserId, userid, id, message)
+			k.MessageKey = groupMessage.MessageKey
+			if s.messageRepository.Create(k) == nil {
+				messages = append(messages, *k)
+			}
+		}
+	}
+	return messages, nil
+}
+
+// 撤回群内消息
+func (s *Service) RevocationMessage(messageId, userid uint) ([]GroupMessage, error) {
+	//先根据给的id查询
+	groupMessage, err := s.messageRepository.FidId(messageId)
+	if err != nil {
+		return nil, ErrRevocation
+	}
+	//在查询撤回人的身份
+	user1, err := s.userRepository.GetGroupUser(groupMessage.GroupId, userid)
+	if err != nil {
+		return nil, ErrRevocation
+	}
+	//查询发送人身份
+	user2, err := s.userRepository.GetGroupUser(groupMessage.GroupId, groupMessage.MessageSender)
+	if err != nil {
+		return nil, ErrRevocation
+	}
+	//如果消息不是自己发的 并且撤回人的权限并不比发送人权限大
+	if groupMessage.MessageSender != userid && user2.IsAdmin >= user1.IsAdmin {
+		return nil, ErrNotUpdate
+	}
+	//收集所有群内用户
+	groupMessages, err := s.messageRepository.FidKey(groupMessage.GroupId, groupMessage.MessageKey)
+	if err != nil {
+		return nil, ErrRevocation
+	}
+	if s.messageRepository.Revocation(groupMessage.MessageKey) != nil {
+		return nil, ErrRevocation
+	}
+	return groupMessages, nil
+}
+
+// 删除个人群信息
+func (s *Service) DeleteMessage(messageId, userid uint) error {
+	//先根据给的id查询
+	groupMessage, err := s.messageRepository.FidId(messageId)
+	if err != nil || groupMessage.MessageOwner != userid {
+		return ErrNotDelete
+	}
+	if s.messageRepository.Delete(groupMessage.GroupId, groupMessage.MessageKey, userid) != nil {
+		return ErrNotDelete
+	}
+	return nil
+}
+
+// 删除个人全部信息
+func (s *Service) DeletesMessage(groupId, userid uint) error {
+	//先查找该用户是否在群中
+	_, err := s.userRepository.GetGroupUser(groupId, userid)
+	if err != nil {
+		return ErrNotGroupUser
+	}
+	if s.messageRepository.Deletes(groupId, userid) != nil {
+		return ErrNotDelete
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package usertoUser
 
 import (
 	"log"
+	"sort"
 )
 
 // 用户消息结构体service结构体
@@ -174,6 +175,19 @@ func (c *Service) Fids(userid uint) ([]UsertoUser, error) {
 	}
 	for i, j := range users {
 		users[i].UserMessages = c.messageRepository.Fid(j.ID)
+		if len(users[i].UserMessages) != 0 {
+			if users[i].UpdatedAt.Before(users[i].UserMessages[len(users[i].UserMessages)-1].UpdatedAt) {
+				users[i].UpdatedAt = users[i].UserMessages[len(users[i].UserMessages)-1].UpdatedAt
+			}
+
+		}
 	}
+	sort.Sort(us(users))
 	return users, nil
 }
+
+type us []UsertoUser
+
+func (a us) Len() int           { return len(a) }
+func (a us) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a us) Less(i, j int) bool { return a[i].UpdatedAt.Before(a[j].UpdatedAt) }

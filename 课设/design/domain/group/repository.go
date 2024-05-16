@@ -31,7 +31,7 @@ func (r *Repository) Create(u *Group) error {
 
 // 更改操作
 func (r *Repository) Update(u *Group) error {
-	return r.db.Omit("CreatedAt").Save(u).Error
+	return r.db.Model(u).Updates(u).Error
 }
 
 // 根据id查找
@@ -66,5 +66,5 @@ func (r *Repository) Fids(u uint) ([]Group, error) {
 
 // 删除群
 func (r *Repository) Delete(id uint) error {
-	return r.db.Where("ID=?", id).Delete(&Group{}).Error
+	return r.db.Unscoped().Where("ID=?", id).Delete(&Group{}).Error
 }

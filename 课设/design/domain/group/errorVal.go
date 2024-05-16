@@ -14,4 +14,5 @@ var (
 	ErrNotUpdate     = errors.New("对不起您的权限不够")
 	ErrUpdate        = errors.New("修改异常")
 	ErrGag           = errors.New("已被禁言")
+	ErrRevocation    = errors.New("撤回异常")
 )

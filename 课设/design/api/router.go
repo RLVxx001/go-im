@@ -1,10 +1,12 @@
 package api
 
 import (
+	groupUserApi "design/api/group"
 	userApi "design/api/user"
 	userApplicationApi "design/api/userApplication"
 	usertoUserApi "design/api/usertoUser"
 	"design/config"
+	"design/domain/group"
 	"design/domain/user"
 	"design/domain/userApplication"
 	"design/domain/usertoUser"
@@ -19,7 +21,10 @@ type Databases struct {
 	userRepository              *user.Repository
 	usertouserRepository        *usertoUser.Repository
 	usertouserMessageRepository *usertoUser.MessageRepository
-	userApplication             *userApplication.Repository
+	userApplicationRepository   *userApplication.Repository
+	groupRepository             *group.Repository
+	groupUserRepository         *group.UserRepository
+	groupMessageRepository      *group.MessageRepository
 }
 
 // 配置文件全局对象
@@ -43,7 +48,10 @@ func CreateDBs() *Databases {
 		userRepository:              user.NewUserRepository(db),
 		usertouserRepository:        usertoUser.NewRepository(db),
 		usertouserMessageRepository: usertoUser.NewMessageRepository(db),
-		userApplication:             userApplication.NewRepository(db),
+		userApplicationRepository:   userApplication.NewRepository(db),
+		groupRepository:             group.NewRepository(db),
+		groupUserRepository:         group.NewUserRepository(db),
+		groupMessageRepository:      group.NewMessageRepository(db),
 	}
 }
 
@@ -54,6 +62,7 @@ func RegisterHandlers(r *gin.Engine) {
 	RegisterUserHandlers(r, dbs)
 	RegisterUsertoUserHandlers(r, dbs)
 	RegisterUserApplicationHandlers(r, dbs)
+	RegisterGroupHandlers(r, dbs)
 }
 
 // 注册用户控制器
@@ -85,10 +94,28 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 
 // 注册用户-用户申请表
 func RegisterUserApplicationHandlers(r *gin.Engine, dbs Databases) {
-	service := userApplication.NewService(*dbs.userApplication)
+	service := userApplication.NewService(*dbs.userApplicationRepository)
 	userService := user.NewService(*dbs.userRepository)
 	controller := userApplicationApi.NewController(userService, service)
 	Group := r.Group("/userApplication")
 	Group.POST("", controller.Create)
 	Group.GET("/fid", controller.Fids)
+}
+
+// 注册群控制器
+func RegisterGroupHandlers(r *gin.Engine, dbs Databases) {
+	service := group.NewService(*dbs.groupRepository, *dbs.groupMessageRepository, *dbs.groupUserRepository)
+	userService := user.NewService(*dbs.userRepository)
+	controller := groupUserApi.NewController(service, userService)
+	Group := r.Group("/group")
+	Group.POST("/createGroup", controller.CreateGroup)
+	Group.POST("/updateGroup", controller.UpdateGroup)
+	Group.POST("/deleteGroup", controller.DeleteGroup)
+	Group.POST("/createGroupUser", controller.CreateGroupUser)
+	Group.POST("/updateGroupUser", controller.UpdateGroupUser)
+	Group.POST("/deleteGroupUser", controller.DeleteGroupUser)
+	Group.POST("/sendMessage", controller.SendMessage)
+	Group.POST("/revocationMessage", controller.RevocationMessage)
+	Group.POST("/deleteMessage", controller.DeleteMessage)
+	Group.POST("/deletesMessage", controller.DeletesMessage)
 }
