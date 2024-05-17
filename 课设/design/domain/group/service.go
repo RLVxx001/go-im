@@ -178,7 +178,7 @@ func (s *Service) SendMessage(id, userid uint, message string) ([]GroupMessage, 
 func (s *Service) RevocationMessage(messageId, userid uint) ([]GroupMessage, error) {
 	//先根据给的id查询
 	groupMessage, err := s.messageRepository.FidId(messageId)
-	if err != nil {
+	if err != nil || groupMessage.MessageOwner != userid {
 		return nil, ErrRevocation
 	}
 	//在查询撤回人的身份

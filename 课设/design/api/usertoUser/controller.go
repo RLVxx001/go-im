@@ -53,6 +53,8 @@ func (c *Controller) Create(g *gin.Context) {
 			}
 			userid = uint(pagination.ParseInt(id, -1))
 			break
+		} else {
+			return
 		}
 	}
 	fmt.Println("验证成功：userid:", userid)
@@ -142,6 +144,8 @@ func (c *Controller) Send(g *gin.Context) {
 			}
 			userid = uint(pagination.ParseInt(id, -1))
 			break
+		} else {
+			return
 		}
 	}
 
@@ -246,6 +250,8 @@ func (c *Controller) Revocation(g *gin.Context) {
 			}
 			userid = uint(pagination.ParseInt(id, -1))
 			break
+		} else {
+			return
 		}
 	}
 

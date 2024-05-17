@@ -2,7 +2,27 @@ package group
 
 import (
 	"design/domain/group"
+	"github.com/gorilla/websocket"
+	"net/http"
 )
+
+var clients = make(map[uint][]*websocket.Conn) //消息专用
+var broadcast = make(chan GroupMessage)
+
+var clientNews = make(map[uint][]*websocket.Conn) //创建
+var broadcastNew = make(chan GroupUser)           //
+
+var clientRes = make(map[uint][]*websocket.Conn) //撤回
+var broadcastRe = make(chan GroupMessage)
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		// 允许跨域请求（仅作为示例，生产环境请考虑安全性）
+		return true
+	},
+} // 使用默认的WebSocket升级选项
 
 type GroupRequest struct {
 	Id            uint           `json:"id"`          //群id
@@ -61,5 +81,17 @@ func ToResponseGroupUser(req group.GroupUser) GroupUser {
 		IsAdmin: req.IsAdmin,
 		IsGag:   req.IsGag,
 		Text:    req.Text,
+	}
+}
+
+func ToResponseGroupMessage(req group.GroupMessage) GroupMessage {
+	return GroupMessage{
+		Id:            req.ID,
+		MessageOwner:  req.MessageOwner,
+		MessageSender: req.MessageSender,
+		GroupId:       req.GroupId,
+		Message:       req.Message,
+		MessageKey:    req.MessageKey,
+		IsRead:        req.IsRead,
 	}
 }

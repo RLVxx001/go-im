@@ -2,6 +2,7 @@ package main
 
 import (
 	"design/api"
+	"design/api/group"
 	"design/api/usertoUser"
 	"design/utils/jwt"
 	"github.com/gin-gonic/gin"
@@ -51,6 +52,9 @@ func main() {
 		go usertoUser.SocketSend()
 		go usertoUser.SocketCreate()
 		go usertoUser.SocketRevocation()
+		go group.SocketSend()
+		go group.SocketCreate()
+		go group.SocketRevocation()
 	}
 	g.Run(":8080")
 }
