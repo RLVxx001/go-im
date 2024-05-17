@@ -1,5 +1,7 @@
 package group
 
+import "sort"
+
 type Service struct {
 	r                 Repository
 	messageRepository MessageRepository
@@ -32,6 +34,40 @@ func (s *Service) CreateGroup(group *Group) error {
 	}
 	return nil
 }
+
+// 通过id查找自己的所有群
+func (s *Service) FidGroups(userid uint) ([]Group, error) {
+	users, err := s.userRepository.GetByUserIdGroupUsers(userid)
+	if err != nil {
+		return nil, ErrFid
+	}
+	var groups []Group
+	for _, i := range users {
+		group, err := s.r.GetById(i.GroupId)
+		if err == nil {
+			groupUsers, err := s.userRepository.GetGroupUsers(group.ID)
+			if err == nil {
+				group.GroupUsers = groupUsers
+			}
+			group.GroupMessages = s.messageRepository.Fid(group.ID, userid)
+
+			if len(group.GroupMessages) != 0 {
+				if group.UpdatedAt.Before(group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt) {
+					group.UpdatedAt = group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt
+				}
+			}
+		}
+		groups = append(groups, *group)
+	}
+	sort.Sort(gr(groups))
+	return groups, nil
+}
+
+type gr []Group
+
+func (a gr) Len() int           { return len(a) }
+func (a gr) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a gr) Less(i, j int) bool { return a[i].UpdatedAt.After(a[j].UpdatedAt) }
 
 // 更改群信息
 func (s *Service) UpdateGroup(group *Group, userid uint) error {

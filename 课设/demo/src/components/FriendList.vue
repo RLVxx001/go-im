@@ -17,7 +17,7 @@
           {{ index }}233
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1">
-            <el-scrollbar style="width:607px;height:400px" ref="scrollbarRef" always>
+            <el-scrollbar style="width:607px;height:345px;margin-top:-10px" ref="scrollbarRef" always>
               <div ref="innerRef">
                 <p v-for="(message,i) in usertoUsers[index].userMessages" 
                 :key="i" 

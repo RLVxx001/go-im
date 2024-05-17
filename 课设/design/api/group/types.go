@@ -4,6 +4,7 @@ import (
 	"design/domain/group"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"time"
 )
 
 var clients = make(map[uint][]*websocket.Conn) //消息专用
@@ -25,23 +26,25 @@ var upgrader = websocket.Upgrader{
 } // 使用默认的WebSocket升级选项
 
 type GroupRequest struct {
-	Id            uint           `json:"id"`          //群id
-	GroupId       string         `json:"groupId"`     //群号
-	GroupName     string         `json:"groupName"`   //群名称
-	GroupInform   string         `json:"groupInform"` //群公告
-	GroupUsers    []GroupUser    `json:"groupUsers"`  //群用户
-	GroupMessages []GroupMessage `json:"groupMessages"`
+	Id            uint           `json:"id"`            //群id
+	GroupId       string         `json:"groupId"`       //群号
+	GroupName     string         `json:"groupName"`     //群名称
+	GroupInform   string         `json:"groupInform"`   //群公告
+	GroupUsers    []GroupUser    `json:"groupUsers"`    //群用户
+	GroupMessages []GroupMessage `json:"groupMessages"` //群消息
+	UpdatedAt     time.Time      `json:"updatedAt"`     //更新事件
 }
 
 // GroupMessage 群消息表
 type GroupMessage struct {
-	Id            uint   `json:"id"`            //群消息id
-	MessageOwner  uint   `json:"messageOwner"`  //消息所属用户
-	MessageSender uint   `json:"messageSender"` //消息发送用户
-	GroupId       uint   `json:"groupId"`       //消息接收群
-	Message       string `json:"message"`       //消息
-	MessageKey    uint   `json:"messageKey"`    //消息key
-	IsRead        bool   `json:"isRead"`        //是否已读
+	Id            uint      `json:"id"`            //群消息id
+	MessageOwner  uint      `json:"messageOwner"`  //消息所属用户
+	MessageSender uint      `json:"messageSender"` //消息发送用户
+	GroupId       uint      `json:"groupId"`       //消息接收群
+	Message       string    `json:"message"`       //消息
+	MessageKey    uint      `json:"messageKey"`    //消息key
+	IsRead        bool      `json:"isRead"`        //是否已读
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 // GroupUser 群用户表
@@ -61,6 +64,17 @@ func ToGroup(req GroupRequest) group.Group {
 		GroupInform: req.GroupInform,
 	}
 }
+func ToGroupRequest(req group.Group) GroupRequest {
+	return GroupRequest{
+		Id:            req.ID,
+		GroupId:       req.GroupId,
+		GroupName:     req.GroupName,
+		GroupInform:   req.GroupInform,
+		GroupUsers:    ToResponseGroupUsers(req.GroupUsers),
+		GroupMessages: ToResponseGroupMessages(req.GroupMessages),
+		UpdatedAt:     req.UpdatedAt,
+	}
+}
 
 func ToGroupUser(req GroupUser) group.GroupUser {
 	return group.GroupUser{
@@ -71,6 +85,14 @@ func ToGroupUser(req GroupUser) group.GroupUser {
 		IsGag:   req.IsGag,
 		Text:    req.Text,
 	}
+}
+
+func ToResponseGroupUsers(req []group.GroupUser) []GroupUser {
+	var gs []GroupUser
+	for _, i := range req {
+		gs = append(gs, ToResponseGroupUser(i))
+	}
+	return gs
 }
 
 func ToResponseGroupUser(req group.GroupUser) GroupUser {
@@ -84,6 +106,13 @@ func ToResponseGroupUser(req group.GroupUser) GroupUser {
 	}
 }
 
+func ToResponseGroupMessages(req []group.GroupMessage) []GroupMessage {
+	var gs []GroupMessage
+	for _, i := range req {
+		gs = append(gs, ToResponseGroupMessage(i))
+	}
+	return gs
+}
 func ToResponseGroupMessage(req group.GroupMessage) GroupMessage {
 	return GroupMessage{
 		Id:            req.ID,
@@ -93,5 +122,6 @@ func ToResponseGroupMessage(req group.GroupMessage) GroupMessage {
 		Message:       req.Message,
 		MessageKey:    req.MessageKey,
 		IsRead:        req.IsRead,
+		UpdatedAt:     req.UpdatedAt,
 	}
 }

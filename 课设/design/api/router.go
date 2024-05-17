@@ -108,6 +108,7 @@ func RegisterGroupHandlers(r *gin.Engine, dbs Databases) {
 	userService := user.NewService(*dbs.userRepository)
 	controller := groupUserApi.NewController(service, userService)
 	Group := r.Group("/group")
+	Group.GET("/fidGroup", controller.FidGroup)
 	Group.GET("/createGroup", controller.CreateGroup)
 	Group.POST("/updateGroup", controller.UpdateGroup)
 	Group.POST("/deleteGroup", controller.DeleteGroup)

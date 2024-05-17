@@ -179,7 +179,6 @@ func (c *Service) Fids(userid uint) ([]UsertoUser, error) {
 			if users[i].UpdatedAt.Before(users[i].UserMessages[len(users[i].UserMessages)-1].UpdatedAt) {
 				users[i].UpdatedAt = users[i].UserMessages[len(users[i].UserMessages)-1].UpdatedAt
 			}
-
 		}
 	}
 	sort.Sort(us(users))
@@ -190,4 +189,4 @@ type us []UsertoUser
 
 func (a us) Len() int           { return len(a) }
 func (a us) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a us) Less(i, j int) bool { return a[i].UpdatedAt.Before(a[j].UpdatedAt) }
+func (a us) Less(i, j int) bool { return a[i].UpdatedAt.After(a[j].UpdatedAt) }

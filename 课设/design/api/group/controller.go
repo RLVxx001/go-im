@@ -25,6 +25,25 @@ func NewController(s *group.Service, userService *user.Service) *Controller {
 	}
 }
 
+// 个人查找群聊
+func (c *Controller) FidGroup(g *gin.Context) {
+	userId := api_helper.GetUserId(g)
+	if _, err := c.userService.GetById(userId); err != nil {
+		api_helper.HandleErrorToken(g, err)
+		return
+	}
+	groups, err := c.s.FidGroups(userId)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	var gs []GroupRequest
+	for _, i := range groups {
+		gs = append(gs, ToGroupRequest(i))
+	}
+	g.JSON(http.StatusOK, gs)
+}
+
 // 创建群聊
 func (c *Controller) CreateGroup(g *gin.Context) {
 	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)

@@ -34,6 +34,16 @@ func (r *UserRepository) Update(groupUser *GroupUser) error {
 	return r.db.Save(groupUser).Error
 }
 
+// 根据用户id查找群
+func (r *UserRepository) GetByUserIdGroupUsers(UserId uint) ([]GroupUser, error) {
+	var groupUser []GroupUser
+	err := r.db.Where("UserId=?", UserId).Find(&groupUser).Error
+	if err != nil {
+		return nil, err
+	}
+	return groupUser, nil
+}
+
 // 查找群用户
 func (r *UserRepository) GetGroupUser(id, userid uint) (*GroupUser, error) {
 	var groupUser GroupUser

@@ -15,4 +15,5 @@ var (
 	ErrUpdate        = errors.New("修改异常")
 	ErrGag           = errors.New("已被禁言")
 	ErrRevocation    = errors.New("撤回异常")
+	ErrFid           = errors.New("查找群聊异常")
 )

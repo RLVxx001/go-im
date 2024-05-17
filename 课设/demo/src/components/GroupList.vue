@@ -1,13 +1,13 @@
-<!-- <template>
+<template>
   <div style="color:rgba(220, 228, 253, 0.942);">
     <div style="display:flex">
       <div class="List">
         <div style="width:10px;height:50px"></div>
         <el-scrollbar style="height:550px;width:200px">
-          <p v-for="(item,index) in usertoUsers" 
+          <p v-for="(item,index) in groups" 
           :key="index" style="margin-top:-10px;line-height:60px;width:200px;height:60px;color:rgb(104, 103, 103)" class="friend">
             <img src="#" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
-            {{ item.remarks }}{{ item.userTarget }}
+            {{ item.groupName }}
           </p>
         </el-scrollbar>
       </div>
@@ -17,12 +17,12 @@
           {{ index }}
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1">
-            <el-scrollbar style="width:607px;height:400px" ref="scrollbarRef" always>
+            <el-scrollbar style="width:607px;height:345px;margin-top:-10px" ref="scrollbarRef" always>
               <div ref="innerRef">
-                <p v-for="(message,i) in usertoUsers[index].userMessages" 
+                <p v-for="(message,i) in groups[index].groupMessages" 
                 :key="i" 
-                 :class="getMessageClass(message.userOwner==usertoUsers[index].userOwner)">
-                  <div v-if="message.userOwner==usertoUsers[index].userOwner" style="display: flex;">
+                 :class="getMessageClass(message.messageOwner==message.messageSender)">
+                  <div v-if="message.messageOwner==message.messageSender" style="display: flex;">
                       <div style="width:300px;height:1px"></div>
                     <div class="bubble" style="background-color:rgb(222, 221, 221);margin-right:10px;">
                       <div class="message" v-html="message.message" style=""></div>
@@ -74,7 +74,7 @@ function send(){
   if(messageWs.value.readyState == WebSocket.OPEN){
     messageWs.value.send(
     JSON.stringify({
-            userTarget: usertoUsers[index.value].userTarget-0,
+            groupId: groups[index.value].id-0,
             message:message.value
         }
     ));
@@ -84,7 +84,7 @@ function send(){
 
 function createMessageWs(){
   console.log("开启socket链接-----"+'ws://')
-  messageWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/send');  
+  messageWs.value = new WebSocket('ws://' + 'localhost:8080' + '/group/sendMessage');  
   messageWs.value.onopen = (event) => {  
     // 当 WebSocket 连接打开时，发送认证消息  
     authenticate(messageWs);  
@@ -94,21 +94,20 @@ function createMessageWs(){
     const msg = JSON.parse(event.data);
     if(msg.type==null||msg.type==""){//接受成功  
       console.log(msg);  
-      for(let i=0;i<usertoUsers.length;i++){
-        if(msg.usertoUserId==usertoUsers[i].id){
+      for(let i=0;i<groups.length;i++){
+        if(msg.groupId==groups[i].id){
           let IsNo=true
-          usertoUsers[i].userMessages.forEach(element => {
-            if(element.key==msg.key){
+          groups[i].groupMessages.forEach(element => {
+            if(element.messageKey==msg.messageKey){
               IsNo=true
             }
           });
           if(IsNo){
-            usertoUsers[i].userMessages.push(msg)
+            groups[i].groupMessages.push(msg)
           }
           break
         }
       }
-
       gobottom()
     }
     else{//失败
@@ -124,7 +123,7 @@ function createMessageWs(){
 
 function createNewWs(){
   console.log("开启socket链接-----"+'ws://')
-  newWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser');  
+  newWs.value = new WebSocket('ws://' + 'localhost:8080' + '/group/createGroup');  
   newWs.value.onopen = (event) => {  
     // 当 WebSocket 连接打开时，发送认证消息  
     authenticate(newWs);  
@@ -140,7 +139,7 @@ function createNewWs(){
 
 function createRevocationWs(){
   console.log("开启socket链接-----"+'ws://')
-  RevocationWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
+  RevocationWs.value = new WebSocket('ws://' + 'localhost:8080' + '/group/revocationMessage');  
   RevocationWs.value.onopen = (event) => {  
     // 当 WebSocket 连接打开时，发送认证消息  
     authenticate(RevocationWs);  
@@ -174,7 +173,7 @@ const getMessageClass = (isSent) => {
 };
 
 
-var usertoUsers=reactive([{}])
+var groups=reactive([{}])
 
 const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
@@ -189,15 +188,14 @@ function gobottom(){//抵达最底部
     scrollbarRef.value!.setScrollTop(20000)
   })
 }
-function getusers(){
+function getgroups(){
   console.log('发送请求')
-   service.get('http://localhost:8080/usertoUser/fid')
+   service.get('http://localhost:8080/group/fidGroup')
    .then(res=>{
-    console.log(usertoUsers)
     console.log(res.data)
-    usertoUsers.pop()
+    groups.pop()
     res.data.forEach(element => {
-      usertoUsers.push(element)
+      groups.push(element)
     });
     gobottom()
    }).catch(err=>{
@@ -218,7 +216,7 @@ onMounted(() => {
   createMessageWs()
   createNewWs()
   createRevocationWs()
-  getusers()
+  getgroups()
   goindex(0)
 })
 </script>
@@ -331,7 +329,4 @@ onMounted(() => {
   border-bottom-left-radius: 17px;
   font-size: 12px;
 }
-</style> -->
-<template>
-  <div></div>
-</template>
+</style>
