@@ -4,8 +4,10 @@
       <img src="../assets/unkonw.png" alt="" class="logo"/>
       <!-- <div class="to1"></div> -->
       <!-- <div class="search"> -->
-         <input contenteditable class="inputType" placeholder='账号' style="width:320px"/>
-        <button class="button">搜索</button>
+         <input contenteditable class="inputType" placeholder='账号' v-model="account" style="width:320px"/>
+         <router-link to="/finduser" @click="setaccount()">
+          <button class="button"  >搜索</button>
+         </router-link>
        <!-- </div> -->
         <router-link to="/home" style="text-decoration: none;">
             <div class="to1">热门群聊</div>
@@ -52,6 +54,12 @@ const userStore=useUserStore()
 const username = computed(() => userStore.username);  
 const token = computed(() => userStore.token); 
 
+var account = ref();
+
+function setaccount()
+{
+  localStorage.setItem("account",account.value);
+}
 </script>
 <style>
 

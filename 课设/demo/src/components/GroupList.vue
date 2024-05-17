@@ -2,19 +2,22 @@
   <div style="color:rgba(220, 228, 253, 0.942);">
     <div style="display:flex">
       <div class="List">
-        <div style="width:10px;height:50px"></div>
+        <div style="width:10px;height:30px"></div>
         <el-scrollbar style="height:550px;width:200px">
           <p v-for="(item,index) in groups" 
-          :key="index" style="margin-top:-10px;line-height:60px;width:200px;height:60px;color:rgb(104, 103, 103)" class="friend">
+          :key="index" style="margin-top:10px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:12px" class="friend">
             <img src="#" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
-            {{ item.groupName }}
+            {{ item.groupName }}12312312
           </p>
         </el-scrollbar>
       </div>
       <div style="border:1px;height:600px;width:1px;float:left"></div>
       <div>
         <div class="Message" >
-          {{ index }}
+          <div>
+            <div>{{ item.groupName }}</div>
+            <button style="float:right;margin-right:20px;margin-top:-10px;background-color:rgb(105, 105, 105);border:0px;">···</button>
+          </div>
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1">
             <el-scrollbar style="width:607px;height:345px;margin-top:-10px" ref="scrollbarRef" always>
@@ -67,6 +70,11 @@ let messageWs = ref(null);
 let newWs = ref(null); 
 let RevocationWs = ref(null); 
 let message=ref('')
+
+var groupuser = reactive([{
+  "username":"xxx",
+  "img":"#"
+}])
 
 function send(){
   // let list=[]
@@ -274,7 +282,7 @@ onMounted(() => {
   height:596px;
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;
-  background-color:#adacac;
+  background-color:#666464;
 }
 
 .Message{

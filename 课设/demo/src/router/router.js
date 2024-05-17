@@ -10,6 +10,7 @@ import FriendList from "../components/FriendList.vue"
 import Newfriend from "../components/Newfriend.vue"
 import Detail from "../components/Detail.vue"
 import GroupList from "../components/GroupList.vue"
+import Finduser from "../components/Finduser.vue"
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -74,6 +75,10 @@ const router = createRouter({
     {
       path: "/detail",
       component: Detail,
+    },
+    {
+      path: "/finduser",
+      component:Finduser,
     }
   ]
 })
