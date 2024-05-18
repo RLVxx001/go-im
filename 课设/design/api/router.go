@@ -74,6 +74,8 @@ func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
 	userGroup.POST("/login", userController.Login)
 	userGroup.GET("/verifyToken", userController.VerifyToken)
 	userGroup.POST("/upload", userController.Upload)
+	userGroup.POST("/update", userController.Update)
+	userGroup.POST("/fidUser", userController.FidUser)
 }
 
 // 注册用户-用户控制器
@@ -100,6 +102,7 @@ func RegisterUserApplicationHandlers(r *gin.Engine, dbs Databases) {
 	Group := r.Group("/userApplication")
 	Group.POST("", controller.Create)
 	Group.GET("/fid", controller.Fids)
+
 }
 
 // 注册群控制器

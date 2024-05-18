@@ -29,8 +29,8 @@
          <div contenteditable class="inputType" placeholder='请输入文字'></div>
         <div class="button">搜索</div>
        </div> -->
-       {{ username }}
-       <template v-if="!username">
+       <!-- {{ username }}
+       <template v-if="!username"> -->
           <router-link  to="/login" style="text-decoration: none;">
           <div class="to1">
             登录
@@ -41,7 +41,7 @@
             注册
           </div>
         </router-link>
-      </template>
+      <!-- </template> -->
       <!-- <router-view></router-view> -->
    </div>
 </template>

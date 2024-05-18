@@ -1,5 +1,7 @@
 package user
 
+import "design/domain/user"
+
 // 创建用户请求结构体
 type CreateUserRequest struct {
 	Username  string `json:"username"`
@@ -27,4 +29,19 @@ type LoginResponse struct {
 	Email    string `json:"email"`
 	Token    string `json:"token"`
 	Img      string `json:"img"`
+	Signed   string `json:"signed"`   //个性签名
+	Birthday string `json:"birthday"` //出生日期
+}
+
+func ToLoginResponse(currentUser user.User) LoginResponse {
+	return LoginResponse{
+		Username: currentUser.Username,
+		UserId:   currentUser.ID,
+		Token:    currentUser.Token,
+		Account:  currentUser.Account,
+		Email:    currentUser.Email,
+		Img:      currentUser.Img,
+		Signed:   currentUser.Signed,   //个性签名
+		Birthday: currentUser.Birthday, //出生日期
+	}
 }

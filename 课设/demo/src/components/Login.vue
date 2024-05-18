@@ -49,7 +49,6 @@ const userStore=useUserStore()
 const router = useRouter()  
 
 
-
 // 响应式状态  
 const username = ref('');  
 const passwd = ref('');  

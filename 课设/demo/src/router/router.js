@@ -58,37 +58,43 @@ const router = createRouter({
     },
     {
       path: '/advices',
-      component: Home
+      component: Home,
+      meta: { requiresAuth: true }
     },
     {
       path: '/evaluate',
-      component: Home
+      component: Home,
+      meta: { requiresAuth: true }
     },
     {
       path: "/newfriend",
       component: Newfriend,
+      meta: { requiresAuth: true }
     },
     {
       path: "/grouplist",
       component: GroupList,
+      meta: { requiresAuth: true }
     },
     {
       path: "/detail",
       component: Detail,
+      meta: { requiresAuth: true }
     },
     {
       path: "/finduser",
       component:Finduser,
+      meta: { requiresAuth: true }
     }
   ]
 })
 router.beforeEach((to, from) => {
   const token = localStorage.getItem('token')
   if (to.meta.requiresAuth && !token) {
-    // return {
-    //     path:'/login',
-    //     query:{redirect:to.fullPath}
-    // }
+    return {
+        path:'/login',
+        query:{redirect:to.fullPath}
+    }
   }
 })
 export default router

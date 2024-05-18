@@ -12,6 +12,8 @@ type User struct {
 	Email     string `gorm:"type:varchar(100)"` //邮件
 	Token     string `gorm:"type:varchar(500)"` //token
 	Img       string `gorm:"type:varchar(500)"` //头像地址
+	Signed    string //个性签名
+	Birthday  string //出生日期
 	IsDeleted bool   //是否被删除
 	IsAdmin   bool   //是否是管理
 }

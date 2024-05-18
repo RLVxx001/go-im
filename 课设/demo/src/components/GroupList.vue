@@ -7,7 +7,7 @@
           <p v-for="(item,index) in groups" 
           :key="index" style="margin-top:10px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:12px" class="friend">
             <img src="#" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
-            {{ item.groupName }}12312312
+            {{ item?item.groupName:'' }}
           </p>
         </el-scrollbar>
       </div>
@@ -15,7 +15,7 @@
       <div>
         <div class="Message" >
           <div>
-            <div>{{ item.groupName }}</div>
+            <div v-if="index!=-1" style="margin-left:20px;line-height:20px">{{ groups[index].groupName?groups[index].groupName:'' }}</div>
             <button style="float:right;margin-right:20px;margin-top:-10px;background-color:rgb(105, 105, 105);border:0px;">···</button>
           </div>
           <hr>
@@ -105,11 +105,14 @@ function createMessageWs(){
       for(let i=0;i<groups.length;i++){
         if(msg.groupId==groups[i].id){
           let IsNo=true
-          groups[i].groupMessages.forEach(element => {
-            if(element.messageKey==msg.messageKey){
-              IsNo=true
-            }
-          });
+          if(groups[i].groupMessages.length&&groups[i].groupMessages.length!=0){
+            groups[i].groupMessages.forEach(element => {
+              if(element.messageKey==msg.messageKey){
+                IsNo=true
+              }
+            });
+          }
+          
           if(IsNo){
             groups[i].groupMessages.push(msg)
           }
@@ -181,7 +184,7 @@ const getMessageClass = (isSent) => {
 };
 
 
-var groups=reactive([{}])
+var groups=reactive([{groupName:''}])
 
 const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()

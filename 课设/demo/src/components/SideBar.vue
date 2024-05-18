@@ -24,13 +24,23 @@
         <div class="to">验证信息</div>
            </router-link>
         <!-- <span class="slice"></span> -->
-           <div v-if="token==1" class="to">退出登录</div>
+           <div v-if="token" class="to" @click="quit()">退出登录</div>
            <div v-else class="to">用户登录</div>
    </div>
 </template>
 <script setup>
+import { ref, onMounted ,h} from 'vue';  
+import { useRouter } from 'vue-router' 
+import { useUserStore } from '../store/user';
+const userStore=useUserStore()
+const router = useRouter()  
 // var token = localStorage.getItem("token")
-var token = 1;
+var token = ref(localStorage.getItem('token'));
+function quit(){
+  localStorage.removeItem('token')
+  router.push('/login')
+}
+
 </script>
 <style>
 

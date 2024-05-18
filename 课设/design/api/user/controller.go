@@ -72,7 +72,7 @@ func (c *Controller) Login(g *gin.Context) {
 	var req LoginRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
-
+		return
 	}
 
 	currentUser, err := c.userService.CheckUser(req.Text, req.Password)
@@ -104,14 +104,7 @@ func (c *Controller) Login(g *gin.Context) {
 	}
 
 	g.JSON(
-		http.StatusOK, LoginResponse{
-			Username: currentUser.Username,
-			UserId:   currentUser.ID,
-			Token:    currentUser.Token,
-			Account:  currentUser.Account,
-			Email:    currentUser.Email,
-			Img:      currentUser.Img,
-		})
+		http.StatusOK, ToLoginResponse(currentUser))
 }
 
 // 验证token
@@ -121,16 +114,55 @@ func (c *Controller) VerifyToken(g *gin.Context) {
 		api_helper.HandleErrorToken(g, err)
 		return
 	}
-	g.JSON(
-		http.StatusOK, LoginResponse{
-			Username: currentUser.Username,
-			UserId:   currentUser.ID,
-			Token:    currentUser.Token,
-			Account:  currentUser.Account,
-			Email:    currentUser.Email,
-			Img:      currentUser.Img,
-		})
+	g.JSON(http.StatusOK, ToLoginResponse(currentUser))
 
+}
+
+// 查找用户（通过账号）
+func (c *Controller) FidUser(g *gin.Context) {
+	var req LoginRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	_, err := c.userService.GetById(api_helper.GetUserId(g))
+	if err != nil {
+		api_helper.HandleErrorToken(g, err)
+		return
+	}
+	getUser, err := c.userService.GetUser(req.Text)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	g.JSON(http.StatusOK, ToLoginResponse(getUser))
+}
+
+// 更新信息
+func (c *Controller) Update(g *gin.Context) {
+	var req LoginResponse
+	fmt.Printf("%v\n", req)
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	userid := api_helper.GetUserId(g)
+	user1, err := c.userService.GetById(userid)
+	if err != nil {
+		api_helper.HandleErrorToken(g, err)
+		return
+	}
+	User2 := user.User{
+		Account:  req.Account,
+		Signed:   req.Signed,
+		Birthday: req.Birthday,
+	}
+	User2.ID = user1.ID
+	if err := c.userService.UpdateUser(&User2); err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	g.JSON(http.StatusOK, ToLoginResponse(User2))
 }
 
 // 上传头像

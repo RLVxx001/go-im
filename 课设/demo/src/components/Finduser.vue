@@ -2,7 +2,7 @@
   <div style="">
     <div style="color:rgb(207, 234, 244);margin-left:150px;margin-top:80px;font-size:25px">
       <div style="display:flex;">
-        <img src="../assets/123.jpg" style="height:100px;width:100px;border-radius:50%"  />
+        <img :src="res.pht" style="height:100px;width:100px;border-radius:50%"  />
       </div>
       <div style="margin-top:20px;display:flex">用户名：<div style="color:rgb(207, 234, 244);margin-left:24px;background-color:rgb(105, 105, 105);">{{res.username}}</div></div>
       <div style="margin-top:10px;display:flex">账号：<div style="color:rgb(207, 234, 244);margin-left:50px;background-color:rgb(105, 105, 105);border:0px">{{res.account}}</div></div>
@@ -20,11 +20,13 @@
 <script lang="ts" setup>
 import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
-import service from '../axios-instance'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import axios from 'axios';
-
+import service from '../axios-instance'
+import { useRouter } from 'vue-router' 
+import { useUserStore } from '../store/user';
+const userStore=useUserStore()
+const router = useRouter()  
 const msg = ref('12345678');
 const popoverRef = ref()
 const open = () => {
@@ -42,9 +44,6 @@ const open = () => {
         type: 'success',
         message: "发送成功！",
       })
-      axios.post("",{
-        "userOwner":""
-      })
       console.log(msg.value)
     })
     .catch(() => {
@@ -55,24 +54,24 @@ const open = () => {
     })
 }
 var user = reactive({})
-    onMounted(()=>{
-      axios.post("",{      })
-      .then(res=>{
-
-      })
-    })
     var a = ref(localStorage.getItem("account"))
+var res = reactive({})
 onMounted(()=>{
   console.log(a.value);
-})
-var res = reactive({
-  "username":"Fantasy",
-  "account":"2460437333",
-  "signed":"xxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "email":"2460437333@qq.com",
-  "pht":"../assets/123.jpg",
-  "birthday":"2003/6/10",
-  "city":"福建"
+  service.post("http://localhost:8080/user/fidUser",{"username":a.value})
+  .then(tmp=>{
+    res.username=tmp.data.username
+    res.account=tmp.data.account
+    res.signed=tmp.data.signed
+    res.email=tmp.data.email
+    res.pht=tmp.data.img
+    res.birthday=tmp.data.birthday
+    res.city=tmp.data.city
+  })
+  .catch(err=>{
+    alert("未找到该用户")
+    router.push('/person')
+  })
 })
 </script>
 

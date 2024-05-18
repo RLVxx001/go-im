@@ -7,14 +7,14 @@
           <p v-for="(item,index) in usertoUsers" 
           :key="index" style="margin-top:10px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:12px" class="friend">
             <img src="#" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
-            {{ item.remarks }}{{ item.userTarget }}
+            {{ item.remarks }}
           </p>
         </el-scrollbar>
       </div>
       <div style="border:1px;height:600px;width:1px;float:left"></div>
       <div>
         <div class="Message" >
-          {{ index }}233
+          {{ index }}
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1">
             <el-scrollbar style="width:607px;height:345px;margin-top:-10px" ref="scrollbarRef" always>

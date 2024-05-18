@@ -70,28 +70,9 @@ func (r *Repository) GetByAccount(account string) ([]User, error) {
 	return users, nil
 }
 
-// 添加测试数据
-func (r *Repository) InsertSampleData() {
-	user := NewUser("admin", "admin", "admin", "admin", "admin@admin")
-
-	user.IsAdmin = true
-	r.db.Where(User{Username: user.Username}).Attrs(
-		User{
-			Username: user.Username,
-			Password: user.Password,
-		}).FirstOrCreate(&user)
-
-	user = NewUser("user", "user", "user", "user", "user")
-	r.db.Where(User{Username: user.Username}).Attrs(
-		User{
-			Username: user.Username,
-			Password: user.Password,
-		}).FirstOrCreate(&user)
-}
-
 // 更新用户
 func (r *Repository) Update(u *User) error {
-	return r.db.Save(&u).Error
+	return r.db.Model(u).Updates(User{Account: u.Account, Signed: u.Signed, Birthday: u.Birthday}).Error
 }
 
 // 更新头像

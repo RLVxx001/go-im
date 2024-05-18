@@ -1,13 +1,36 @@
 <script  lang="ts" setup>  
-import { provide } from 'vue';  
+import { provide,onMounted } from 'vue';  
 import TopBar from './components/TopBar.vue';  
 import Home from './components/Home.vue';  
 import SideBar from './components/SideBar.vue';  
 import Demo from './components/Demo.vue';  
 import bus from "./EventBus/eventbus"; // 确保这个 eventbus 适用于你的项目  
-  
+import service from './axios-instance'
+import { ElNotification } from 'element-plus'
+import { useUserStore } from './store/user';
+import { useRouter } from 'vue-router' 
+const router = useRouter()  
+const userStore=useUserStore()
 // 在 <script setup> 中，组件默认是局部注册的，所以不需要在 components 对象中声明  
-  
+onMounted(()=>{
+  service.get('http://localhost:8080/user/verifyToken')
+  .then(response=>{
+    console.log('------------')
+    console.log(response.data);
+    localStorage.setItem('id',response.data.id)
+    localStorage.setItem('user',JSON.stringify(response.data))
+    userStore.token=response.data.token
+    userStore.username=response.data.username
+    ElNotification({
+      title: 'Success',
+      message: '登录成功',
+      type: 'success',
+    }) 
+    router.push('person')
+  }).catch(err=>{
+    localStorage.removeItem('token')
+  })
+})
 // 提供 color 属性  
 provide('color', 'red');
 </script>
@@ -28,7 +51,6 @@ provide('color', 'red');
     </div>    
     </div>
   </div>
-
 </template>
 
 <style>
