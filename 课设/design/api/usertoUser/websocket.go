@@ -53,6 +53,7 @@ func deleteWs(ws *websocket.Conn, id uint, clients map[uint][]*websocket.Conn) {
 	for index, i := range clients[id] {
 		if i == ws {
 			clients[id] = append(clients[id][:index], clients[id][index+1:]...) //删除
+			break
 		}
 	}
 	log.Printf("关闭ws------")

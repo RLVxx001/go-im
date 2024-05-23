@@ -12,8 +12,8 @@ func SocketSend() {
 		msg := <-broadcast
 
 		for _, client := range clients[msg.MessageOwner] {
-
 			err := client.WriteJSON(msg)
+
 			if err != nil {
 				log.Printf("error: %v\n", err)
 				deleteWs(client, msg.MessageOwner, clients)

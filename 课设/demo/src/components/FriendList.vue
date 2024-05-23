@@ -216,8 +216,8 @@ function getusers(){
 
 onMounted(() => {
   createMessageWs()
-  createNewWs()
-  createRevocationWs()
+  // createNewWs()
+  // createRevocationWs()
   getusers()
   goindex(0)
 })

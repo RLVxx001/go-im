@@ -7,6 +7,7 @@ import (
 	"design/utils/api_helper"
 	"design/utils/jwt"
 	"design/utils/pagination"
+	"design/utils/webSocketDecoded"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -121,49 +122,28 @@ func (c *Controller) Send(g *gin.Context) {
 		log.Fatal(err)
 	}
 	var userid uint
+	userid = 7
 	defer deleteWs(ws, userid, clients)
+
+	defer fmt.Println("userid:", userid)
 	fmt.Println("发送链接中--------")
-	for {
-		var token config.Token
-		err = ws.ReadJSON(&token)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if token.Type == "auth" {
-			id, err := jwt.Decoded(token.Token)
-			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
-				if err != nil {
-					return
-				}
-				continue
-			}
-			userid = uint(pagination.ParseInt(id, -1))
-			break
-		} else {
-			return
-		}
-	}
 
 	fmt.Println("验证成功：userid:", userid)
 
 	clients[userid] = append(clients[userid], ws) //添加
 	for {
-		var req UserRequest // Read in a new message as JSON and map it to a Message object
-		err := ws.ReadJSON(&req)
-		fmt.Printf("req:%v\n", req)
+		var req UserRequest
+		err, st := webSocketDecoded.Decoded(ws, &req, &userid)
+		fmt.Printf("%v\n%v\n", req, userid)
 		if err != nil {
 			log.Printf("error: %v\n", err)
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
+			err := api_helper.WsError(ws, err, st)
 			if err != nil {
 				return
 			}
 			continue
 		}
+
 		req.UserOwner = userid
 		if _, err := c.userService.GetById(req.UserOwner); err != nil {
 			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
@@ -171,7 +151,7 @@ func (c *Controller) Send(g *gin.Context) {
 		}
 
 		utou := ToUsertoUser(req)
-		fmt.Printf("%v\n", utou)
+		//fmt.Printf("%v\n", utou)
 		m, m1, err := c.service.Send(utou, req.Message)
 		if err != nil {
 			err1 := api_helper.WsError(ws, err, "")
@@ -260,7 +240,7 @@ func (c *Controller) Revocation(g *gin.Context) {
 	for {
 		var req UserRequest
 		err := ws.ReadJSON(&req)
-		fmt.Printf("req:%v\n", req)
+		//fmt.Printf("req:%v\n", req)
 		if err != nil {
 			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 			if err != nil {
