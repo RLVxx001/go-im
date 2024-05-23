@@ -5,22 +5,28 @@ import (
 	"gorm.io/gorm"
 )
 
-type SpaceRepostirory struct {
+type SpaceRepository struct {
 	db *gorm.DB
 }
 
-func (r *SpaceRepostirory) Migration() {
+func NewSpaceRepository(db *gorm.DB) *SpaceRepository {
+	return &SpaceRepository{
+		db: db,
+	}
+}
+
+func (r *SpaceRepository) Migration() {
 	err := r.db.AutoMigrate(&Space{})
 	if err != nil {
 		fmt.Print(err)
 	}
 }
 
-func (r *SpaceRepostirory) FindSpace(userid uint) (*Space, error) {
+func (r *SpaceRepository) Find(userid uint) (Space, error) {
 	var space Space
 	err := r.db.Where("UserId=?", userid).First(&space).Error
 	if err != nil {
-		return nil, err
+		print(err)
 	}
-	return &space, nil
+	return space, err
 }

@@ -31,9 +31,10 @@ type SpaceTrends struct {
 	SpaceId  uint      //空间表id
 }
 
-func NewSpaceTrends(spaceId uint) *SpaceTrends {
+func NewSpaceTrends(spaceId uint, detail string) *SpaceTrends {
 	return &SpaceTrends{
 		SpaceId:  spaceId,
+		Detail:   detail,
 		Comments: make([]Comment, 0),
 	}
 }
@@ -41,18 +42,18 @@ func NewSpaceTrends(spaceId uint) *SpaceTrends {
 // Comment 评论表
 type Comment struct {
 	gorm.Model
-	UserId        uint      //评论用户id
-	User          user.User `gorm:"-"`
-	Praise        uint
-	Content       string //内容
-	SpaceTrendsId uint   //空间动态表id
-	ToUserId      uint   //0
+	UserId   uint      //评论用户id
+	User     user.User `gorm:"-"`
+	Praise   uint
+	Content  string //内容
+	TrendsId uint   //空间动态表id
+	ToUserId uint   //0
 }
 
 func NewComment(userId uint, content string, spaceTrendsId uint) *Comment {
 	return &Comment{
-		UserId:        userId,
-		Content:       content,
-		SpaceTrendsId: spaceTrendsId,
+		UserId:   userId,
+		Content:  content,
+		TrendsId: spaceTrendsId,
 	}
 }

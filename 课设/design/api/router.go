@@ -2,11 +2,13 @@ package api
 
 import (
 	groupUserApi "design/api/group"
+	spaceApi "design/api/space"
 	userApi "design/api/user"
 	userApplicationApi "design/api/userApplication"
 	usertoUserApi "design/api/usertoUser"
 	"design/config"
 	"design/domain/group"
+	"design/domain/space"
 	"design/domain/user"
 	"design/domain/userApplication"
 	"design/domain/usertoUser"
@@ -25,6 +27,9 @@ type Databases struct {
 	groupRepository             *group.Repository
 	groupUserRepository         *group.UserRepository
 	groupMessageRepository      *group.MessageRepository
+	spaceRepository             *space.SpaceRepository
+	trendsRepository            *space.TrendsRepository
+	commentRepository           *space.CommentRepository
 }
 
 // 配置文件全局对象
@@ -52,6 +57,9 @@ func CreateDBs() *Databases {
 		groupRepository:             group.NewRepository(db),
 		groupUserRepository:         group.NewUserRepository(db),
 		groupMessageRepository:      group.NewMessageRepository(db),
+		spaceRepository:             space.NewSpaceRepository(db),
+		trendsRepository:            space.NewTrendsRepository(db),
+		commentRepository:           space.NewCommentRepository(db),
 	}
 }
 
@@ -63,6 +71,17 @@ func RegisterHandlers(r *gin.Engine) {
 	RegisterUsertoUserHandlers(r, dbs)
 	RegisterUserApplicationHandlers(r, dbs)
 	RegisterGroupHandlers(r, dbs)
+	RegisterSpaceHandlers(r, dbs)
+}
+
+// 注册空间控制器
+func RegisterSpaceHandlers(r *gin.Engine, dbs Databases) {
+	spaceService := space.NewService(*dbs.spaceRepository, *dbs.trendsRepository, *dbs.commentRepository)
+	spaceController := spaceApi.NewSpaceController(spaceService, AppConfig)
+	spaceGroup := r.Group("/space")
+	spaceGroup.POST("/fidTrends", spaceController.FindTrend)
+	spaceGroup.POST("/addTrends", spaceController.CreateTrend)
+	spaceGroup.POST("/addComment", spaceController.CreateComment)
 }
 
 // 注册用户控制器
