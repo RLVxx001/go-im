@@ -6,6 +6,7 @@ import (
 	userApi "design/api/user"
 	userApplicationApi "design/api/userApplication"
 	usertoUserApi "design/api/usertoUser"
+	"design/api/ws"
 	"design/config"
 	"design/domain/group"
 	"design/domain/space"
@@ -15,6 +16,7 @@ import (
 	"design/utils/database_handler"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"log"
 )
 
@@ -72,6 +74,7 @@ func RegisterHandlers(r *gin.Engine) {
 	RegisterUserApplicationHandlers(r, dbs)
 	RegisterGroupHandlers(r, dbs)
 	RegisterSpaceHandlers(r, dbs)
+	r.GET("/ws", ws.Ws) //注册ws
 }
 
 // 注册空间控制器
@@ -103,9 +106,9 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	userService := user.NewService(*dbs.userRepository)
 	controller := usertoUserApi.NewController(service, userService)
 	Group := r.Group("/usertoUser")
-	Group.GET("", controller.Create)
-	Group.GET("/revocation", controller.Revocation)
-	Group.GET("/send", controller.Send)
+	RevocationWs("/usertoUser", controller.Create)
+	RevocationWs("/usertoUser/revocation", controller.Revocation)
+	RevocationWs("/usertoUser/send", controller.Send)
 	Group.GET("/fid", controller.Fids)
 	Group.POST("/update", controller.Update)
 	Group.POST("/read", controller.Read)
@@ -131,14 +134,19 @@ func RegisterGroupHandlers(r *gin.Engine, dbs Databases) {
 	controller := groupUserApi.NewController(service, userService)
 	Group := r.Group("/group")
 	Group.GET("/fidGroup", controller.FidGroup)
-	Group.GET("/createGroup", controller.CreateGroup)
+	RevocationWs("/group/createGroup", controller.CreateGroup)
 	Group.POST("/updateGroup", controller.UpdateGroup)
 	Group.POST("/deleteGroup", controller.DeleteGroup)
 	Group.POST("/createGroupUser", controller.CreateGroupUser)
 	Group.POST("/updateGroupUser", controller.UpdateGroupUser)
 	Group.POST("/deleteGroupUser", controller.DeleteGroupUser)
-	Group.GET("/sendMessage", controller.SendMessage)
-	Group.GET("/revocationMessage", controller.RevocationMessage)
+	RevocationWs("/group/sendMessage", controller.SendMessage)
+	RevocationWs("/group/revocationMessage", controller.RevocationMessage)
 	Group.POST("/deleteMessage", controller.DeleteMessage)
 	Group.POST("/deletesMessage", controller.DeletesMessage)
+}
+
+// 注册自定义路由
+func RevocationWs(st string, fu func(*websocket.Conn, map[string]interface{}, uint)) {
+	ws.Routes[st] = fu
 }

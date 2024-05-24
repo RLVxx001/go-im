@@ -2,8 +2,7 @@ package main
 
 import (
 	"design/api"
-	"design/api/group"
-	"design/api/usertoUser"
+	"design/api/ws"
 	"design/utils/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -49,12 +48,7 @@ func main() {
 	g.Use(jwtMiddleware())
 	api.RegisterHandlers(g)
 	{ //启动websocket辅助函数
-		go usertoUser.SocketSend()
-		go usertoUser.SocketCreate()
-		go usertoUser.SocketRevocation()
-		go group.SocketSend()
-		go group.SocketCreate()
-		go group.SocketRevocation()
+		go ws.SocketSend()
 	}
 	g.Run(":8080")
 }

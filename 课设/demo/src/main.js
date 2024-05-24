@@ -8,6 +8,8 @@ import 'element-plus/dist/index.css'
 import { createPinia } from 'pinia'
 import { TEST_SYMBOL } from './symbol'
 import {ElNotification} from 'element-plus'  
+import { useWsStore } from './store/user';
+
 
 let Ws = ref(null); 
 
@@ -17,11 +19,6 @@ Ws.value = new WebSocket('ws://' + 'localhost:8080' + '/ws');
 //   // 当 WebSocket 连接打开时，发送认证消息  
 //   authenticate(messageWs);  
 // };  
-Ws.value.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);
-    console.log(msg)
-}
 
 
 const send=(data)=>{
@@ -30,12 +27,7 @@ const send=(data)=>{
   console.log(data)
   if(Ws.value&&localStorage.getItem('token')&&Ws.value.readyState == WebSocket.OPEN){
     Ws.value.send(
-    JSON.stringify({
-            userTarget: 2,
-            message:'message.value',
-            token:localStorage.getItem('token')
-        }
-    ));
+    JSON.stringify(data));
   }
   else{
     ElNotification({
@@ -52,8 +44,15 @@ app.use(scroll)
 app.use(ElementPlus)
 app.use(createPinia())
 // 使用 symbol 方式
-app.provide(TEST_SYMBOL, send)
+// app.provide(TEST_SYMBOL, send)
 // 使用自定义字符串方式
-app.provide('$Test', send)
-
+app.provide('$Ws', send)
 app.mount('#app')
+const wsStore=useWsStore()
+Ws.value.onmessage = (event) => {  
+    // 处理从服务器接收到的消息  
+    const msg = JSON.parse(event.data);
+    console.log(msg)
+    wsStore.addMessage(msg)
+}
+

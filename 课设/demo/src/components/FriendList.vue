@@ -58,115 +58,49 @@
 <script lang="ts" setup>
 import ImageViewer from "@luohc92/vue3-image-viewer";
 import '@luohc92/vue3-image-viewer/dist/style.css';
-import { ref, onMounted ,h,reactive,nextTick } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick,inject,watch } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
-
-
-let messageWs = ref(null); 
-let newWs = ref(null); 
-let RevocationWs = ref(null); 
+import { useWsStore } from '../store/user';
+const wsStore=useWsStore()
+const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
 
 function send(){
-  // let list=[]
-  // list.push({key:passwd-0})
-  if(messageWs.value.readyState == WebSocket.OPEN){
-    messageWs.value.send(
-    JSON.stringify({
+  $Ws && $Ws({
             userTarget: usertoUsers[index.value].userTarget-0,
-            message:message.value
-        }
-    ));
-  }
+            message:message.value,
+            event:'/send',
+            token:localStorage.getItem('token')
+        })
   message.value=''
 }
 
-function createMessageWs(){
-  console.log("开启socket链接-----"+'ws://')
-  messageWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/send');  
-  messageWs.value.onopen = (event) => {  
-    // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(messageWs);  
-  };  
-  messageWs.value.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);
-    if(msg.type==null||msg.type==""){//接受成功  
-      console.log(msg);  
-      for(let i=0;i<usertoUsers.length;i++){
-        if(msg.usertoUserId==usertoUsers[i].id){
-          let IsNo=true
-          usertoUsers[i].userMessages.forEach(element => {
-            if(element.key==msg.key){
-              IsNo=true
+// 使用watch来监听userStore的userInfo变化  
+watch(  
+    () => wsStore.count,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.count){
+        wsStore.readAndClearMessages().then(res=>{
+          console.log(res)
+          res.forEach(element => {
+            for(let i=0;i<usertoUsers.length;i++)
+            {
+              if(usertoUsers[i].id==element.usertoUserId){
+                usertoUsers[i].userMessages.push(element)
+                gobottom()
+                break;
+              }
             }
           });
-          if(IsNo){
-            usertoUsers[i].userMessages.push(msg)
-          }
-          break
-        }
+        }).catch(err=>{
+          console.error(err)
+        })
       }
-
-      gobottom()
-    }
-    else{//失败
-      ElNotification({
-        title: '发送异常',
-        message: msg.errorMessage,
-        type: 'error',
-      })
-    }
-    
-  };
-}
-
-function createNewWs(){
-  console.log("开启socket链接-----"+'ws://')
-  newWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser');  
-  newWs.value.onopen = (event) => {  
-    // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(newWs);  
-  };  
-  
-  newWs.value.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);  
-    console.log(msg);  
-  };
-}
-
-
-function createRevocationWs(){
-  console.log("开启socket链接-----"+'ws://')
-  RevocationWs.value = new WebSocket('ws://' + 'localhost:8080' + '/usertoUser/revocation');  
-  RevocationWs.value.onopen = (event) => {  
-    // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(RevocationWs);  
-  };  
-  
-  RevocationWs.value.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);  
-    console.log(msg);  
-  };
-}
-
-function authenticate(ws){// 认证方法 
-  if (ws.value.readyState == WebSocket.OPEN && localStorage.token) {  
-    console.log("发送验证信息")
-    ws.value.send(  
-      JSON.stringify({  
-        type: 'auth', // 消息类型，用于区分是普通消息还是认证消息  
-        token: localStorage.token,  
-        // 其他可能需要的认证信息...  
-      })  
-    );  
-  }
-}
-
-
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+  );
 
 //消息框样式动态选择
 const getMessageClass = (isSent) => {
@@ -215,9 +149,6 @@ function getusers(){
 }
 
 onMounted(() => {
-  createMessageWs()
-  // createNewWs()
-  // createRevocationWs()
   getusers()
   goindex(0)
 })
