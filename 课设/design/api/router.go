@@ -120,9 +120,11 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 func RegisterUserApplicationHandlers(r *gin.Engine, dbs Databases) {
 	service := userApplication.NewService(*dbs.userApplicationRepository)
 	userService := user.NewService(*dbs.userRepository)
-	controller := userApplicationApi.NewController(userService, service)
+	groupService := group.NewService(*dbs.groupRepository, *dbs.groupMessageRepository, *dbs.groupUserRepository)
+	usertoUserService := usertoUser.NewService(*dbs.usertouserRepository, *dbs.usertouserMessageRepository)
+	controller := userApplicationApi.NewController(userService, groupService, usertoUserService, service)
 	Group := r.Group("/userApplication")
-	Group.POST("", controller.Create)
+	Group.POST("", controller.Application)
 	Group.GET("/fid", controller.Fids)
 
 }

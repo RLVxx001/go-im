@@ -9,4 +9,5 @@ var (
 	ErrNotFid      = errors.New("查找异常")
 	ErrNotUpdate   = errors.New("拒绝异常")
 	ErrUser        = errors.New("您已添加对方为好友")
+	ErrAccept      = errors.New("接受异常")
 )

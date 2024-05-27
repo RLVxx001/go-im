@@ -53,6 +53,15 @@ Ws.value.onmessage = (event) => {
     // 处理从服务器接收到的消息  
     const msg = JSON.parse(event.data);
     console.log(msg)
-    wsStore.addMessage(msg)
+    wsStore.addMessage(msg.data,msg.event)
 }
+Ws.value.onopen = (event) => {  
+    if(localStorage.getItem('token'))
+    {
 
+        Ws.value.send(JSON.stringify({
+            token:localStorage.getItem('token'),
+            event:''
+        }))
+    }
+};  

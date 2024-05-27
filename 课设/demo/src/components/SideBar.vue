@@ -29,9 +29,12 @@
    </div>
 </template>
 <script setup>
-import { ref, onMounted ,h} from 'vue';  
+import { ref, onMounted ,h,watch} from 'vue';  
 import { useRouter } from 'vue-router' 
 import { useUserStore } from '../store/user';
+import { useWsStore } from '../store/user';
+import { ElNotification,ElScrollbar } from 'element-plus'
+const wsStore=useWsStore()
 const userStore=useUserStore()
 const router = useRouter()  
 // var token = localStorage.getItem("token")
@@ -40,7 +43,34 @@ function quit(){
   localStorage.removeItem('token')
   router.push('/login')
 }
-
+watch(  
+    () => wsStore.Frientcount,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.Frientcount){
+        ElNotification({
+          title: 'Info',
+          message: '你有来自好友的'+wsStore.Frientcount+'条消息',
+          type: 'info',
+        })
+      }
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+  );
+  watch(  
+    () => wsStore.Groupcount,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.Groupcount){
+        ElNotification({
+          title: 'Info',
+          message: '你有来自群友的'+wsStore.Groupcount+'条消息',
+          type: 'info',
+        })
+      }
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+  );
 </script>
 <style>
 

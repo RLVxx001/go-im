@@ -6,6 +6,7 @@ import "errors"
 
 var (
 	ErrGroupId       = errors.New("该群号已存在")
+	ErrNotGroupId    = errors.New("该群不存在")
 	ErrNotSend       = errors.New("发送异常")
 	ErrNotCreateUser = errors.New("该用户已存在群中")
 	ErrNotDelete     = errors.New("删除异常")

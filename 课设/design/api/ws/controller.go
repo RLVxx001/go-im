@@ -41,12 +41,14 @@ func Ws(g *gin.Context) {
 				deleteWs(ws)
 				return
 			}
-		}
-		f, ok := Routes[event]
-		if !ok {
 			continue
 		}
 		Clients[ws] = userid
+		f, ok := Routes[event]
+		if !ok {
+			fmt.Println("跳过了")
+			continue
+		}
 		f(ws, mp, userid)
 	}
 
@@ -54,8 +56,8 @@ func Ws(g *gin.Context) {
 
 type W struct {
 	userId uint
-	data   interface{}
-	event  string
+	Data   interface{} `json:"data"`
+	Event  string      `json:"event"`
 }
 
 func NewW(userId uint, data interface{}, event string) W {
@@ -71,6 +73,7 @@ func SocketSend() {
 		for client, j := range Clients {
 			if j == msg.userId {
 				err := client.WriteJSON(msg)
+
 				if err != nil {
 					log.Printf("error: %v\n", err)
 					deleteWs(client)

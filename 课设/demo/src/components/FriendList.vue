@@ -70,7 +70,7 @@ function send(){
   $Ws && $Ws({
             userTarget: usertoUsers[index.value].userTarget-0,
             message:message.value,
-            event:'/send',
+            event:'/usertoUser/send',
             token:localStorage.getItem('token')
         })
   message.value=''
@@ -78,10 +78,10 @@ function send(){
 
 // 使用watch来监听userStore的userInfo变化  
 watch(  
-    () => wsStore.count,  
+    () => wsStore.Frientmessagecount,  
     (newUserInfo, prevUserInfo) => {  
-      if(wsStore.count){
-        wsStore.readAndClearMessages().then(res=>{
+      if(wsStore.Frientmessagecount){
+        wsStore.readFrientMessages().then(res=>{
           console.log(res)
           res.forEach(element => {
             for(let i=0;i<usertoUsers.length;i++)
@@ -149,6 +149,7 @@ function getusers(){
 }
 
 onMounted(() => {
+  wsStore.event=0
   getusers()
   goindex(0)
 })

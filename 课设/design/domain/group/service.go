@@ -35,6 +35,24 @@ func (s *Service) CreateGroup(group *Group) error {
 	return nil
 }
 
+// 通过group的id查询group
+func (s *Service) GetById(id uint) (*Group, error) {
+	byId, err := s.r.GetById(id)
+	if err != nil {
+		return nil, ErrNotGroupId
+	}
+	return byId, nil
+}
+
+// 查询群下用户的实体
+func (s *Service) GetGroupUser(groupId, userId uint) (*GroupUser, error) {
+	groupUser, err := s.userRepository.GetGroupUser(groupId, userId)
+	if err != nil {
+		return nil, ErrNotGroupUser
+	}
+	return groupUser, nil
+}
+
 // 通过id查找自己的所有群
 func (s *Service) FidGroups(userid uint) ([]Group, error) {
 	users, err := s.userRepository.GetByUserIdGroupUsers(userid)

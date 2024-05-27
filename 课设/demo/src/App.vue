@@ -11,6 +11,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()  
 // 在 <script setup> 中，组件默认是局部注册的，所以不需要在 components 对象中声明  
 onMounted(()=>{
+  
 })
 // 提供 color 属性  
 provide('color', 'red');
@@ -18,7 +19,6 @@ provide('color', 'red');
 </script>
 
 <template>
-  <div @click="send">Send</div>
   <div style="background-color: #525257a2;width:100%">
 
     <div style="height:10px;"></div>
