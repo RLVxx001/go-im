@@ -50,12 +50,12 @@ func (r *Repository) Fid(u, cl, tou uint) (*UserApplication, error) {
 	return &userApplication, nil
 }
 
-// 查找
-func (r *Repository) Fids(u uint) ([]UserApplication, error) {
+// 查找用户下所有请求
+func (r *Repository) Fids(u uint, ins []uint) ([]UserApplication, error) {
 	var users []UserApplication
-	err := r.db.Unscoped().Where("UserOwner=?", u).
-		Or("Target = ?", u).
-		Or("InviteUser = ?", u).
+	err := r.db.Where("Class = 0 AND (UserOwner = ? OR Target = ?)", u, u).
+		Or("Class = 1 AND (UserOwner = ? OR Target IN (?))", u, ins).
+		Or("Class = 2 AND (Target = ? OR InviteUser = ?)", u, u).
 		Find(&users).Error
 	if err != nil {
 		return nil, err

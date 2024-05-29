@@ -60,8 +60,40 @@ type W struct {
 	Event  string      `json:"event"`
 }
 
+var ApplicationChan = make(chan ApplicationAccept)
+var UserChan = make(chan ApplicationAccept)
+var GroupChan = make(chan ApplicationAccept)
+
+type ApplicationAccept struct {
+	Owner  uint   //所属用户或群id
+	Class  uint   //0表示用户申请用户 1表示用户申请群 2表示群邀请用户
+	Target uint   //对方用户或群id
+	Event  string //辨别
+}
+
 func NewW(userId uint, data interface{}, event string) W {
 	return W{userId, data, event}
+}
+
+// 申请同意分发
+func SocketApplication() {
+	for {
+		req := <-ApplicationChan
+		fmt.Printf("%v\n", req)
+		if req.Class == 0 {
+			req.Event = "/usertoUser"
+			UserChan <- req
+		} else if req.Class == 1 {
+			//
+			//GroupChan <- req
+		} else if req.Class == 2 {
+			//i := req.Owner
+			//req.Owner = req.Target
+			//req.Target = i
+			//GroupChan <- req
+		}
+
+	}
 }
 
 // 处理消息发送

@@ -52,6 +52,9 @@ const wsStore=useWsStore()
 Ws.value.onmessage = (event) => {  
     // 处理从服务器接收到的消息  
     const msg = JSON.parse(event.data);
+    if(msg.type=='token'){
+      localStorage.removeItem('token')
+    }
     console.log(msg)
     wsStore.addMessage(msg.data,msg.event)
 }

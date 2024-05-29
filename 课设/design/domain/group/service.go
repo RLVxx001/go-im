@@ -53,6 +53,37 @@ func (s *Service) GetGroupUser(groupId, userId uint) (*GroupUser, error) {
 	return groupUser, nil
 }
 
+// 查找用户账号下所有管理的群聊
+func (s *Service) FidMyManage(userId uint) ([]Group, error) {
+	users, err := s.userRepository.GetByUserIdGroupUsers(userId)
+	if err != nil {
+		return nil, ErrFid
+	}
+	var groups []Group
+	for _, i := range users {
+		if i.IsAdmin == 0 {
+			continue
+		}
+		group, err := s.r.GetById(i.GroupId)
+		if err == nil {
+			groupUsers, err := s.userRepository.GetGroupUsers(group.ID)
+			if err == nil {
+				group.GroupUsers = groupUsers
+			}
+			group.GroupMessages = s.messageRepository.Fid(group.ID, userId)
+
+			if len(group.GroupMessages) != 0 {
+				if group.UpdatedAt.Before(group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt) {
+					group.UpdatedAt = group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt
+				}
+			}
+		}
+		groups = append(groups, *group)
+	}
+	sort.Sort(gr(groups))
+	return groups, nil
+}
+
 // 通过id查找自己的所有群
 func (s *Service) FidGroups(userid uint) ([]Group, error) {
 	users, err := s.userRepository.GetByUserIdGroupUsers(userid)
@@ -193,7 +224,7 @@ func (s *Service) CreateGroupUser(groupId, id, userid uint) error {
 }
 
 // 发送信息
-func (s *Service) SendMessage(id, userid uint, message string) ([]GroupMessage, error) {
+func (s *Service) SendMessage(id, userid uint, message, img string) ([]GroupMessage, error) {
 	//查询该用户是否已经存在群中
 	groupUser, err := s.userRepository.GetGroupUser(id, userid)
 	if err != nil {
@@ -208,6 +239,7 @@ func (s *Service) SendMessage(id, userid uint, message string) ([]GroupMessage, 
 	}
 	var messages []GroupMessage
 	groupMessage := NewGroupMessage(userid, userid, id, message)
+	groupMessage.Img = img
 	if s.messageRepository.Create(groupMessage) != nil {
 		return nil, ErrNotSend
 	}
@@ -219,6 +251,7 @@ func (s *Service) SendMessage(id, userid uint, message string) ([]GroupMessage, 
 	for _, j := range users {
 		if j.UserId != userid {
 			k := NewGroupMessage(j.UserId, userid, id, message)
+			k.Img = img
 			k.MessageKey = groupMessage.MessageKey
 			if s.messageRepository.Create(k) == nil {
 				messages = append(messages, *k)

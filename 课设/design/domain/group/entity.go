@@ -11,6 +11,7 @@ type Group struct {
 	GroupId       string         //群号
 	GroupName     string         //群名称
 	GroupInform   string         //群公告
+	Img           string         //群头像
 	GroupUsers    []GroupUser    `gorm:"foreignKey:GroupId"`
 	GroupMessages []GroupMessage `gorm:"-"`
 }
@@ -22,6 +23,7 @@ type GroupMessage struct {
 	MessageSender uint   //消息发送用户
 	GroupId       uint   //消息接收群
 	Message       string `gorm:"type:varchar(500)"` //消息
+	Img           string `消息包含图片`
 	MessageKey    uint   //消息key
 	IsRead        bool   //是否已读
 }

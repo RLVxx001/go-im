@@ -24,57 +24,80 @@ func NewController(service *usertoUser.Service, userService *user.Service) *Cont
 }
 
 // 创建用户-用户链接
-func (c *Controller) Create(ws *websocket.Conn, mp map[string]interface{}, userid uint) {
-	var req UserRequest
-	err := webSocketDecoded.DecodedMap(mp, &req)
-	fmt.Printf("req: %v\n", req)
-	if err != nil {
-		err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
+func (c *Controller) Create() {
+
+	for {
+		var req UserRequest
+		body := <-wsServer.UserChan
+
+		//校验用户id是否正确
+		req.UserOwner = body.Owner
+		req.UserTarget = body.Target
+		fmt.Printf("%v\n", req)
+
+		if _, err := c.userService.GetById(req.UserOwner); err != nil {
+			log.Println(err)
+			continue
+		}
+
+		if _, err := c.userService.GetById(req.UserTarget); err != nil {
+			log.Println(err)
+			continue
+		}
+		//创建链接
+		user1, err := c.service.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, req.Remarks))
 		if err != nil {
-			return
+			log.Println(err)
+			continue
 		}
-		return
-	}
-	//校验用户id是否正确
-	req.UserOwner = userid
-	//fmt.Printf("%v\n", req)
+		var user2 *usertoUser.UsertoUser = nil
+		user2, err = c.service.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, req.Remarks1))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		m, m1, err := c.service.Send(user1, "你好，我是"+req.Remarks)
+		if err != nil {
+			continue
+		}
+		wsServer.Broadcast <- wsServer.NewW(user1.UserOwner, UserMessage{
+			Message:      m.Message,
+			UsertoUserId: m.UsertoUserId,
+			Key:          m.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m.CreatedAt,
+		}, body.Event) //发送者
+		wsServer.Broadcast <- wsServer.NewW(user1.UserTarget, UserMessage{
+			Message:      m1.Message,
+			UsertoUserId: m1.UsertoUserId,
+			Key:          m1.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m1.CreatedAt,
+		}, body.Event) //发送者
 
-	if _, err := c.userService.GetById(req.UserOwner); err != nil {
-		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
-		return
-	}
-
-	if _, err := c.userService.GetById(req.UserTarget); err != nil {
-		err1 := api_helper.WsError(ws, err, "")
-		if err1 != nil {
-			return
+		m, m1, err = c.service.Send(user2, "你好，我是"+req.Remarks1)
+		if err != nil {
+			continue
 		}
-		return
+		wsServer.Broadcast <- wsServer.NewW(user2.UserOwner, UserMessage{
+			Message:      m.Message,
+			UsertoUserId: m.UsertoUserId,
+			Key:          m.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m.CreatedAt,
+		}, body.Event) //发送者
+		wsServer.Broadcast <- wsServer.NewW(user2.UserTarget, UserMessage{
+			Message:      m1.Message,
+			UsertoUserId: m1.UsertoUserId,
+			Key:          m1.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m1.CreatedAt,
+		}, body.Event) //发送者
 	}
-	//创建链接
-	user1, err := c.service.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, req.Remarks))
-	if err != nil {
-		err1 := api_helper.WsError(ws, err, "")
-		if err1 != nil {
-			return
-		}
-		return
-	}
-	var user2 *usertoUser.UsertoUser = nil
-	user2, err = c.service.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, req.Remarks1))
-	if err != nil {
-		err1 := api_helper.WsError(ws, err, "")
-		if err1 != nil {
-			return
-		}
-		return
-	}
-	c.service.Send(user1, "你好，我是"+req.Remarks)
-	c.service.Send(user2, "你好，我是"+req.Remarks1)
-
-	wsServer.Broadcast <- wsServer.NewW(user1.UserOwner, user1, mp["event"].(string)) //发送者
-	// Send the newly received message to the broadcast channel
-	wsServer.Broadcast <- wsServer.NewW(user2.UserOwner, user2, mp["event"].(string)) //送达者
 }
 
 // 发送消息
@@ -214,7 +237,7 @@ func (c *Controller) Revocation(ws *websocket.Conn, mp map[string]interface{}, u
 }
 
 // 用户单方面删除消息
-func (c *Controller) Delete(g *gin.Context) {
+func (c *Controller) DeleteMessage(g *gin.Context) {
 	var req UserRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
@@ -233,8 +256,8 @@ func (c *Controller) Delete(g *gin.Context) {
 	g.JSON(http.StatusOK, nil)
 }
 
-// 用户单方面删除消息群
-func (c *Controller) Deletes(g *gin.Context) {
+// 用户单方面删除所以消息
+func (c *Controller) DeleteMessages(g *gin.Context) {
 	var req UserRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
@@ -243,6 +266,29 @@ func (c *Controller) Deletes(g *gin.Context) {
 	req.UserOwner = api_helper.GetUserId(g)
 	utou := ToUsertoUser(req)
 	if err := c.service.DeleteMessages(utou); err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	g.JSON(http.StatusOK, nil)
+}
+
+// 删除好友
+func (c *Controller) DeleteUser(g *gin.Context) {
+	var req UserRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	req.UserOwner = api_helper.GetUserId(g)
+
+	fid, err := c.service.Fid(req.UserOwner, req.UserTarget)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	fid.IsDeleted = true
+	err = c.service.DeleteUser(fid)
+	if err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}

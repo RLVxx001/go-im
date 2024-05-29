@@ -49,6 +49,7 @@ func main() {
 	api.RegisterHandlers(g)
 	{ //启动websocket辅助函数
 		go ws.SocketSend()
+		go ws.SocketApplication()
 	}
 	g.Run(":8080")
 }

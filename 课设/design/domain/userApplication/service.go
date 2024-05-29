@@ -66,8 +66,8 @@ func (c *Service) Accept(userApplication *UserApplication) error {
 }
 
 // 查询单用户下的所有信息
-func (c *Service) Fids(userid uint) ([]UserApplication, error) {
-	users, err := c.r.Fids(userid)
+func (c *Service) Fids(userid uint, ins []uint) ([]UserApplication, error) {
+	users, err := c.r.Fids(userid, ins)
 	if err != nil {
 		return nil, ErrNotFid
 	}

@@ -38,7 +38,7 @@ type UserResponse struct {
 	Img      string `json:"img"`
 }
 
-// 用户信息响应
+// 群信息响应
 type GroupResponse struct {
 	GroupId   string `json:"groupId"`   //群号
 	GroupName string `json:"groupName"` //群名称

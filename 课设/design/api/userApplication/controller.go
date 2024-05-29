@@ -1,6 +1,7 @@
 package userApplication
 
 import (
+	wsServer "design/api/ws"
 	"design/domain/group"
 	"design/domain/user"
 	"design/domain/userApplication"
@@ -234,6 +235,11 @@ func (c *Controller) Accept(g *gin.Context, req CreateRequest) {
 		}
 		g.JSON(http.StatusOK, nil)
 	}
+	wsServer.ApplicationChan <- wsServer.ApplicationAccept{
+		Owner:  application.UserOwner,
+		Class:  application.Class,
+		Target: application.Target,
+	}
 }
 
 // 查询申请
@@ -241,12 +247,19 @@ func (c *Controller) Fids(g *gin.Context) {
 
 	//校验用户是否合法
 	userId := api_helper.GetUserId(g)
+
 	if _, err := c.userService.GetById(userId); err != nil {
 		api_helper.HandleErrorToken(g, err)
 		return
 	}
+	manage, err := c.groupService.FidMyManage(userId)
 
-	fids, err := c.service.Fids(userId)
+	var ins []uint = make([]uint, 0)
+	for _, i := range manage {
+		ins = append(ins, i.ID)
+	}
+
+	fids, err := c.service.Fids(userId, ins)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return
@@ -288,7 +301,7 @@ func (c *Controller) Fids(g *gin.Context) {
 			responses[i].GroupResponse = GroupResponse{
 				GroupId:   groupes.GroupId,
 				GroupName: groupes.GroupName,
-				Img:       "",
+				Img:       groupes.Img,
 			}
 		} else if j.Class == 2 {
 			groupes, err := c.groupService.GetById(j.UserOwner)
@@ -298,7 +311,7 @@ func (c *Controller) Fids(g *gin.Context) {
 			responses[i].GroupResponse = GroupResponse{
 				GroupId:   groupes.GroupId,
 				GroupName: groupes.GroupName,
-				Img:       "",
+				Img:       groupes.Img,
 			}
 		}
 

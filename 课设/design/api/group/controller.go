@@ -224,7 +224,7 @@ func (c *Controller) SendMessage(ws *websocket.Conn, mp map[string]interface{}, 
 		return
 	}
 
-	messages, err := c.s.SendMessage(req.GroupId, userid, req.Message)
+	messages, err := c.s.SendMessage(req.GroupId, userid, req.Message, req.Img)
 	if err != nil {
 		err1 := api_helper.WsError(ws, err, "")
 		if err1 != nil {

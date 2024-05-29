@@ -106,17 +106,22 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	userService := user.NewService(*dbs.userRepository)
 	controller := usertoUserApi.NewController(service, userService)
 	Group := r.Group("/usertoUser")
-	RevocationWs("/usertoUser", controller.Create)
+	{
+		go controller.Create()
+	}
+	//RevocationWs("/usertoUser", controller.Create) 已被申请模块通过管道 特殊调用 不暴露给前端
 	RevocationWs("/usertoUser/revocation", controller.Revocation)
 	RevocationWs("/usertoUser/send", controller.Send)
 	Group.GET("/fid", controller.Fids)
 	Group.POST("/update", controller.Update)
 	Group.POST("/read", controller.Read)
-	Group.POST("/delete", controller.Delete)
-	Group.POST("/deletes", controller.Deletes)
+	Group.POST("/deleteUser", controller.DeleteUser)
+	Group.POST("/deleteMessage", controller.DeleteMessage)
+	Group.POST("/deleteMessages", controller.DeleteMessages)
+
 }
 
-// 注册用户-用户申请表
+// 注册用户申请表
 func RegisterUserApplicationHandlers(r *gin.Engine, dbs Databases) {
 	service := userApplication.NewService(*dbs.userApplicationRepository)
 	userService := user.NewService(*dbs.userRepository)
@@ -125,7 +130,7 @@ func RegisterUserApplicationHandlers(r *gin.Engine, dbs Databases) {
 	controller := userApplicationApi.NewController(userService, groupService, usertoUserService, service)
 	Group := r.Group("/userApplication")
 	Group.POST("", controller.Application)
-	Group.GET("/fid", controller.Fids)
+	Group.GET("/fids", controller.Fids)
 
 }
 

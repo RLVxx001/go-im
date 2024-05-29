@@ -34,6 +34,14 @@ func (r *Repository) Update(u *UsertoUser) error {
 	return r.db.Omit("CreatedAt").Save(u).Error
 }
 
+// 删除好友操作
+func (r *Repository) DeleteUser(u *UsertoUser) error {
+	return r.db.Model(&UsertoUser{}).
+		Where("(UserOwner = ? AND UserTarget = ?)", u.UserOwner, u.UserTarget).
+		Or("(UserOwner = ? AND UserTarget = ?)", u.UserTarget, u.UserOwner).
+		Update("IsDeleted", true).Error
+}
+
 // 查找
 func (r *Repository) Fid(u, tou uint) (*UsertoUser, error) {
 	var usertoUser UsertoUser

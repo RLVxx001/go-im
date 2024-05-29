@@ -12,6 +12,7 @@ type GroupRequest struct {
 	GroupInform   string         `json:"groupInform"`   //群公告
 	GroupUsers    []GroupUser    `json:"groupUsers"`    //群用户
 	GroupMessages []GroupMessage `json:"groupMessages"` //群消息
+	Img           string         `json:"img"`           //图像
 	UpdatedAt     time.Time      `json:"updatedAt"`     //更新事件
 }
 
@@ -24,6 +25,7 @@ type GroupMessage struct {
 	Message       string    `json:"message"`       //消息
 	MessageKey    uint      `json:"messageKey"`    //消息key
 	IsRead        bool      `json:"isRead"`        //是否已读
+	Img           string    `json:"img"`           //图片
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
@@ -42,6 +44,7 @@ func ToGroup(req GroupRequest) group.Group {
 		GroupId:     req.GroupId,
 		GroupName:   req.GroupName,
 		GroupInform: req.GroupInform,
+		Img:         req.Img,
 	}
 }
 func ToGroupRequest(req group.Group) GroupRequest {
