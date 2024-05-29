@@ -21,10 +21,12 @@
 import {ref,reactive,onMounted} from 'vue'
 import { ElNotification } from 'element-plus'
 import service from '../axios-instance'
+import { useWsStore } from '../store/user';
+const wsStore=useWsStore()
 // const user=reactive(JSON.parse(localStorage.getItem('user')))
 var user = reactive(JSON.parse(localStorage.getItem('user')))
 onMounted(()=>{
-  
+  wsStore.event=-1
   // service.post("http://localhost:8080/user/fidUser",{"username":localStorage.getItem("username")})
   // .then(tmp=>{
   //   user.username=tmp.data.username

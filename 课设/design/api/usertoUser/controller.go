@@ -1,15 +1,14 @@
 package usertoUser
 
 import (
-	"design/config"
+	wsServer "design/api/ws"
 	"design/domain/user"
 	"design/domain/usertoUser"
 	"design/utils/api_helper"
-	"design/utils/jwt"
-	"design/utils/pagination"
 	"design/utils/webSocketDecoded"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 )
@@ -25,160 +24,134 @@ func NewController(service *usertoUser.Service, userService *user.Service) *Cont
 }
 
 // 创建用户-用户链接
-func (c *Controller) Create(g *gin.Context) {
-	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var userid uint
-	defer deleteWs(ws, userid, clientNews)
-	fmt.Println("创建链接中--------")
-	for {
-		var token config.Token
-		err = ws.ReadJSON(&token)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if token.Type == "auth" {
-			id, err := jwt.Decoded(token.Token)
-			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
-				if err != nil {
-					return
-				}
-				continue
-			}
-			userid = uint(pagination.ParseInt(id, -1))
-			break
-		} else {
-			return
-		}
-	}
-	fmt.Println("验证成功：userid:", userid)
-	clientNews[userid] = append(clientNews[userid], ws) //添加
+func (c *Controller) Create() {
+
 	for {
 		var req UserRequest
-		err = ws.ReadJSON(&req)
-		fmt.Printf("req: %v\n", req)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
+		body := <-wsServer.UserChan
+
 		//校验用户id是否正确
-		req.UserOwner = userid
-		//fmt.Printf("%v\n", req)
+		req.UserOwner = body.Owner
+		req.UserTarget = body.Target
+		fmt.Printf("%v\n", req)
 
 		if _, err := c.userService.GetById(req.UserOwner); err != nil {
-			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
-			return
+			log.Println(err)
+			continue
 		}
 
 		if _, err := c.userService.GetById(req.UserTarget); err != nil {
-			err1 := api_helper.WsError(ws, err, "")
-			if err1 != nil {
-				return
-			}
+			log.Println(err)
 			continue
 		}
 		//创建链接
 		user1, err := c.service.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, req.Remarks))
 		if err != nil {
-			err1 := api_helper.WsError(ws, err, "")
-			if err1 != nil {
-				return
-			}
+			log.Println(err)
 			continue
 		}
 		var user2 *usertoUser.UsertoUser = nil
 		user2, err = c.service.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, req.Remarks1))
 		if err != nil {
-			err1 := api_helper.WsError(ws, err, "")
-			if err1 != nil {
-				return
-			}
+			log.Println(err)
 			continue
 		}
-		c.service.Send(user1, "你好，我是"+req.Remarks) //相互发送一条消息
-		c.service.Send(user2, "你好，我是"+req.Remarks)
-
-		broadcastNew <- ToUserResponse(user1) //发送者
-		// Send the newly received message to the broadcast channel
-		broadcastNew <- ToUserResponse(user2) //送达者
-	}
-
-}
-
-// 发送消息
-func (c *Controller) Send(g *gin.Context) {
-	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var userid uint
-	userid = 7
-	defer deleteWs(ws, userid, clients)
-
-	defer fmt.Println("userid:", userid)
-	fmt.Println("发送链接中--------")
-
-	fmt.Println("验证成功：userid:", userid)
-
-	clients[userid] = append(clients[userid], ws) //添加
-	for {
-		var req UserRequest
-		err, st := webSocketDecoded.Decoded(ws, &req, &userid)
-		fmt.Printf("%v\n%v\n", req, userid)
+		m, m1, err := c.service.Send(user1, "你好，我是"+req.Remarks)
 		if err != nil {
-			log.Printf("error: %v\n", err)
-			err := api_helper.WsError(ws, err, st)
-			if err != nil {
-				return
-			}
 			continue
 		}
-
-		req.UserOwner = userid
-		if _, err := c.userService.GetById(req.UserOwner); err != nil {
-			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
-			return
-		}
-
-		utou := ToUsertoUser(req)
-		//fmt.Printf("%v\n", utou)
-		m, m1, err := c.service.Send(utou, req.Message)
-		if err != nil {
-			err1 := api_helper.WsError(ws, err, "")
-			if err1 != nil {
-				log.Printf("error: %v", err1)
-				break
-			}
-		}
-
-		broadcast <- UserMessage{
+		wsServer.Broadcast <- wsServer.NewW(user1.UserOwner, UserMessage{
 			Message:      m.Message,
 			UsertoUserId: m.UsertoUserId,
 			Key:          m.Key,
 			User:         req.UserOwner,
 			UserOwner:    req.UserOwner,
 			CreatedAt:    m.CreatedAt,
-		} //发送者
-		// Send the newly received message to the broadcast channel
-		broadcast <- UserMessage{
+		}, body.Event) //发送者
+		wsServer.Broadcast <- wsServer.NewW(user1.UserTarget, UserMessage{
 			Message:      m1.Message,
 			UsertoUserId: m1.UsertoUserId,
 			Key:          m1.Key,
-			User:         req.UserTarget,
+			User:         req.UserOwner,
 			UserOwner:    req.UserOwner,
 			CreatedAt:    m1.CreatedAt,
-		} //送达者
+		}, body.Event) //发送者
+
+		m, m1, err = c.service.Send(user2, "你好，我是"+req.Remarks1)
+		if err != nil {
+			continue
+		}
+		wsServer.Broadcast <- wsServer.NewW(user2.UserOwner, UserMessage{
+			Message:      m.Message,
+			UsertoUserId: m.UsertoUserId,
+			Key:          m.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m.CreatedAt,
+		}, body.Event) //发送者
+		wsServer.Broadcast <- wsServer.NewW(user2.UserTarget, UserMessage{
+			Message:      m1.Message,
+			UsertoUserId: m1.UsertoUserId,
+			Key:          m1.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+			CreatedAt:    m1.CreatedAt,
+		}, body.Event) //发送者
 	}
+}
+
+// 发送消息
+func (c *Controller) Send(ws *websocket.Conn, mp map[string]interface{}, userid uint) {
+
+	fmt.Println("发送链接中--------")
+
+	fmt.Println("验证成功：userid:", userid)
+
+	var req UserRequest
+	err := webSocketDecoded.DecodedMap(mp, &req)
+	fmt.Printf("%v\n%v\n", req, userid)
+	if err != nil {
+		log.Printf("error: %v\n", err)
+		err := api_helper.WsError(ws, err, "")
+		if err != nil {
+			return
+		}
+	}
+
+	req.UserOwner = userid
+	if _, err := c.userService.GetById(req.UserOwner); err != nil {
+		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+		return
+	}
+
+	utou := ToUsertoUser(req)
+	//fmt.Printf("%v\n", utou)
+	m, m1, err := c.service.Send(utou, req.Message)
+	if err != nil {
+		err1 := api_helper.WsError(ws, err, "")
+		if err1 != nil {
+			log.Printf("error: %v", err1)
+		}
+		return
+	}
+
+	wsServer.Broadcast <- wsServer.NewW(req.UserOwner, UserMessage{
+		Message:      m.Message,
+		UsertoUserId: m.UsertoUserId,
+		Key:          m.Key,
+		User:         req.UserOwner,
+		UserOwner:    req.UserOwner,
+		CreatedAt:    m.CreatedAt,
+	}, mp["event"].(string)) //发送者
+	// Send the newly received message to the broadcast channel
+	wsServer.Broadcast <- wsServer.NewW(req.UserTarget, UserMessage{
+		Message:      m1.Message,
+		UsertoUserId: m1.UsertoUserId,
+		Key:          m1.Key,
+		User:         req.UserTarget,
+		UserOwner:    req.UserOwner,
+		CreatedAt:    m1.CreatedAt,
+	}, mp["event"].(string)) //送达者
 
 }
 
@@ -201,105 +174,70 @@ func (c *Controller) Update(g *gin.Context) {
 }
 
 // 撤回消息
-func (c *Controller) Revocation(g *gin.Context) {
-	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var userid uint
-	defer deleteWs(ws, userid, clientRes)
-	fmt.Println("撤回链接中--------")
-	for {
-		var token config.Token
-		err = ws.ReadJSON(&token)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if token.Type == "auth" {
-			id, err := jwt.Decoded(token.Token)
-			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
-				if err != nil {
-					return
-				}
-				continue
-			}
-			userid = uint(pagination.ParseInt(id, -1))
-			break
-		} else {
-			return
-		}
-	}
-
+func (c *Controller) Revocation(ws *websocket.Conn, mp map[string]interface{}, userid uint) {
 	fmt.Println("验证成功：userid:", userid)
-	clientRes[userid] = append(clientRes[userid], ws) //添加
-	for {
-		var req UserRequest
-		err := ws.ReadJSON(&req)
-		//fmt.Printf("req:%v\n", req)
+
+	var req UserRequest
+	err := webSocketDecoded.DecodedMap(mp, &req)
+	//fmt.Printf("req:%v\n", req)
+	if err != nil {
+		err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if len(req.UserMessages) == 0 {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		req.UserOwner = userid
-		if _, err := c.userService.GetById(req.UserOwner); err != nil {
-			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
-		utou := ToUsertoUser(req)
-		fidutou, err := c.service.Fid(utou.UserOwner, utou.UserTarget)
+		return
+	}
+	if len(req.UserMessages) == 0 {
+		err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 		if err != nil {
-			err := api_helper.WsError(ws, err, "")
-			if err != nil {
-				return
-			}
-			continue
+			return
 		}
-		utou.ID = fidutou.ID
-		if err := c.service.Revocation(utou); err != nil {
-			err := api_helper.WsError(ws, err, "")
-			if err != nil {
-				return
-			}
-			continue
+		return
+	}
+	req.UserOwner = userid
+	if _, err := c.userService.GetById(req.UserOwner); err != nil {
+		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+		return
+	}
+	utou := ToUsertoUser(req)
+	fidutou, err := c.service.Fid(utou.UserOwner, utou.UserTarget)
+	if err != nil {
+		err := api_helper.WsError(ws, err, "")
+		if err != nil {
+			return
 		}
+		return
+	}
+	utou.ID = fidutou.ID
+	if err := c.service.Revocation(utou); err != nil {
+		err := api_helper.WsError(ws, err, "")
+		if err != nil {
+			return
+		}
+		return
+	}
 
-		for _, j := range utou.UserMessages {
-			broadcastRe <- UserMessage{
-				UsertoUserId: utou.ID,
-				Key:          j.Key,
-				User:         req.UserOwner,
-				UserOwner:    req.UserOwner,
-			} //发送者
-			// Send the newly received message to the broadcast channel
-			broadcastRe <- UserMessage{
-				UsertoUserId: utou.ID,
-				Key:          j.Key,
-				User:         req.UserTarget,
-				UserOwner:    req.UserOwner,
-			} //送达者
-			break //暂时先处理一个
-		}
+	for _, j := range utou.UserMessages {
+		wsServer.Broadcast <- wsServer.NewW(req.UserOwner, UserMessage{
+			UsertoUserId: utou.ID,
+			Key:          j.Key,
+			User:         req.UserOwner,
+			UserOwner:    req.UserOwner,
+		}, mp["event"].(string)) //发送者
+		// Send the newly received message to the broadcast channel
+		wsServer.Broadcast <- wsServer.NewW(req.UserTarget, UserMessage{
+			UsertoUserId: utou.ID,
+			Key:          j.Key,
+			User:         req.UserTarget,
+			UserOwner:    req.UserOwner,
+		}, mp["event"].(string)) //送达者
+		break //暂时先处理一个
 	}
 
 }
 
 // 用户单方面删除消息
-func (c *Controller) Delete(g *gin.Context) {
+func (c *Controller) DeleteMessage(g *gin.Context) {
 	var req UserRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
@@ -318,8 +256,8 @@ func (c *Controller) Delete(g *gin.Context) {
 	g.JSON(http.StatusOK, nil)
 }
 
-// 用户单方面删除消息群
-func (c *Controller) Deletes(g *gin.Context) {
+// 用户单方面删除所以消息
+func (c *Controller) DeleteMessages(g *gin.Context) {
 	var req UserRequest
 	if err := g.ShouldBind(&req); err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
@@ -328,6 +266,29 @@ func (c *Controller) Deletes(g *gin.Context) {
 	req.UserOwner = api_helper.GetUserId(g)
 	utou := ToUsertoUser(req)
 	if err := c.service.DeleteMessages(utou); err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	g.JSON(http.StatusOK, nil)
+}
+
+// 删除好友
+func (c *Controller) DeleteUser(g *gin.Context) {
+	var req UserRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	req.UserOwner = api_helper.GetUserId(g)
+
+	fid, err := c.service.Fid(req.UserOwner, req.UserTarget)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	fid.IsDeleted = true
+	err = c.service.DeleteUser(fid)
+	if err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}

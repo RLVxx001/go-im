@@ -3,6 +3,7 @@ package userApplication
 import (
 	"gorm.io/gorm"
 	"log"
+	"time"
 )
 
 type Repository struct {
@@ -35,19 +36,27 @@ func (r *Repository) Update(u *UserApplication) error {
 }
 
 // 查找
-func (r *Repository) Fid(u, tou uint) (*UserApplication, error) {
+func (r *Repository) Fid(u, cl, tou uint) (*UserApplication, error) {
 	var userApplication UserApplication
-	err := r.db.Where("UserOwner=?", u).Where("UserTarget=?", tou).Where("IsDown", false).Where("IsAccept", false).First(&userApplication).Error
+	err := r.db.Where("UserOwner=?", u).
+		Where("Class=?", cl).
+		Where("Target=?", tou).
+		Where("Stats=?", 0).
+		Where("FailureTime>=?", time.Now()).
+		First(&userApplication).Error
 	if err != nil {
 		return nil, err
 	}
 	return &userApplication, nil
 }
 
-// 查找
-func (r *Repository) Fids(u uint) ([]UserApplication, error) {
+// 查找用户下所有请求
+func (r *Repository) Fids(u uint, ins []uint) ([]UserApplication, error) {
 	var users []UserApplication
-	err := r.db.Where("UserOwner=?", u).Or("UserTarget = ?", u).Find(&users).Error
+	err := r.db.Where("Class = 0 AND (UserOwner = ? OR Target = ?)", u, u).
+		Or("Class = 1 AND (UserOwner = ? OR Target IN (?))", u, ins).
+		Or("Class = 2 AND (Target = ? OR InviteUser = ?)", u, u).
+		Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
@@ -56,5 +65,5 @@ func (r *Repository) Fids(u uint) ([]UserApplication, error) {
 
 // 删除申请操作
 func (r *Repository) Delete(id uint) error {
-	return r.db.Unscoped().Where("ID=?", id).Delete(&UserApplication{}).Error
+	return r.db.Where("ID=?", id).Where("FailureTime>=", time.Now()).Delete(&UserApplication{}).Error
 }

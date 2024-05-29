@@ -1,15 +1,14 @@
 package group
 
 import (
-	"design/config"
+	wsServer "design/api/ws"
 	"design/domain/group"
 	"design/domain/user"
 	"design/utils/api_helper"
-	"design/utils/jwt"
-	"design/utils/pagination"
+	"design/utils/webSocketDecoded"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/gorilla/websocket"
 	"net/http"
 )
 
@@ -45,85 +44,52 @@ func (c *Controller) FidGroup(g *gin.Context) {
 }
 
 // 创建群聊
-func (c *Controller) CreateGroup(g *gin.Context) {
-	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var userid uint
-	defer deleteWs(ws, userid, clientNews)
-	fmt.Println("创建链接中--------")
-	for {
-		var token config.Token
-		err = ws.ReadJSON(&token)
-		fmt.Printf("%v\n", token)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if token.Type == "auth" {
-			id, err := jwt.Decoded(token.Token)
-			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
-				if err != nil {
-					return
-				}
-				continue
-			}
-			userid = uint(pagination.ParseInt(id, -1))
-			break
-		} else {
-			return
-		}
-	}
+func (c *Controller) CreateGroup(ws *websocket.Conn, mp map[string]interface{}, userid uint) {
+
 	fmt.Println("验证成功：userid:", userid)
-	clientNews[userid] = append(clientNews[userid], ws) //添加
-	for {
-		var req GroupRequest
-		err = ws.ReadJSON(&req)
-		fmt.Printf("req: %v\n", req)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
 
-		if _, err := c.userService.GetById(userid); err != nil {
-			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+	var req GroupRequest
+	err := webSocketDecoded.DecodedMap(mp, req)
+	fmt.Printf("req: %v\n", req)
+	if err != nil {
+		err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
+		if err != nil {
 			return
 		}
-		mp := make(map[uint]bool)
-		//筛选合理用户
-		var groupUsers []group.GroupUser
-		groupUsers = append(groupUsers, group.GroupUser{UserId: userid, IsAdmin: 2}) //创建人为群主
-		mp[userid] = true
-		for _, j := range req.GroupUsers {
-			if mp[j.UserId] {
-				continue
-			}
-			if _, err := c.userService.GetById(j.UserId); err == nil {
-				groupUsers = append(groupUsers, group.GroupUser{UserId: j.UserId})
-				mp[j.UserId] = true
-			}
-		}
-		group := ToGroup(req)
-		group.GroupUsers = groupUsers
-		err := c.s.CreateGroup(&group)
-		if err != nil {
-			err1 := api_helper.WsError(ws, err, "")
-			if err1 != nil {
-				return
-			}
-			continue
-		}
-
+		return
 	}
 
+	if _, err := c.userService.GetById(userid); err != nil {
+		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+		return
+	}
+	p := make(map[uint]bool)
+	//筛选合理用户
+	var groupUsers []group.GroupUser
+	groupUsers = append(groupUsers, group.GroupUser{UserId: userid, IsAdmin: 2}) //创建人为群主
+	p[userid] = true
+	for _, j := range req.GroupUsers {
+		if p[j.UserId] {
+			continue
+		}
+		if _, err := c.userService.GetById(j.UserId); err == nil {
+			groupUsers = append(groupUsers, group.GroupUser{UserId: j.UserId})
+			p[j.UserId] = true
+		}
+	}
+	group := ToGroup(req)
+	group.GroupUsers = groupUsers
+	err = c.s.CreateGroup(&group)
+	if err != nil {
+		err1 := api_helper.WsError(ws, err, "")
+		if err1 != nil {
+			return
+		}
+		return
+	}
+	for _, i := range group.GroupUsers {
+		wsServer.Broadcast <- wsServer.NewW(i.UserId, i, mp["event"].(string))
+	}
 }
 
 // 更改群信息
@@ -238,141 +204,71 @@ func (c *Controller) DeleteGroupUser(g *gin.Context) {
 }
 
 // 发送群消息
-func (c *Controller) SendMessage(g *gin.Context) {
-	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (c *Controller) SendMessage(ws *websocket.Conn, mp map[string]interface{}, userid uint) {
 
-	var userid uint
-	defer deleteWs(ws, userid, clientNews)
-	fmt.Println("发送链接中--------")
-	for {
-		var token config.Token
-		err = ws.ReadJSON(&token)
-		fmt.Printf("%v\n", token)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if token.Type == "auth" {
-			id, err := jwt.Decoded(token.Token)
-			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
-				if err != nil {
-					return
-				}
-				continue
-			}
-			userid = uint(pagination.ParseInt(id, -1))
-			break
-		} else {
-			return
-		}
-	}
 	fmt.Println("验证成功：userid:", userid)
-	clients[userid] = append(clients[userid], ws) //添加
 
-	for {
-		var req GroupMessage
-		err = ws.ReadJSON(&req)
-		fmt.Printf("req: %v\n", req)
+	var req GroupMessage
+	err := webSocketDecoded.DecodedMap(mp, &req)
+	fmt.Printf("req: %v\n", req)
+	if err != nil {
+		err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-
-		if _, err := c.userService.GetById(userid); err != nil {
-			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
+		return
+	}
 
-		messages, err := c.s.SendMessage(req.GroupId, userid, req.Message)
-		if err != nil {
-			err1 := api_helper.WsError(ws, err, "")
-			if err1 != nil {
-				return
-			}
-			continue
+	if _, err := c.userService.GetById(userid); err != nil {
+		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
+		return
+	}
+
+	messages, err := c.s.SendMessage(req.GroupId, userid, req.Message, req.Img)
+	if err != nil {
+		err1 := api_helper.WsError(ws, err, "")
+		if err1 != nil {
+			return
 		}
-		for _, i := range messages {
-			broadcast <- ToResponseGroupMessage(i)
-		}
+		return
+	}
+	for _, i := range messages {
+		wsServer.Broadcast <- wsServer.NewW(i.MessageOwner, ToResponseGroupMessage(i), mp["event"].(string))
 	}
 
 }
 
 // 撤回群消息
-func (c *Controller) RevocationMessage(g *gin.Context) {
-	ws, err := upgrader.Upgrade(g.Writer, g.Request, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var userid uint
-	defer deleteWs(ws, userid, clientRes)
-	fmt.Println("撤回链接中--------")
-	for {
-		var token config.Token
-		err = ws.ReadJSON(&token)
-		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if token.Type == "auth" {
-			id, err := jwt.Decoded(token.Token)
-			if err != nil {
-				err := api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
-				if err != nil {
-					return
-				}
-				continue
-			}
-			userid = uint(pagination.ParseInt(id, -1))
-			break
-		} else {
-			return
-		}
-	}
+func (c *Controller) RevocationMessage(ws *websocket.Conn, mp map[string]interface{}, userid uint) {
 
 	fmt.Println("验证成功：userid:", userid)
-	clientRes[userid] = append(clientRes[userid], ws) //添加
-	for {
-		var req GroupMessage
-		err = ws.ReadJSON(&req)
-		fmt.Printf("req: %v\n", req)
+
+	var req GroupMessage
+	err := webSocketDecoded.DecodedMap(mp, &req)
+	fmt.Printf("req: %v\n", req)
+	if err != nil {
+		err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
 		if err != nil {
-			err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
-			if err != nil {
-				return
-			}
-			continue
-		}
-		if _, err := c.userService.GetById(userid); err != nil {
-			_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
 			return
 		}
+		return
+	}
+	if _, err := c.userService.GetById(userid); err != nil {
+		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+		return
+	}
 
-		messages, err := c.s.RevocationMessage(req.Id, userid)
-		if err != nil {
-			err1 := api_helper.WsError(ws, err, "")
-			if err1 != nil {
-				return
-			}
-			continue
+	messages, err := c.s.RevocationMessage(req.Id, userid)
+	if err != nil {
+		err1 := api_helper.WsError(ws, err, "")
+		if err1 != nil {
+			return
 		}
-		fmt.Printf("%v\n", messages)
-		for _, i := range messages {
-			broadcastRe <- ToResponseGroupMessage(i)
-		}
+		return
+	}
+	fmt.Printf("%v\n", messages)
+	for _, i := range messages {
+		wsServer.Broadcast <- wsServer.NewW(i.MessageOwner, ToResponseGroupMessage(i), mp["event"].(string))
 	}
 
 }

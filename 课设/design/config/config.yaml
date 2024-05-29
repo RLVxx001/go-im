@@ -5,7 +5,7 @@ DatabaseSettings:
   DatabaseURIR: "parseTime=True&loc=Local"
   DatabaseName: "chat_db" # 数据库名
   Username: "root"
-  Password: "123456"
+  Password: "15159579836x"
 
 JwtSettings:
   SecretKey: "chat.com" #JWTkey

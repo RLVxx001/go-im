@@ -17,9 +17,9 @@ func Decoded(ws *websocket.Conn, userid *uint, event *string) (error, string, ma
 	if err != nil {
 		return api_helper.ErrInvalidBody, "", nil
 	}
-	for i, j := range mp {
-		fmt.Printf("%v  %v\n", i, j)
-	}
+	//for i, j := range mp {
+	//	fmt.Printf("%v  %v\n", i, j)
+	//}
 	token, ok := mp["token"].(string)
 	if !ok {
 		return api_helper.ErrInvalidBody, "", nil

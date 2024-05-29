@@ -2,28 +2,8 @@ package group
 
 import (
 	"design/domain/group"
-	"github.com/gorilla/websocket"
-	"net/http"
 	"time"
 )
-
-var clients = make(map[uint][]*websocket.Conn) //消息专用
-var broadcast = make(chan GroupMessage)
-
-var clientNews = make(map[uint][]*websocket.Conn) //创建
-var broadcastNew = make(chan GroupUser)           //
-
-var clientRes = make(map[uint][]*websocket.Conn) //撤回
-var broadcastRe = make(chan GroupMessage)
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// 允许跨域请求（仅作为示例，生产环境请考虑安全性）
-		return true
-	},
-} // 使用默认的WebSocket升级选项
 
 type GroupRequest struct {
 	Id            uint           `json:"id"`            //群id
@@ -32,6 +12,7 @@ type GroupRequest struct {
 	GroupInform   string         `json:"groupInform"`   //群公告
 	GroupUsers    []GroupUser    `json:"groupUsers"`    //群用户
 	GroupMessages []GroupMessage `json:"groupMessages"` //群消息
+	Img           string         `json:"img"`           //图像
 	UpdatedAt     time.Time      `json:"updatedAt"`     //更新事件
 }
 
@@ -44,6 +25,7 @@ type GroupMessage struct {
 	Message       string    `json:"message"`       //消息
 	MessageKey    uint      `json:"messageKey"`    //消息key
 	IsRead        bool      `json:"isRead"`        //是否已读
+	Img           string    `json:"img"`           //图片
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
@@ -62,6 +44,7 @@ func ToGroup(req GroupRequest) group.Group {
 		GroupId:     req.GroupId,
 		GroupName:   req.GroupName,
 		GroupInform: req.GroupInform,
+		Img:         req.Img,
 	}
 }
 func ToGroupRequest(req group.Group) GroupRequest {

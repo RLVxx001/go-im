@@ -4,11 +4,17 @@
     <hr>
   <el-scrollbar style="width:800px;height:470px;margin-top:-20px" ref="scrollbarRef" always>
       <div ref="innerRef">
-        <div v-for="(tmp) in friendlist">
+        <div v-for="(tmp,index) in friendlist" :key="index">
           <div style="width:750px;height:auto;min-height:70px;background-color:rgb(189, 184, 184);margin-left:30px;margin-top:10px;border-radius:10px">
             <div style="height:50px;display:flex">
-              <img :src="tmp.pht" style="margin-left:10px;height:50px;width:50px;border-radius:50%;border:1px double"/>
-              <div style="font-size:23px;margin-left:10px">{{tmp.name}}</div>
+              <img :src="tmp.userResponse.img?tmp.userResponse.img:tmp.groupResponse.img" style="margin-left:10px;height:50px;width:50px;border-radius:50%;border:1px double"/>
+              <div v-if="tme.class==1"></div>
+              <div v-if="tme.class==2"></div>
+              <div style="font-size:23px;margin-left:10px">
+                <span v-if="tme.class==0">{{ tmp.userOwner==id?tmp.target:tmp.userOwner }}</span>
+                <span v-if="tme.class==1">{{ tmp.userOwner==id?tmp.target:tmp.userOwner }}</span>
+                <span v-if="tme.class==2">{{  }}</span>
+              </div>
             </div>
             <div style="display:flex">
               <div style="margin-left:160px;margin-top:-40px;font-size:15px">请求添加为好友</div>
@@ -34,41 +40,24 @@ let friendlist=reactive([{
     "msg":"hello,world",
     "tim":"2024/5/17",
     "is_agr":0,
-  },
-  {
-    "pht":"#",
-    "name":"xxxs",
-    "id":"id",
-    "msg":"hello,world",
-    "tim":"2024/5/17",
-    "is_agr":0,
-  },
-  {
-    "pht":"#",
-    "name":"xxxs",
-    "id":"id",
-    "msg":"hello,world",
-    "tim":"2024/5/17",
-    "is_agr":1,
-  },
-  {
-    "pht":"#",
-    "name":"xxxs",
-    "id":"id",
-    "msg":"hello,world",
-    "tim":"2024/5/17",
-    "is_agr":1,
-  },
-  {
-    "pht":"#",
-    "name":"xxxs",
-    "id":"id",
-    "msg":"hello,world",
-    "tim":"2024/5/17",
-    "is_agr":111,
   }
 ])
 let id = ref(localStorage.getItem("id"));
+function getlist(){
+  service.get('http://localhost:8080/userApplication')
+  .then(res=>{
+    friendlist.splice(0,1)
+    res.data.forEach(element => {
+      friendlist.push(element)
+    });
+    console.log(friendlist)
+  }).catch(err=>{
+
+  })
+}
+onMounted(()=>{
+  getlist()
+})
 </script>
 <style>
 .to22{

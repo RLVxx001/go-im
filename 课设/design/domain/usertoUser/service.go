@@ -139,6 +139,15 @@ func (c *Service) DeleteMessages(u *UsertoUser) error {
 	return nil
 }
 
+// 删除用户
+func (c *Service) DeleteUser(u *UsertoUser) error {
+	err := c.r.DeleteUser(u)
+	if err != nil {
+		return ErrNotDelete
+	}
+	return nil
+}
+
 // 查找消息
 func (c *Service) FidMessage(u *UsertoUser) (*UsertoUser, error) {
 	//校验
@@ -154,7 +163,7 @@ func (c *Service) FidMessage(u *UsertoUser) (*UsertoUser, error) {
 // 查找用户-用户实体
 func (c *Service) Fid(u1, u2 uint) (*UsertoUser, error) {
 	us, err := c.r.Fid(u1, u2)
-	if err != nil {
+	if err != nil || us.IsDeleted {
 		return nil, ErrNotUsers
 	}
 	return us, nil

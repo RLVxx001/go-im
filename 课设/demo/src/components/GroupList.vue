@@ -61,14 +61,12 @@
 <script lang="ts" setup>
 import ImageViewer from "@luohc92/vue3-image-viewer";
 import '@luohc92/vue3-image-viewer/dist/style.css';
-import { ref, onMounted ,h,reactive,nextTick } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick,inject,watch } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
-
-
-let messageWs = ref(null); 
-let newWs = ref(null); 
-let RevocationWs = ref(null); 
+import { useWsStore } from '../store/user';
+const wsStore=useWsStore()
+const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
 
 var groupuser = reactive([{
@@ -77,104 +75,38 @@ var groupuser = reactive([{
 }])
 
 function send(){
-  // let list=[]
-  // list.push({key:passwd-0})
-  if(messageWs.value.readyState == WebSocket.OPEN){
-    messageWs.value.send(
-    JSON.stringify({
+  $Ws && $Ws({
             groupId: groups[index.value].id-0,
-            message:message.value
-        }
-    ));
-  }
+            message:message.value,
+            event:'/group/sendMessage',
+            token:localStorage.getItem('token')
+        })
   message.value=''
 }
-
-function createMessageWs(){
-  console.log("开启socket链接-----"+'ws://')
-  messageWs.value = new WebSocket('ws://' + 'localhost:8080' + '/group/sendMessage');  
-  messageWs.value.onopen = (event) => {  
-    // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(messageWs);  
-  };  
-  messageWs.value.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);
-    if(msg.type==null||msg.type==""){//接受成功  
-      console.log(msg);  
-      for(let i=0;i<groups.length;i++){
-        if(msg.groupId==groups[i].id){
-          let IsNo=true
-          if(groups[i].groupMessages.length&&groups[i].groupMessages.length!=0){
-            groups[i].groupMessages.forEach(element => {
-              if(element.messageKey==msg.messageKey){
-                IsNo=true
+watch(  
+    () => wsStore.Groupmessagecount,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.Groupmessagecount){
+        wsStore.readGroupMessages().then(res=>{
+          console.log(res)
+          res.forEach(element => {
+            for(let i=0;i<groups.length;i++)
+            {
+              if(groups[i].id==element.groupId){
+                groups[i].groupMessages.push(element)
+                gobottom()
+                break;
               }
-            });
-          }
-          
-          if(IsNo){
-            groups[i].groupMessages.push(msg)
-          }
-          break
-        }
+            }
+          });
+        }).catch(err=>{
+          console.error(err)
+        })
       }
-      gobottom()
-    }
-    else{//失败
-      ElNotification({
-        title: '发送异常',
-        message: msg.errorMessage,
-        type: 'error',
-      })
-    }
-    
-  };
-}
-
-function createNewWs(){
-  console.log("开启socket链接-----"+'ws://')
-  newWs.value = new WebSocket('ws://' + 'localhost:8080' + '/group/createGroup');  
-  newWs.value.onopen = (event) => {  
-    // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(newWs);  
-  };  
-  
-  newWs.value.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);  
-    console.log(msg);  
-  };
-}
-
-
-function createRevocationWs(){
-  console.log("开启socket链接-----"+'ws://')
-  RevocationWs.value = new WebSocket('ws://' + 'localhost:8080' + '/group/revocationMessage');  
-  RevocationWs.value.onopen = (event) => {  
-    // 当 WebSocket 连接打开时，发送认证消息  
-    authenticate(RevocationWs);  
-  };  
-  
-  RevocationWs.value.onmessage = (event) => {  
-    // 处理从服务器接收到的消息  
-    const msg = JSON.parse(event.data);  
-    console.log(msg);  
-  };
-}
-
-function authenticate(ws){// 认证方法 
-  if (ws.value.readyState == WebSocket.OPEN && localStorage.token) {  
-    console.log("发送验证信息")
-    ws.value.send(  
-      JSON.stringify({  
-        type: 'auth', // 消息类型，用于区分是普通消息还是认证消息  
-        token: localStorage.token,  
-        // 其他可能需要的认证信息...  
-      })  
-    );  
-  }
-}
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+  );
 
 
 
@@ -224,9 +156,7 @@ function getgroups(){
 }
 
 onMounted(() => {
-  createMessageWs()
-  createNewWs()
-  createRevocationWs()
+  wsStore.event=1
   getgroups()
   goindex(0)
 })
