@@ -22,6 +22,15 @@ func (r *SpaceRepository) Migration() {
 	}
 }
 
+func (r *SpaceRepository) Create(userId uint) error {
+	var space Space
+	space.UserId = userId
+	space.EnterPermit = false
+	var trends []SpaceTrends
+	space.SpaceTrends = trends
+	return r.db.Create(&space).Error
+}
+
 func (r *SpaceRepository) Find(userid uint) (Space, error) {
 	var space Space
 	err := r.db.Where("UserId=?", userid).First(&space).Error

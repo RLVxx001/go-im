@@ -4,6 +4,7 @@ import (
 	"design/config"
 	"design/domain/space"
 	"design/utils/api_helper"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -20,21 +21,38 @@ func NewSpaceController(service *space.Service, appConfig *config.Configuration)
 	}
 }
 
-func (r *Controller) CreateTrend(g *gin.Context) {
-	var req CreateTrendRequest
+func (r *Controller) CreateSpace(g *gin.Context) {
+	var req CreateSpaceResp
 	err := g.ShouldBind(&req)
 	if err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}
-	err = r.spaceService.CreateTrends(&req.Trend)
+	err = r.spaceService.CreateSpace(req.UserId)
+	if err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+}
+
+func (r *Controller) CreateTrend(g *gin.Context) {
+	var req CreateTrendRequest
+	err := g.ShouldBind(&req)
+	fmt.Printf("%v", req)
+	if err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	trend := ToSpaceTrend(req)
+
+	err = r.spaceService.CreateTrends(&trend)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
 	g.JSON(
 		http.StatusCreated, CreateTrendResponse{
-			SpaceId: req.Trend.SpaceId,
+			SpaceId: req.SpaceId,
 		})
 }
 

@@ -31,9 +31,9 @@ func (r *TrendsRepository) Delete(trendid uint) error {
 	return r.db.Where("ID=?", trendid).Delete(SpaceTrends{}).Error
 }
 
-func (r *TrendsRepository) Find(trendId uint) ([]SpaceTrends, error) {
-	var trend []SpaceTrends
-	err := r.db.Where("ID=?", trendId).Find(&trend).Error
+func (r *TrendsRepository) Find(trendId uint) (SpaceTrends, error) {
+	var trend SpaceTrends
+	err := r.db.Where("ID=?", trendId).First(&trend).Error
 	return trend, err
 }
 

@@ -42,12 +42,13 @@ func NewSpaceTrends(spaceId uint, detail string) *SpaceTrends {
 // Comment 评论表
 type Comment struct {
 	gorm.Model
-	UserId   uint      //评论用户id
-	User     user.User `gorm:"-"`
-	Praise   uint
-	Content  string //内容
-	TrendsId uint   //空间动态表id
-	ToUserId uint   //0
+	UserId        uint      //评论用户id
+	User          user.User `gorm:"-"`
+	Praise        uint
+	Content       string //内容
+	TrendsId      uint   //空间动态表id
+	ToUserId      uint   //0
+	SpaceTrendsId uint
 }
 
 func NewComment(userId uint, content string, spaceTrendsId uint) *Comment {

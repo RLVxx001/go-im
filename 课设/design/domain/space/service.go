@@ -11,7 +11,20 @@ func NewService(r SpaceRepository, t TrendsRepository, c CommentRepository) *Ser
 	t.Migration()
 	c.Migration()
 	//r.InsertSampleData()
-	return &Service{}
+	return &Service{
+		space:   r,
+		trend:   t,
+		comment: c,
+	}
+}
+
+func (s *Service) CreateSpace(userId uint) error {
+	var user uint
+	err := s.space.Create(user)
+	if err != nil {
+		print(err)
+	}
+	return err
 }
 
 func (r *Service) FindSpace(userid uint) (Space, error) {

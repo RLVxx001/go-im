@@ -47,46 +47,11 @@
 import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
-let rcd=reactive([{
-  "name":"xxx",
-  "pht":"#",
-  "detail":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "tim":"2024/5/14 1:11",
-  "commit":[{
-    "username":"xxx",
-    "disc":"xasfxxxxxxxxxxx",
-    "img":"#"
-  }]
-  },
-  {
-  "detail":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "tim":"2024/5/14 1:11",
-  "commit":[{
-    "username":"xxx",
-    "disc":"xasfxxxxxxxxxxx",
-    "img":"#"
-  }]
-  },
-  {
-  "detail":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "tim":"2024/5/14 1:11",
-  "commit":[{
-    "username":"xxx",
-    "disc":"xasfxxxxxxxxxxx",
-    "img":"#"
-  }]
-  },
-  {
-  "detail":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "tim":"2024/5/14 1:11",
-  "commit":[{
-    "username":"xxx",
-    "disc":"xasfxxxxxxxxxxx",
-    "img":"#"
-  }]
-  }
-])
+let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
+onMounted(()=>{
+  service.post("http://localhost:8080/space")
+})
 </script>
 <style>
 .to22{
