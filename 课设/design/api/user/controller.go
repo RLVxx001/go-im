@@ -172,20 +172,24 @@ func (c *Controller) Upload(g *gin.Context) {
 		api_helper.HandleErrorToken(g, err)
 		return
 	}
+	uid := g.Request.PostFormValue("uid")
+	if uid == "" {
+		api_helper.HandleError(g, errors.New("uid is null"))
+		return
+	}
 	file, header, err := g.Request.FormFile("file")
 	if err != nil {
 		api_helper.HandleError(g, errors.New("Failed to retrieve file"))
 		return
 	}
+
 	ext := filepath.Ext(header.Filename) //获取文件后缀
 	if ext != ".jpg" && ext != ".webp" && ext != ".png" {
 		api_helper.HandleError(g, errors.New("文件格式不符合"))
 		return
 	}
-	now := time.Now()
-	timestampSeconds := now.Unix()
 
-	header.Filename = fmt.Sprintf("%dto%d%s", api_helper.GetUserId(g), timestampSeconds, ext)
+	header.Filename = fmt.Sprintf("%v%s", uid, ext)
 
 	// 指定上传目录，比如 "uploads"
 	uploadDir := "./public/images"
