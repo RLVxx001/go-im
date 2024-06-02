@@ -6,7 +6,7 @@
         <el-scrollbar style="height:550px;width:200px">
           <p v-for="(item,index) in usertoUsers" 
           :key="index" style="margin-top:10px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:12px" class="friend">
-            <img src="#" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
+            <img :src="item.ToUser.img" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
             {{ item.remarks }}
           </p>
         </el-scrollbar>
@@ -16,7 +16,7 @@
         <div class="Message" >
           {{ index }}
           <hr>
-          <div class="Top" style="width:auto" v-if="index!=-1">
+          <div class="Top" style="width:auto" v-if="index!=-1 && usertoUsers.length!=0">
             <el-scrollbar style="width:607px;height:345px;margin-top:-10px" ref="scrollbarRef" always>
               <div ref="innerRef">
                 <p v-for="(message,i) in usertoUsers[index].userMessages" 
@@ -24,19 +24,34 @@
                  :class="getMessageClass(message.userOwner==usertoUsers[index].userOwner)">
                   <div v-if="message.userOwner==usertoUsers[index].userOwner" style="display: flex;">
                       <div style="width:300px;height:1px"></div>
-                    <div class="bubble" style="background-color:rgb(222, 221, 221);margin-right:10px;">
-                      <div class="message" v-html="message.message" style=""></div>
+                    <div class="bubble" style="margin-right:10px;">
+                            <div class="message" v-html="message.message"></div>
                     </div>
                     <div class="avatar">
-                      <img src="#" class="avatar-image" style="margin-right:20px" />
+                      <img :src="user.img" class="avatar-image" style="margin-right:20px" />
                     </div>
                   </div>
                   <div v-else  style="display: flex;">
                     <div class="avatar">
-                      <img src="#" class="avatar-image" style="margin-left:20px"/>
+                      <img :src="usertoUsers[index].ToUser.img" class="avatar-image" style="margin-left:20px"/>
                     </div>
-                    <div class="bubble" style="background-color:rgb(222, 221, 221);margin-left:10px">
-                      <div class="message" v-html="message.message"></div>
+                    <div class="bubble" style="margin-left:10px">
+                      <div class="message">
+                        <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
+                          <div style="text-align: right; margin: 0;">
+                            <el-button size="small" text @click="message.visible = false">取消</el-button>
+                            <el-button size="small" type="primary" @click="che">
+                              撤回
+                            </el-button>
+                            <el-button size="small" type="primary" @click="shan">
+                              删除
+                            </el-button>
+                          </div>
+                          <template #reference>
+                            <el-button @click="message.visible = true">{{ message.message }}</el-button>
+                          </template>
+                        </el-popover>
+                      </div>
                     </div>
                       <div style="width:300px;height:1px"></div>
                   </div>
@@ -75,7 +90,7 @@ function send(){
         })
   message.value=''
 }
-
+var user = reactive(JSON.parse(localStorage.getItem('user')))
 // 使用watch来监听userStore的userInfo变化  
 watch(  
     () => wsStore.Frientmessagecount,  
@@ -100,36 +115,84 @@ watch(
     },  
     // 可选：配置watch选项，如立即执行、深度监听等  
     { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
-  );
-
+);
+watch(  
+    () => wsStore.Frientusercount,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.Frientusercount){
+        wsStore.readFrientUsers().then(res=>{
+          console.log(res)
+          res.forEach(element => {
+            let p=0;
+            for(let i=0;i<usertoUsers.length;i++)
+            {
+              if(usertoUsers[i].id==element.id)
+              {
+                usertoUsers.splice(i,1)
+                if(index.value>i)
+                {
+                  break
+                }
+                else if(index.value==i)
+                {
+                  p=1;
+                  break
+                }
+                else
+                {
+                  index.value++
+                  break
+                }
+              }
+            }
+            service.post('http://localhost:8080/usertoUser/fid',{'userTarget':element.userTarget})
+            .then(res=>{
+              console.log(res.data)
+              element=res.data
+              usertoUsers.unshift(element)
+              goindex(0)
+            })
+            
+          });
+        }).catch(err=>{
+          console.error(err)
+        })
+      }
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+);
 //消息框样式动态选择
 const getMessageClass = (isSent) => {
   return isSent ? 'message-container-right' : 'message-container-left';
 };
 
 
-var usertoUsers=reactive([{}])
+var usertoUsers=reactive([])
 
 const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
-let index=ref(0)
+let index=ref(-1)
 function goindex(val){
-  console.log(val)
   index.value=val
   gobottom()
 }
 function gobottom(){//抵达最底部
+  if(usertoUsers.length==0||index.value==-1)
+  {
+    return
+  }
+  console.log(usertoUsers)
   nextTick(() => {  
     scrollbarRef.value!.setScrollTop(20000)
   })
 }
 function getusers(){
   console.log('发送请求')
-   service.get('http://localhost:8080/usertoUser/fid')
+   service.get('http://localhost:8080/usertoUser/fids')
    .then(res=>{
     console.log(usertoUsers)
     console.log(res.data)
-    usertoUsers.pop()
     res.data.forEach(element => {
       usertoUsers.push(element)
     });
@@ -151,7 +214,7 @@ function getusers(){
 onMounted(() => {
   wsStore.event=0
   getusers()
-  goindex(0)
+
 })
 </script>
 <style scoped>

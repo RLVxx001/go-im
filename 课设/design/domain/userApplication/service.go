@@ -52,17 +52,17 @@ func (c *Service) Refuse(userApplication *UserApplication) error {
 }
 
 // 接受操作
-func (c *Service) Accept(userApplication *UserApplication) error {
+func (c *Service) Accept(userApplication *UserApplication) (*UserApplication, error) {
 	fid, err := c.r.Fid(userApplication.UserOwner, userApplication.Class, userApplication.Target) //先查询是否有此请求
 	if err != nil {
-		return ErrAccept
+		return nil, ErrAccept
 	}
 	fid.Stats = 2
 	fid.InviteUser = userApplication.InviteUser
 	if err := c.r.Update(fid); err != nil {
-		return ErrAccept
+		return nil, ErrAccept
 	}
-	return nil
+	return fid, nil
 }
 
 // 查询单用户下的所有信息

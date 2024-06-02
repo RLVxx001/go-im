@@ -174,6 +174,7 @@ func (c *Controller) Refuse(g *gin.Context, req CreateRequest) {
 
 // 同意申请
 func (c *Controller) Accept(g *gin.Context, req CreateRequest) {
+	//有漏洞
 	application := userApplication.NewUserApplication(req.UserOwner, req.Class, req.Target, req.Remarks, req.Text)
 	userId := api_helper.GetUserId(g)
 	if application.Class == 0 { //对于好友申请同意
@@ -183,17 +184,24 @@ func (c *Controller) Accept(g *gin.Context, req CreateRequest) {
 			api_helper.HandleError(g, err)
 			return
 		}
-		_, err = c.usertoUserService.Fid(application.UserOwner, application.Target)
-		if err == nil {
+		_, err1 := c.usertoUserService.Fid(application.UserOwner, application.Target)
+		if err1 == nil {
 			api_helper.HandleError(g, errors.New("您已添加该好友"))
 			return
 		}
-		err = c.service.Accept(application)
-		if err != nil {
-			api_helper.HandleError(g, err)
+		fid, err2 := c.service.Accept(application)
+		if err2 != nil {
+			api_helper.HandleError(g, err2)
 			return
 		}
 		g.JSON(http.StatusOK, req)
+		wsServer.ApplicationChan <- wsServer.ApplicationAccept{
+			Owner:    application.UserOwner,
+			Class:    application.Class,
+			Target:   application.Target,
+			Remarks:  fid.Remarks,
+			Remarks1: req.Remarks,
+		}
 	} else if application.Class == 1 { //身为管理员 同意用户申请
 		groupUser, err := c.groupService.GetGroupUser(application.Target, userId) //查询群内是否有本用户
 		if err != nil {
@@ -209,13 +217,20 @@ func (c *Controller) Accept(g *gin.Context, req CreateRequest) {
 			api_helper.HandleError(g, errors.New("该用户已加入该群聊"))
 			return
 		}
-		application.InviteUser = api_helper.GetUserId(g) //设置批阅人
-		err = c.service.Accept(application)
+		application.InviteUser = userId //设置批阅人
+		_, err = c.service.Accept(application)
 		if err != nil {
 			api_helper.HandleError(g, err)
 			return
 		}
 		g.JSON(http.StatusOK, req)
+		wsServer.ApplicationChan <- wsServer.ApplicationAccept{
+			Owner:      application.UserOwner,
+			Class:      application.Class,
+			Target:     application.Target,
+			InviteUser: userId,
+			Remarks:    req.Text,
+		}
 	} else if application.Class == 2 { //身为用户 同意群管理发来的请求
 		application.Target = userId
 		_, err := c.groupService.GetById(application.UserOwner) //查询群聊
@@ -228,18 +243,21 @@ func (c *Controller) Accept(g *gin.Context, req CreateRequest) {
 			api_helper.HandleError(g, errors.New("您已加入该群聊"))
 			return
 		}
-		err = c.service.Accept(application)
-		if err != nil {
-			api_helper.HandleError(g, err)
+		fid, err1 := c.service.Accept(application)
+		if err1 != nil {
+			api_helper.HandleError(g, err1)
 			return
 		}
 		g.JSON(http.StatusOK, nil)
+		wsServer.ApplicationChan <- wsServer.ApplicationAccept{
+			Owner:      application.UserOwner,
+			Class:      application.Class,
+			Target:     application.Target,
+			InviteUser: fid.InviteUser,
+			Remarks:    req.Text,
+		}
 	}
-	wsServer.ApplicationChan <- wsServer.ApplicationAccept{
-		Owner:  application.UserOwner,
-		Class:  application.Class,
-		Target: application.Target,
-	}
+
 }
 
 // 查询申请

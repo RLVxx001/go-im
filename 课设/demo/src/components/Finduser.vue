@@ -7,7 +7,6 @@
       <div style="margin-top:20px;display:flex">用户名：<div style="color:rgb(207, 234, 244);margin-left:24px;background-color:rgb(105, 105, 105);">{{res.username}}</div></div>
       <div style="margin-top:10px;display:flex">账号：<div style="color:rgb(207, 234, 244);margin-left:50px;background-color:rgb(105, 105, 105);border:0px">{{res.account}}</div></div>
       <div style="margin-top:10px;display:flex">个性签名：<div style="background-color:rgb(105, 105, 105);border:0px" >{{res.signed}}</div></div>
-      <div style="margin-top:10px;display:flex">邮箱：<div style="margin-left:50px;background-color:rgb(105, 105, 105);border:0px">{{res.email}}</div></div>
       <div style="margin-top:10px;display:flex">生日：<div style="margin-left:50px;background-color:rgb(105, 105, 105);border:0px">{{res.birthday}}</div></div>
       <div style="margin-top:10px;display:flex">居住地：<div style="margin-left:24px;background-color:rgb(105, 105, 105);border:0px">{{res.city}}</div></div>
     </div>
@@ -38,6 +37,13 @@ const open = () => {
     inputErrorMessage: 'Invalid Email',
   })
     .then(({ value }) => {
+      
+      // service.post('',{
+      //   'userOwner':JSON.parse(localStorage.getItem('user')).id-0,
+      //   'class':0,
+      //   'target':res.userId,
+      //   'text':
+      // })
       msg.value=value
       localStorage.setItem("msg",value);
       ElMessage({
@@ -67,6 +73,7 @@ onMounted(()=>{
     res.pht=tmp.data.img
     res.birthday=tmp.data.birthday
     res.city=tmp.data.city
+    res.userId=tmp.data.userId
   })
   .catch(err=>{
     alert("未找到该用户")

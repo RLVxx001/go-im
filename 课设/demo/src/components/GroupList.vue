@@ -6,7 +6,7 @@
         <el-scrollbar style="height:550px;width:200px">
           <p v-for="(item,index) in groups" 
           :key="index" style="margin-top:10px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:12px" class="friend">
-            <img src="#" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
+            <img :src="item.img" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
             {{ item?item.groupName:'' }}
           </p>
         </el-scrollbar>
@@ -27,19 +27,49 @@
                  :class="getMessageClass(message.messageOwner==message.messageSender)">
                   <div v-if="message.messageOwner==message.messageSender" style="display: flex;">
                       <div style="width:300px;height:1px"></div>
-                    <div class="bubble" style="background-color:rgb(222, 221, 221);margin-right:10px;">
-                      <div class="message" v-html="message.message" style=""></div>
+                    <div class="bubble" style="margin-right:10px;">
+                      <div class="message">
+                        <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
+                          <div style="text-align: right; margin: 0;">
+                            <el-button size="small" text @click="message.visible = false">取消</el-button>
+                            <el-button size="small" type="primary" @click="che">
+                              撤回
+                            </el-button>
+                            <el-button size="small" type="primary" @click="shan">
+                              删除
+                            </el-button>
+                          </div>
+                          <template #reference>
+                            <el-button @click="message.visible = true">{{ message.message }}</el-button>
+                          </template>
+                        </el-popover>
+                      </div>
                     </div>
                     <div class="avatar">
-                      <img src="#" class="avatar-image" style="margin-right:20px" />
+                      <img :src="message.senderUser.img" class="avatar-image" style="margin-right:20px" />
                     </div>
                   </div>
                   <div v-else  style="display: flex;">
                     <div class="avatar">
-                      <img src="#" class="avatar-image" style="margin-left:20px"/>
+                      <img :src="message.senderUser.img" class="avatar-image" style="margin-left:20px"/>
                     </div>
-                    <div class="bubble" style="background-color:rgb(222, 221, 221);margin-left:10px">
-                      <div class="message" v-html="message.message"></div>
+                    <div class="bubble" style="margin-left:10px">
+                      <div class="message">
+                        <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
+                          <div style="text-align: right; margin: 0;">
+                            <el-button size="small" text @click="message.visible = false">取消</el-button>
+                            <el-button size="small" type="primary" @click="che">
+                              撤回
+                            </el-button>
+                            <el-button size="small" type="primary" @click="shan">
+                              删除
+                            </el-button>
+                          </div>
+                          <template #reference>
+                            <el-button @click="message.visible = true">{{ message.message }}</el-button>
+                          </template>
+                        </el-popover>
+                      </div>
                     </div>
                       <div style="width:300px;height:1px"></div>
                   </div>
@@ -65,6 +95,7 @@ import { ref, onMounted ,h,reactive,nextTick,inject,watch } from 'vue';
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 import { useWsStore } from '../store/user';
+import { da } from "element-plus/es/locale";
 const wsStore=useWsStore()
 const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
@@ -83,6 +114,7 @@ function send(){
         })
   message.value=''
 }
+//消息监听
 watch(  
     () => wsStore.Groupmessagecount,  
     (newUserInfo, prevUserInfo) => {  
@@ -106,8 +138,52 @@ watch(
     },  
     // 可选：配置watch选项，如立即执行、深度监听等  
     { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
-  );
-
+);
+//新增群聊监听
+watch(  
+    () => wsStore.Groupusercount,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.Groupusercount){
+        wsStore.readGroupUsers().then(res=>{
+          console.log(res)
+          let p=false
+          
+          res.forEach(element => {
+            service.post('http://localhost:8080/group/fidGroup',{
+              'id':element.target
+            })
+            .then(res=>{
+              let data=res.data
+              console.log(data)
+              for(let i=0;i<groups.length;i++)
+              {
+                if(groups[i].id==element.target)
+                {
+                  groups.splice(i,1)
+                  if(index.value==i)
+                  {
+                    goindex(0)
+                  }
+                  else if(index.value<i&&index.value!=-1)
+                  {
+                    index.value=-1
+                  }
+                  break
+                }
+              }
+              groups.unshift(data)
+            }).catch(err=>{
+              console.error(err)
+            })
+          });
+        }).catch(err=>{
+          console.error(err)
+        })
+      }
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+);
 
 
 //消息框样式动态选择
@@ -133,7 +209,7 @@ function gobottom(){//抵达最底部
 }
 function getgroups(){
   console.log('发送请求')
-   service.get('http://localhost:8080/group/fidGroup')
+   service.get('http://localhost:8080/group/fidGroups')
    .then(res=>{
     console.log(res.data)
     groups.pop()

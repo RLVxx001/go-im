@@ -113,7 +113,8 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	//RevocationWs("/usertoUser", controller.Create) 已被申请模块通过管道 特殊调用 不暴露给前端
 	RevocationWs("/usertoUser/revocation", controller.Revocation)
 	RevocationWs("/usertoUser/send", controller.Send)
-	Group.GET("/fid", controller.Fids)
+	Group.GET("/fids", controller.Fids)
+	Group.POST("/fid", controller.Fid)
 	Group.POST("/update", controller.Update)
 	Group.POST("/read", controller.Read)
 	Group.POST("/deleteUser", controller.DeleteUser)
@@ -141,11 +142,14 @@ func RegisterGroupHandlers(r *gin.Engine, dbs Databases) {
 	userService := user.NewService(*dbs.userRepository)
 	controller := groupUserApi.NewController(service, userService)
 	Group := r.Group("/group")
-	Group.GET("/fidGroup", controller.FidGroup)
+	Group.GET("/fidGroups", controller.FidGroups)
+	Group.POST("/fidGroup", controller.FidGroup)
 	RevocationWs("/group/createGroup", controller.CreateGroup)
 	Group.POST("/updateGroup", controller.UpdateGroup)
 	Group.POST("/deleteGroup", controller.DeleteGroup)
-	Group.POST("/createGroupUser", controller.CreateGroupUser)
+	{
+		go controller.CreateGroupUser()
+	}
 	Group.POST("/updateGroupUser", controller.UpdateGroupUser)
 	Group.POST("/deleteGroupUser", controller.DeleteGroupUser)
 	RevocationWs("/group/sendMessage", controller.SendMessage)

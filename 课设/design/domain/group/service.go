@@ -99,7 +99,6 @@ func (s *Service) FidGroups(userid uint) ([]Group, error) {
 				group.GroupUsers = groupUsers
 			}
 			group.GroupMessages = s.messageRepository.Fid(group.ID, userid)
-
 			if len(group.GroupMessages) != 0 {
 				if group.UpdatedAt.Before(group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt) {
 					group.UpdatedAt = group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt
@@ -117,6 +116,23 @@ type gr []Group
 func (a gr) Len() int           { return len(a) }
 func (a gr) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a gr) Less(i, j int) bool { return a[i].UpdatedAt.After(a[j].UpdatedAt) }
+
+// 通过id和群号查找群
+func (s *Service) FidGroup(id, userid uint) (*Group, error) {
+	if _, err := s.userRepository.GetGroupUser(id, userid); err != nil {
+		return nil, ErrNotGroupUser
+	}
+	group, err := s.r.GetById(id)
+	if err != nil {
+		return nil, ErrNotGroupId
+	}
+	group.GroupMessages = s.messageRepository.Fid(id, userid)
+	group.GroupUsers, err = s.userRepository.GetGroupUsers(id)
+	if err != nil {
+		return nil, ErrFid
+	}
+	return group, nil
+}
 
 // 更改群信息
 func (s *Service) UpdateGroup(group *Group, userid uint) error {

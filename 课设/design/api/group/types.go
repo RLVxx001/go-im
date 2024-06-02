@@ -2,6 +2,7 @@ package group
 
 import (
 	"design/domain/group"
+	"design/domain/user"
 	"time"
 )
 
@@ -12,7 +13,7 @@ type GroupRequest struct {
 	GroupInform   string         `json:"groupInform"`   //群公告
 	GroupUsers    []GroupUser    `json:"groupUsers"`    //群用户
 	GroupMessages []GroupMessage `json:"groupMessages"` //群消息
-	Img           string         `json:"img"`           //图像
+	Img           string         `json:"img"`           //群头像
 	UpdatedAt     time.Time      `json:"updatedAt"`     //更新事件
 }
 
@@ -21,6 +22,7 @@ type GroupMessage struct {
 	Id            uint      `json:"id"`            //群消息id
 	MessageOwner  uint      `json:"messageOwner"`  //消息所属用户
 	MessageSender uint      `json:"messageSender"` //消息发送用户
+	SenderUser    User      `json:"senderUser"`    //消息发送用户实体
 	GroupId       uint      `json:"groupId"`       //消息接收群
 	Message       string    `json:"message"`       //消息
 	MessageKey    uint      `json:"messageKey"`    //消息key
@@ -34,9 +36,15 @@ type GroupUser struct {
 	ID      uint   `json:"id"`      //群用户id
 	GroupId uint   `json:"groupId"` //群表id
 	UserId  uint   `json:"userId"`  //用户id
+	User    User   `json:"user"`
 	IsAdmin uint   `json:"isAdmin"` //是否管理
 	IsGag   bool   `json:"isGag"`   //是否被禁言
 	Text    string `json:"text"`    //群备注
+}
+type User struct {
+	Username string `json:"username"`
+	Account  string `json:"account"`
+	Img      string `json:"img"`
 }
 
 func ToGroup(req GroupRequest) group.Group {
@@ -56,6 +64,7 @@ func ToGroupRequest(req group.Group) GroupRequest {
 		GroupUsers:    ToResponseGroupUsers(req.GroupUsers),
 		GroupMessages: ToResponseGroupMessages(req.GroupMessages),
 		UpdatedAt:     req.UpdatedAt,
+		Img:           req.Img,
 	}
 }
 
@@ -83,6 +92,7 @@ func ToResponseGroupUser(req group.GroupUser) GroupUser {
 		ID:      req.ID,
 		GroupId: req.GroupId,
 		UserId:  req.UserId,
+		User:    ToUser(req.User),
 		IsAdmin: req.IsAdmin,
 		IsGag:   req.IsGag,
 		Text:    req.Text,
@@ -101,10 +111,18 @@ func ToResponseGroupMessage(req group.GroupMessage) GroupMessage {
 		Id:            req.ID,
 		MessageOwner:  req.MessageOwner,
 		MessageSender: req.MessageSender,
+		SenderUser:    ToUser(req.SenderUser),
 		GroupId:       req.GroupId,
 		Message:       req.Message,
 		MessageKey:    req.MessageKey,
 		IsRead:        req.IsRead,
 		UpdatedAt:     req.UpdatedAt,
+	}
+}
+func ToUser(u user.User) User {
+	return User{
+		Username: u.Username,
+		Account:  u.Account,
+		Img:      u.Img,
 	}
 }

@@ -9,7 +9,7 @@
             <div style="height:50px;display:flex">
               <img :src="tmp.userResponse.img?tmp.userResponse.img:tmp.groupResponse.img" style="margin-left:10px;height:50px;width:50px;border-radius:50%;border:1px double"/>
               <div style="font-size:23px;margin-left:10px">
-                {{ tmp.userResponse.account?tmp.userResponse.account:tmp.groupResponse.groupName }}
+                {{ tmp.userResponse?tmp.userResponse.account:tmp.groupResponse.groupName }}
               </div>
               <div style="font-size:23px;margin-left:10px">
                 <span v-if="tmp.class==0">{{ tmp.userOwner==id?'请求添加对方为好友':tmp.remarks }}</span>
@@ -19,7 +19,21 @@
             </div>
             <div style="display:flex">
               <div style="margin-left:160px;margin-top:-40px;font-size:15px"></div>
-              <div v-if="tmp.stats==0" style="background-color:rgb(223, 219, 219);border:1px double;text-align:center;line-height:30px;margin-top:-30px;width:100px;height:30px;margin-left:300px">同意</div>
+              <div v-if="tmp.stats==0" style="background-color:rgb(223, 219, 219);border:1px double;text-align:center;line-height:30px;margin-top:-30px;width:100px;height:30px;margin-left:300px">
+
+                <div v-if="new Date(tmp.failureTime)>Date.now()">
+                  <div v-if="(tmp.class==1&&tmp.userOwner!=id)||(tmp.class!=1&&tmp.target==id)">
+                    <button @click="checkN(index)">不同意</button>
+                    <button @click="checkY(index)">同意</button>
+                  </div>
+                  <div v-else>
+                     等待验证 
+                  </div>
+                </div>
+                <div v-else>
+                   申请已过期
+                </div>
+              </div>
               <div v-if="tmp.stats==1" style="text-align:center;line-height:30px;margin-top:-30px;width:100px;height:30px;margin-left:300px">已拒绝</div>
               <div v-if="tmp.stats==2" style="text-align:center;line-height:30px;margin-top:-30px;width:100px;height:30px;margin-left:300px">已同意</div>
               <!-- <div :v-if="tmp.is_agr==1" style="margin-top:-30px;width:100px;height:30px;margin-left:300px">已通过</div> -->
@@ -36,7 +50,7 @@ import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue';
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 let friendlist=reactive([])
-let id = ref(localStorage.getItem("id"));
+let id = ref(JSON.parse(localStorage.getItem("user")).userId);
 function getlist(){
   service.get('http://localhost:8080/userApplication/fids')
   .then(res=>{
@@ -47,6 +61,26 @@ function getlist(){
   }).catch(err=>{
 
   })
+}
+function checkY(index){
+  let u=JSON.stringify(friendlist[index])
+  let body=JSON.parse(u)
+  body.stats=2
+  console.log(body)
+  service.post('http://localhost:8080/userApplication',body)
+  .then(res=>{
+    friendlist[index].stats=2
+  }).catch(err=>{
+    console.log(err)
+    ElNotification({
+      title: 'Error',
+      message: '操作失误',
+      type: 'error',
+    })
+  })
+}
+function checkN(index){
+  console.log('N:'+index)
 }
 onMounted(()=>{
   getlist()

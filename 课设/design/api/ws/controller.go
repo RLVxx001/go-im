@@ -65,10 +65,13 @@ var UserChan = make(chan ApplicationAccept)
 var GroupChan = make(chan ApplicationAccept)
 
 type ApplicationAccept struct {
-	Owner  uint   //所属用户或群id
-	Class  uint   //0表示用户申请用户 1表示用户申请群 2表示群邀请用户
-	Target uint   //对方用户或群id
-	Event  string //辨别
+	Owner      uint   //所属用户或群id
+	Class      uint   //0表示用户申请用户 1表示用户申请群 2表示群邀请用户
+	Target     uint   `json:"target"` //对方用户或群id
+	InviteUser uint   //当该请求为群邀请时邀请人id
+	Remarks    string //所属用户给对方的备注
+	Remarks1   string //对方用户给所属的备注
+	Event      string //辨别
 }
 
 func NewW(userId uint, data interface{}, event string) W {
@@ -84,9 +87,14 @@ func SocketApplication() {
 			req.Event = "/usertoUser"
 			UserChan <- req
 		} else if req.Class == 1 {
-			//
-			//GroupChan <- req
+			req.Event = "/group/createGroup"
+			GroupChan <- req
 		} else if req.Class == 2 {
+			i := req.Owner
+			req.Owner = req.Target
+			req.Target = i
+			req.Event = "/group/createGroup"
+			GroupChan <- req
 			//i := req.Owner
 			//req.Owner = req.Target
 			//req.Target = i

@@ -28,6 +28,7 @@ func (c *Service) Create(u *UsertoUser) (*UsertoUser, error) {
 	if err == nil {
 		if us.IsDeleted {
 			us.IsDeleted = false
+			us.Remarks = u.Remarks
 			if err := c.r.Update(us); err != nil {
 				return nil, ErrNotCreate
 			}

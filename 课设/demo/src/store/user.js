@@ -21,12 +21,16 @@ export const useWsStore = defineStore('ws', {
       Frientmessagecount: 0, // 消息数量  
       Frientrevocations: [], // 存储消息的数组  
       Frientrevocationcount: 0, // 消息数量
+      Frientusers: [], // 存储消息的数组  
+      Frientusercount: 0, // 消息数量
       Frientcount:0,
 
       Groupmessages: [], // 存储消息的数组  
       Groupmessagecount: 0, // 消息数量  
       Grouprevocations: [], // 存储消息的数组  
       Grouprevocationcount: 0, // 消息数量
+      Groupusers: [], 
+      Groupusercount: 0, 
       Groupcount:0,
       event: -1
     }),  
@@ -44,6 +48,7 @@ export const useWsStore = defineStore('ws', {
             else
             {
                 this.Frientcount++
+                this.Frientrevocationcount=0
                 this.Frientrevocations.splice(0,this.Frientrevocations.length)
             }
         }
@@ -58,19 +63,24 @@ export const useWsStore = defineStore('ws', {
             else
             {
                 this.Frientcount++
+                this.Frientmessagecount=0
                 this.Frientmessages.splice(0,this.Frientmessages.length)
             }
         }
         else if(event=="/usertoUser")
         {
             if(this.event==0)
-            {
-                
-            }
-            else
-            {
-                
-            }
+                {
+                    this.Frientcount=0
+                    this.Frientusercount++
+                    this.Frientusers.push(message)
+                }
+                else
+                {
+                    this.Frientcount++
+                    this.Frientusercount=0
+                    this.Frientusers.splice(0,this.Frientusers.length)
+                } 
         }
         else if(event=="/group/sendMessage")
         {
@@ -83,6 +93,7 @@ export const useWsStore = defineStore('ws', {
             else
             {
                 this.Groupcount++
+                this.Groupmessagecount=0
                 this.Groupmessages.splice(0,this.Groupmessages.length)
             }
         }
@@ -97,6 +108,7 @@ export const useWsStore = defineStore('ws', {
             else
             {
                 this.Groupcount++
+                this.Grouprevocationcount=0
                 this.Grouprevocations.splice(0,this.Grouprevocations.length)
             }
         }
@@ -104,11 +116,15 @@ export const useWsStore = defineStore('ws', {
         {
             if(this.event==1)
             {
-                
+                this.Groupcount=0
+                this.Groupusercount++
+                this.Groupusers.push(message)
             }
             else
             {
                 this.Groupcount++
+                this.Groupusercount=0
+                this.Groupusers.splice(0,this.Groupusers.length)
             }
         }
         console.log("进入paina的消息："+message)
@@ -135,6 +151,18 @@ export const useWsStore = defineStore('ws', {
         // 清空数组和重置计数器  
         this.Frientmessagecount -= messagesToRead.length; 
         this.Frientmessages.splice(0,messagesToRead.length)  
+        
+        // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
+        return messagesToRead
+      }, 
+      async readGroupUsers() {  
+        // 复制当前的消息数组，以便返回给调用者  
+        console.log(this.Frientusers)
+        const messagesToRead = this.Groupusers.slice();  
+    
+        // 清空数组和重置计数器  
+        this.Groupusercount -= messagesToRead.length; 
+        this.Groupusers.splice(0,messagesToRead.length)  
         
         // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
         return messagesToRead

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 )
 
@@ -24,8 +25,8 @@ func NewController(s *group.Service, userService *user.Service) *Controller {
 	}
 }
 
-// 个人查找群聊
-func (c *Controller) FidGroup(g *gin.Context) {
+// 个人查找所有群聊
+func (c *Controller) FidGroups(g *gin.Context) {
 	userId := api_helper.GetUserId(g)
 	if _, err := c.userService.GetById(userId); err != nil {
 		api_helper.HandleErrorToken(g, err)
@@ -37,10 +38,54 @@ func (c *Controller) FidGroup(g *gin.Context) {
 		return
 	}
 	var gs []GroupRequest
-	for _, i := range groups {
-		gs = append(gs, ToGroupRequest(i))
+	for i, j := range groups {
+		for k, o := range j.GroupUsers {
+			user, err := c.userService.GetById(o.UserId)
+			if err == nil {
+				groups[i].GroupUsers[k].User = user
+			}
+		}
+		for k, o := range j.GroupMessages {
+			user, err := c.userService.GetById(o.MessageSender)
+			if err == nil {
+				groups[i].GroupMessages[k].SenderUser = user
+			}
+		}
+		gs = append(gs, ToGroupRequest(groups[i]))
 	}
 	g.JSON(http.StatusOK, gs)
+}
+
+// 个人查找单群聊
+func (c *Controller) FidGroup(g *gin.Context) {
+	var req GroupRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	userId := api_helper.GetUserId(g)
+	if _, err := c.userService.GetById(userId); err != nil {
+		api_helper.HandleErrorToken(g, err)
+		return
+	}
+	group, err := c.s.FidGroup(req.Id, userId)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	for k, o := range group.GroupUsers {
+		user, err := c.userService.GetById(o.UserId)
+		if err == nil {
+			group.GroupUsers[k].User = user
+		}
+	}
+	for k, o := range group.GroupMessages {
+		user, err := c.userService.GetById(o.MessageSender)
+		if err == nil {
+			group.GroupMessages[k].SenderUser = user
+		}
+	}
+	g.JSON(http.StatusOK, ToGroupRequest(*group))
 }
 
 // 创建群聊
@@ -135,32 +180,19 @@ func (c *Controller) DeleteGroup(g *gin.Context) {
 }
 
 // 新增群用户
-func (c *Controller) CreateGroupUser(g *gin.Context) {
-	var req GroupRequest
-	if err := g.ShouldBind(&req); err != nil {
-		api_helper.HandleError(g, api_helper.ErrInvalidBody)
-		return
-	}
-	userId := api_helper.GetUserId(g)
-	if _, err := c.userService.GetById(userId); err != nil {
-		api_helper.HandleErrorToken(g, err)
-		return
-	}
-	//筛选合理用户
-	mp := make(map[uint]bool)
-	for _, j := range req.GroupUsers {
-		if mp[j.UserId] {
+func (c *Controller) CreateGroupUser() {
+	for {
+		req := <-wsServer.GroupChan
+		if _, err := c.userService.GetById(req.Owner); err != nil {
+			log.Print(err)
 			continue
 		}
-		if _, err := c.userService.GetById(j.UserId); err == nil {
-			if c.s.CreateGroupUser(req.Id, j.UserId, userId) == nil {
-
-			}
-			mp[j.UserId] = true
+		if err := c.s.CreateGroupUser(req.Target, req.Owner, req.InviteUser); err != nil {
+			log.Print(err)
+			continue
 		}
+		wsServer.Broadcast <- wsServer.NewW(req.Owner, req, req.Event)
 	}
-	g.JSON(http.StatusOK, nil)
-
 }
 
 // 更改群用户信息包括权限
@@ -233,7 +265,14 @@ func (c *Controller) SendMessage(ws *websocket.Conn, mp map[string]interface{}, 
 		return
 	}
 	for _, i := range messages {
-		wsServer.Broadcast <- wsServer.NewW(i.MessageOwner, ToResponseGroupMessage(i), mp["event"].(string))
+		response := ToResponseGroupMessage(i)
+		user, err := c.userService.GetById(response.MessageSender)
+		if err == nil {
+			response.SenderUser.Username = user.Username
+			response.SenderUser.Account = user.Account
+			response.SenderUser.Img = user.Img
+		}
+		wsServer.Broadcast <- wsServer.NewW(i.MessageOwner, response, mp["event"].(string))
 	}
 
 }

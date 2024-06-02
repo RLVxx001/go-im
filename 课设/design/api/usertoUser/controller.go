@@ -29,7 +29,7 @@ func (c *Controller) Create() {
 	for {
 		var req UserRequest
 		body := <-wsServer.UserChan
-
+		fmt.Printf("%v\n", body)
 		//校验用户id是否正确
 		req.UserOwner = body.Owner
 		req.UserTarget = body.Target
@@ -45,58 +45,36 @@ func (c *Controller) Create() {
 			continue
 		}
 		//创建链接
-		user1, err := c.service.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, req.Remarks))
+		user1, err := c.service.Create(usertoUser.NewUsertoUser(req.UserOwner, req.UserTarget, body.Remarks))
 		if err != nil {
 			log.Println(err)
 			continue
+		}
+		response1 := ToUserResponse(user1)
+		us, err1 := c.userService.GetById(response1.UserTarget)
+		if err1 == nil {
+			response1.ToUser.Username = us.Username
+			response1.ToUser.Account = us.Account
+			response1.ToUser.Img = us.Img
 		}
 		var user2 *usertoUser.UsertoUser = nil
-		user2, err = c.service.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, req.Remarks1))
+		user2, err = c.service.Create(usertoUser.NewUsertoUser(req.UserTarget, req.UserOwner, body.Remarks1))
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		m, m1, err := c.service.Send(user1, "你好，我是"+req.Remarks)
-		if err != nil {
-			continue
+		response2 := ToUserResponse(user2)
+		us, err1 = c.userService.GetById(response1.UserTarget)
+		if err1 == nil {
+			response2.ToUser.Username = us.Username
+			response2.ToUser.Account = us.Account
+			response2.ToUser.Img = us.Img
 		}
-		wsServer.Broadcast <- wsServer.NewW(user1.UserOwner, UserMessage{
-			Message:      m.Message,
-			UsertoUserId: m.UsertoUserId,
-			Key:          m.Key,
-			User:         req.UserOwner,
-			UserOwner:    req.UserOwner,
-			CreatedAt:    m.CreatedAt,
-		}, body.Event) //发送者
-		wsServer.Broadcast <- wsServer.NewW(user1.UserTarget, UserMessage{
-			Message:      m1.Message,
-			UsertoUserId: m1.UsertoUserId,
-			Key:          m1.Key,
-			User:         req.UserOwner,
-			UserOwner:    req.UserOwner,
-			CreatedAt:    m1.CreatedAt,
-		}, body.Event) //发送者
+		c.service.Send(user1, body.Remarks1)
+		c.service.Send(user2, body.Remarks)
+		wsServer.Broadcast <- wsServer.NewW(user1.UserOwner, response1, body.Event) //发送者
+		wsServer.Broadcast <- wsServer.NewW(user2.UserOwner, response2, body.Event) //发送者
 
-		m, m1, err = c.service.Send(user2, "你好，我是"+req.Remarks1)
-		if err != nil {
-			continue
-		}
-		wsServer.Broadcast <- wsServer.NewW(user2.UserOwner, UserMessage{
-			Message:      m.Message,
-			UsertoUserId: m.UsertoUserId,
-			Key:          m.Key,
-			User:         req.UserOwner,
-			UserOwner:    req.UserOwner,
-			CreatedAt:    m.CreatedAt,
-		}, body.Event) //发送者
-		wsServer.Broadcast <- wsServer.NewW(user2.UserTarget, UserMessage{
-			Message:      m1.Message,
-			UsertoUserId: m1.UsertoUserId,
-			Key:          m1.Key,
-			User:         req.UserOwner,
-			UserOwner:    req.UserOwner,
-			CreatedAt:    m1.CreatedAt,
-		}, body.Event) //发送者
 	}
 }
 
@@ -318,6 +296,29 @@ func (c *Controller) Fids(g *gin.Context) {
 	}
 
 	g.JSON(http.StatusOK, userResponses)
+}
+
+// 查找好友信息
+func (c *Controller) Fid(g *gin.Context) {
+	var req UserRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	userid := api_helper.GetUserId(g)
+	fid, err := c.service.FidMessage(usertoUser.NewUsertoUser(userid, req.UserTarget, ""))
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	response := ToUserResponse(fid)
+	user, err := c.userService.GetById(fid.UserTarget)
+	if err == nil {
+		response.ToUser.Username = user.Username
+		response.ToUser.Account = user.Account
+		response.ToUser.Img = user.Img
+	}
+	g.JSON(http.StatusOK, response)
 }
 
 // 查看消息

@@ -54,6 +54,7 @@ Ws.value.onmessage = (event) => {
     const msg = JSON.parse(event.data);
     if(msg.type=='token'){
       localStorage.removeItem('token')
+      return
     }
     console.log(msg)
     wsStore.addMessage(msg.data,msg.event)
