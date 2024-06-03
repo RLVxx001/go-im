@@ -38,19 +38,23 @@ const open = () => {
   })
     .then(({ value }) => {
       
-      // service.post('',{
-      //   'userOwner':JSON.parse(localStorage.getItem('user')).id-0,
-      //   'class':0,
-      //   'target':res.userId,
-      //   'text':
-      // })
-      msg.value=value
-      localStorage.setItem("msg",value);
-      ElMessage({
-        type: 'success',
-        message: "发送成功！",
+      service.post('',{
+        'userOwner':JSON.parse(localStorage.getItem('user')).id-0,
+        'class':0,
+        'target':res.userId-0,
+        'text':value,
+        'stats':0
+      }).then(res=>{
+        ElMessage({
+          type: 'success',
+          message: "发送成功！",
+        })
+      }).catch(err=>{
+        ElMessage({
+          type: 'error',
+          message: err.response.data.errorMessage,
+        })
       })
-      console.log(msg.value)
     })
     .catch(() => {
       ElMessage({

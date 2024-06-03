@@ -63,21 +63,38 @@ function getlist(){
   })
 }
 function checkY(index){
-  let u=JSON.stringify(friendlist[index])
-  let body=JSON.parse(u)
-  body.stats=2
-  console.log(body)
-  service.post('http://localhost:8080/userApplication',body)
-  .then(res=>{
-    friendlist[index].stats=2
-  }).catch(err=>{
-    console.log(err)
-    ElNotification({
-      title: 'Error',
-      message: '操作失误',
-      type: 'error',
-    })
+  ElMessageBox.prompt('请输入给对方的备注', '验证', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    inputPattern:
+      /(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*/,
+    inputErrorMessage: 'Invalid Email',
   })
+    .then(({ value }) => {
+      let u=JSON.stringify(friendlist[index])
+      let body=JSON.parse(u)
+      body.stats=2
+      body.remarks=value
+      console.log(body)
+      service.post('http://localhost:8080/userApplication',body)
+      .then(res=>{
+        friendlist[index].stats=2
+      }).catch(err=>{
+        console.log(err)
+        ElNotification({
+          title: 'Error',
+          message: '操作失误',
+          type: 'error',
+        })
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消',
+      })
+    })
+  
 }
 function checkN(index){
   console.log('N:'+index)
