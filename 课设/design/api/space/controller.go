@@ -67,8 +67,9 @@ func (r *Controller) FindTrend(g *gin.Context) {
 	Trends, err = r.spaceService.FindTrends(req.UserId)
 	if err != nil {
 		api_helper.HandleError(g, err)
+		return
 	}
-	g.JSON(200, FindTrendResponse{Trends: Trends})
+	g.JSON(200, Trends)
 
 }
 
