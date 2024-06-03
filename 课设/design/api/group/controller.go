@@ -105,7 +105,7 @@ func (c *Controller) CreateGroup(ws *websocket.Conn, mp map[string]interface{}, 
 	}
 
 	if _, err := c.userService.GetById(userid); err != nil {
-		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
 		return
 	}
 	p := make(map[uint]bool)
@@ -126,7 +126,7 @@ func (c *Controller) CreateGroup(ws *websocket.Conn, mp map[string]interface{}, 
 	group.GroupUsers = groupUsers
 	err = c.s.CreateGroup(&group)
 	if err != nil {
-		err1 := api_helper.WsError(ws, err, "")
+		err1 := api_helper.WsError(ws, err, "err")
 		if err1 != nil {
 			return
 		}
@@ -258,7 +258,7 @@ func (c *Controller) SendMessage(ws *websocket.Conn, mp map[string]interface{}, 
 
 	messages, err := c.s.SendMessage(req.GroupId, userid, req.Message, req.Img)
 	if err != nil {
-		err1 := api_helper.WsError(ws, err, "")
+		err1 := api_helper.WsError(ws, err, "err")
 		if err1 != nil {
 			return
 		}
@@ -293,13 +293,13 @@ func (c *Controller) RevocationMessage(ws *websocket.Conn, mp map[string]interfa
 		return
 	}
 	if _, err := c.userService.GetById(userid); err != nil {
-		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "auth")
+		_ = api_helper.WsError(ws, api_helper.ErrInvalidToken, "token")
 		return
 	}
 
 	messages, err := c.s.RevocationMessage(req.Id, userid)
 	if err != nil {
-		err1 := api_helper.WsError(ws, err, "")
+		err1 := api_helper.WsError(ws, err, "err")
 		if err1 != nil {
 			return
 		}

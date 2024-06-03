@@ -44,7 +44,7 @@ func (r *MessageRepository) Deletes(utouid uint) error {
 
 // 撤回消息
 func (r *MessageRepository) Revocation(key uint) error {
-	tx := r.db.Unscoped().Where("`Key`=?", key).Delete(&UserMessage{})
+	tx := r.db.Model(&UserMessage{}).Where("`Key`=?", key).Update("IsDeleted", true).Update("Message", "")
 	return tx.Error
 }
 

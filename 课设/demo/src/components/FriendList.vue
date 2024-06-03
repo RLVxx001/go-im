@@ -21,11 +21,42 @@
               <div ref="innerRef">
                 <p v-for="(message,i) in usertoUsers[index].userMessages" 
                 :key="i" 
-                 :class="getMessageClass(message.userOwner==usertoUsers[index].userOwner)">
-                  <div v-if="message.userOwner==usertoUsers[index].userOwner" style="display: flex;">
+                 :class="getMessageClass(message.userOwner==usertoUsers[index].userOwner,message.isDeleted)">
+                 <div v-if="message.isDeleted" style="display: flex;">
+                  {{ message.userOwner==usertoUsers[index].userOwner?'您已撤回一条消息':'对方已撤回一条消息' }}
+                  <div v-if="message.standby" class="mb-4">
+                    <el-button
+                      type="danger"
+                      text
+                      @click="checkstandby(message.standby)"
+                    >
+                     重新编辑
+                    </el-button>
+                  </div>
+                  <div @click="messagedelete(index,message.key,i)">
+                    <img src='http://localhost:8080/static/images/close.png'/>
+                  </div>
+                 </div>
+                 <div v-else-if="message.userOwner==usertoUsers[index].userOwner" style="display: flex;">
                       <div style="width:300px;height:1px"></div>
                     <div class="bubble" style="margin-right:10px;">
-                            <div class="message" v-html="message.message"></div>
+                        <div class="message">
+                          <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
+                            <div style="text-align: right; margin: 0;">
+                              <el-button size="small" text @click="message.visible = false">取消</el-button>
+                              <el-button size="small" type="primary" @click="revocation(index,message.key,i)">
+                                撤回
+                              </el-button>
+                              <el-button size="small" type="primary" @click="messagedelete(index,message.key,i)">
+                                删除
+                              </el-button>
+                            </div>
+                            <template #reference>
+                              <el-button @click="message.visible = true">{{ message.message }}</el-button>
+                            </template>
+                          </el-popover>
+                        
+                        </div>
                     </div>
                     <div class="avatar">
                       <img :src="user.img" class="avatar-image" style="margin-right:20px" />
@@ -40,10 +71,7 @@
                         <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
                           <div style="text-align: right; margin: 0;">
                             <el-button size="small" text @click="message.visible = false">取消</el-button>
-                            <el-button size="small" type="primary" @click="che">
-                              撤回
-                            </el-button>
-                            <el-button size="small" type="primary" @click="shan">
+                            <el-button size="small" type="primary" @click="messagedelete(index,message.key,i)">
                               删除
                             </el-button>
                           </div>
@@ -89,6 +117,34 @@ function send(){
             token:localStorage.getItem('token')
         })
   message.value=''
+}
+function messagedelete(i,key,j){
+  usertoUsers[i].userMessages[j].visible=false
+  let userMessages=[{key:key-0}]
+  service.post('http://localhost:8080/usertoUser/deleteMessage',{
+    'userTarget': usertoUsers[i].userTarget-0,
+    'userMessages':userMessages,
+  }).then(res=>{
+    usertoUsers[i].userMessages.splice(j,1)
+  }).catch(err=>{
+    console.error(err)
+    ElNotification({
+        title: 'Error',
+        message: err.response.data.errorMessage,
+        type: 'error',
+      })
+  })
+}
+function revocation(i,key,j){
+  usertoUsers[i].userMessages[j].visible=false
+  let userMessages=[{key:key-0}]
+  $Ws && $Ws({
+            userTarget: usertoUsers[i].userTarget-0,
+            userMessages:userMessages,
+            event:'/usertoUser/revocation',
+            token:localStorage.getItem('token')
+        })
+  
 }
 var user = reactive(JSON.parse(localStorage.getItem('user')))
 // 使用watch来监听userStore的userInfo变化  
@@ -162,8 +218,65 @@ watch(
     // 可选：配置watch选项，如立即执行、深度监听等  
     { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
 );
+watch(  
+    () => wsStore.Frientrevocationcount,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.Frientrevocationcount){
+        wsStore.readFrientRevocations().then(res=>{
+
+          res.forEach(element => {
+            let p=0;
+            for(let i=0;i<usertoUsers.length;i++)
+            {
+              if(usertoUsers[i].id==element.usertoUserId)
+              {
+                let l=0,r=usertoUsers[i].userMessages.length-1
+                while(l<=r)
+                {
+                  let mid=(l+r)/2
+                  if((l+r)%2!=0)
+                  {
+                    mid=(l+r-1)/2
+                  }
+                  if(usertoUsers[i].userMessages[mid].key<element.key)
+                  {
+                    l=mid+1
+                  }
+                  else if(usertoUsers[i].userMessages[mid].key>element.key)
+                  {
+                    r=mid-1
+                  }
+                  else
+                  {
+                    console.log('撤回了')
+                    console.log(mid)
+                    if(usertoUsers[i].userMessages[mid].userOwner==usertoUsers[i].userOwner){
+                      usertoUsers[i].userMessages[mid].standby=usertoUsers[i].userMessages[mid].message
+                    }
+                    usertoUsers[i].userMessages[mid].message=''
+                    usertoUsers[i].userMessages[mid].isDeleted=true
+                    break
+                  }
+                }
+                break
+              }
+            }
+
+          });
+        }).catch(err=>{
+          console.error(err)
+        })
+      }
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+);
+
 //消息框样式动态选择
-const getMessageClass = (isSent) => {
+const getMessageClass = (isSent,isDeleted) => {
+  if(isDeleted){
+    return 'message-container-centre'
+  }
   return isSent ? 'message-container-right' : 'message-container-left';
 };
 
@@ -210,7 +323,9 @@ function getusers(){
       })
    })
 }
-
+function checkstandby(st){
+  message.value+=st
+}
 onMounted(() => {
   wsStore.event=0
   getusers()
@@ -256,6 +371,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+}
+.message-container-centre{
+  float: left;
+  margin-left: 40%;
+  
 }
 .message-container-right {
   float:right;

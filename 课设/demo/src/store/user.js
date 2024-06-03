@@ -131,18 +131,18 @@ export const useWsStore = defineStore('ws', {
 
 
       },  
-      async readGroupMessages() {  
+      async readFrientRevocations() {  
         // 复制当前的消息数组，以便返回给调用者  
-        console.log(this.Groupmessages)
-        const messagesToRead = this.Groupmessages.slice();  
+        console.log(this.Frientrevocations)
+        const messagesToRead = this.Frientrevocations.slice();  
     
         // 清空数组和重置计数器  
-        this.Groupmessagecount -= messagesToRead.length; 
-        this.Groupmessages.splice(0,messagesToRead.length)  
+        this.Frientrevocationcount -= messagesToRead.length; 
+        this.Frientrevocations.splice(0,messagesToRead.length)  
         
         // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
         return messagesToRead
-      },  
+      }, 
       async readFrientMessages() {  
         // 复制当前的消息数组，以便返回给调用者  
         console.log(this.Frientmessages)
@@ -155,6 +155,18 @@ export const useWsStore = defineStore('ws', {
         // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
         return messagesToRead
       }, 
+      async readGroupMessages() {  
+        // 复制当前的消息数组，以便返回给调用者  
+        console.log(this.Groupmessages)
+        const messagesToRead = this.Groupmessages.slice();  
+    
+        // 清空数组和重置计数器  
+        this.Groupmessagecount -= messagesToRead.length; 
+        this.Groupmessages.splice(0,messagesToRead.length)  
+        
+        // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
+        return messagesToRead
+      },  
       async readGroupUsers() {  
         // 复制当前的消息数组，以便返回给调用者  
         console.log(this.Frientusers)

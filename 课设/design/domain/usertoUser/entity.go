@@ -25,6 +25,7 @@ type UserMessage struct {
 	Key          uint   //消息标识
 	UserOwner    uint   //所属用户
 	IsRead       bool   //是否被读
+	IsDeleted    bool   //是否删除
 }
 
 func NewUsertoUser(userOwner, userTarget uint, remarks string) *UsertoUser {

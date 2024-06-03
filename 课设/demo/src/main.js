@@ -56,6 +56,14 @@ Ws.value.onmessage = (event) => {
       localStorage.removeItem('token')
       return
     }
+    else if(msg.type=='err'){
+      ElNotification({
+        title: '异常',
+        message:msg.errorMessage,
+        type: 'error',
+      })
+      return
+    }
     console.log(msg)
     wsStore.addMessage(msg.data,msg.event)
 }
