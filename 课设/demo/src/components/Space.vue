@@ -25,7 +25,7 @@
           <div style="width:750px;height:auto;min-height:250px;background-color:rgb(189, 184, 184);margin-left:30px;margin-top:30px;border-radius:10px;border-top-right-radius:50px">
             <div style="height:50px;display:flex">
               <img :src="tmp.pht" style="margin-left:10px;height:50px;width:50px;border-radius:50%;border:1px double"/>
-              <div style="font-size:23px;margin-left:10px">{{tmp.name}}</div>
+              <div style="font-size:23px;margin-left:10px">{{tmp.user.name}}</div>
             </div>
             <div style="display:flex">
               <div style="margin-left:200px;margin-top:-35px;font-size:15px">发表于:<div style="margin-left:20px;font-size:13px">{{tmp.tim}}</div></div>
@@ -50,7 +50,12 @@ import service from '../axios-instance'
 let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
 onMounted(()=>{
-  service.post("http://localhost:8080/space")
+  service.post("http://localhost:8080/space/fidTrends",{
+    "userId":localStorage.getItem("id")
+  })
+  .then(res=>{
+    rcd=res.data
+  })
 })
 </script>
 <style>

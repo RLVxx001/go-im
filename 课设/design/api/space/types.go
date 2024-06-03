@@ -2,7 +2,7 @@ package space
 
 import (
 	"design/domain/space"
-	"gorm.io/gorm"
+	"design/domain/user"
 )
 
 type CreateTrendRequest struct {
@@ -17,9 +17,8 @@ type CreateSpaceResp struct {
 }
 
 type Comment struct {
-	gorm.Model
-	UserId   uint //评论用户id
-	User     User `gorm:"-"`
+	UserId   uint      //评论用户id
+	User     user.User `gorm:"-"`
 	Praise   uint
 	Content  string //内容
 	TrendsId uint   //空间动态表id
@@ -67,7 +66,43 @@ type FindTrendRequest struct {
 }
 
 type FindTrendResponse struct {
-	Trends []space.SpaceTrends `json:"trends"`
+	UserId   uint
+	User     user.User `gorm:"-"`
+	Detail   string
+	Praise   uint
+	Comments []Comment `json:"comments"` //评论[](不计入表)
+	SpaceId  uint      //空间表id
+}
+
+func ToComment(comment space.Comment) Comment {
+	return Comment{
+		UserId:   comment.UserId,
+		User:     comment.User,
+		Praise:   comment.Praise,
+		Content:  comment.Content,
+		TrendsId: comment.TrendsId,
+		ToUserId: comment.ToUserId,
+	}
+}
+
+func ToComments(comment []space.Comment) []Comment {
+	var comments []Comment
+	for i := 0; i < len(comment); i++ {
+		tmp := comment[i]
+		comments = append(comments, ToComment(tmp))
+	}
+	return comments
+}
+
+func ToFindTrendResp(trends space.SpaceTrends) FindTrendResponse {
+	return FindTrendResponse{
+		UserId:   trends.UserId,
+		User:     trends.User,
+		Detail:   trends.Detail,
+		Praise:   trends.Praise,
+		Comments: ToComments(trends.Comments),
+		SpaceId:  trends.SpaceId,
+	}
 }
 
 type CreateCommentRequest struct {
