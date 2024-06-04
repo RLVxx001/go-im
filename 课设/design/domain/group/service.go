@@ -1,6 +1,8 @@
 package group
 
-import "sort"
+import (
+	"sort"
+)
 
 type Service struct {
 	r                 Repository
@@ -94,11 +96,19 @@ func (s *Service) FidGroups(userid uint) ([]Group, error) {
 	for _, i := range users {
 		group, err := s.r.GetById(i.GroupId)
 		if err == nil {
+			group.GroupMessages = s.messageRepository.Fid(group.ID, userid)
 			groupUsers, err := s.userRepository.GetGroupUsers(group.ID)
 			if err == nil {
 				group.GroupUsers = groupUsers
+				mp := make(map[uint]GroupUser)
+				for _, o := range groupUsers {
+					mp[o.UserId] = o
+				}
+
+				for o, k := range group.GroupMessages {
+					group.GroupMessages[o].SenderUser = mp[k.MessageSender]
+				}
 			}
-			group.GroupMessages = s.messageRepository.Fid(group.ID, userid)
 			if len(group.GroupMessages) != 0 {
 				if group.UpdatedAt.Before(group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt) {
 					group.UpdatedAt = group.GroupMessages[len(group.GroupMessages)-1].UpdatedAt
@@ -130,6 +140,13 @@ func (s *Service) FidGroup(id, userid uint) (*Group, error) {
 	group.GroupUsers, err = s.userRepository.GetGroupUsers(id)
 	if err != nil {
 		return nil, ErrFid
+	}
+	mp := make(map[uint]GroupUser)
+	for _, o := range group.GroupUsers {
+		mp[o.UserId] = o
+	}
+	for o, k := range group.GroupMessages {
+		group.GroupMessages[o].SenderUser = mp[k.MessageSender]
 	}
 	return group, nil
 }

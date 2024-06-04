@@ -39,7 +39,7 @@
                  </div>
                  <div v-else-if="message.userOwner==usertoUsers[index].userOwner" style="display: flex;">
                       <div style="width:300px;height:1px"></div>
-                    <div class="bubble" style="margin-right:10px;">
+                    <div class="bubble">
                         <div class="message">
                           <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
                             <div style="text-align: right; margin: 0;">
@@ -59,14 +59,14 @@
                         </div>
                     </div>
                     <div class="avatar">
-                      <img :src="user.img" class="avatar-image" style="margin-right:20px" />
+                      <img :src="user.img" class="avatar-image" style="margin-right:20px" @click="drawer2 = true"/>
                     </div>
                   </div>
                   <div v-else  style="display: flex;">
                     <div class="avatar">
-                      <img :src="usertoUsers[index].ToUser.img" class="avatar-image" style="margin-left:20px"/>
+                      <img :src="usertoUsers[index].ToUser.img" class="avatar-image" style="margin-left:20px" @click="drawer1 = true"/>
                     </div>
-                    <div class="bubble" style="margin-left:10px">
+                    <div class="bubble">
                       <div class="message">
                         <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
                           <div style="text-align: right; margin: 0;">
@@ -97,6 +97,39 @@
       </div>
     </div>
   </div>
+  <el-drawer v-model="drawer1" direction="rtl" v-if="index!=-1">
+    <template #header>
+      <h4><img :src="usertoUsers[index].ToUser.img"/> {{ usertoUsers[index].remarks }} </h4>
+    </template>
+    <template #default>
+      <div>账号：{{ usertoUsers[index].ToUser.username }}</div>
+      <div>账号名：{{ usertoUsers[index].ToUser.account }}</div>
+      <div>备注：{{ usertoUsers[index].remarks }}</div>
+      <div>其他：</div>
+    </template>
+    <template #footer>
+      <div style="flex: auto">
+        <el-button @click="drawer1 = false">取消</el-button>
+        <el-button type="primary" @click="confirmClick">保存</el-button>
+      </div>
+    </template>
+  </el-drawer>
+  <el-drawer v-model="drawer2" direction="ltr">
+    <template #header>
+      <h4><img :src="user.img"/>  </h4>
+    </template>
+    <template #default>
+      <div>账号：{{ user.username }}</div>
+      <div>账号名：{{ user.account }}</div>
+      <div>其他：</div>
+    </template>
+    <template #footer>
+      <div style="flex: auto">
+        <el-button @click="drawer2 = false">取消</el-button>
+        <el-button type="primary" @click="confirmClick">保存</el-button>
+      </div>
+    </template>
+  </el-drawer>
 </template>
 <script lang="ts" setup>
 import ImageViewer from "@luohc92/vue3-image-viewer";
@@ -108,6 +141,8 @@ import { useWsStore } from '../store/user';
 const wsStore=useWsStore()
 const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
+let drawer1=ref(false)
+let drawer2=ref(false)
 
 function send(){
   $Ws && $Ws({

@@ -21,12 +21,13 @@ type GroupMessage struct {
 	gorm.Model
 	MessageOwner  uint      //消息所属用户
 	MessageSender uint      //消息发送用户
-	SenderUser    user.User `gorm:"-"` //发送用户实体
+	SenderUser    GroupUser `gorm:"-"` //发送用户实体
 	GroupId       uint      //消息接收群
 	Message       string    `gorm:"type:varchar(500)"` //消息
 	Img           string    `消息包含图片`
 	MessageKey    uint      //消息key
 	IsRead        bool      //是否已读
+	IsDeleted     bool      `json:"isDeleted"` //是否被删除
 }
 
 // GroupUser 群用户表

@@ -39,16 +39,24 @@ func (c *Controller) FidGroups(g *gin.Context) {
 	}
 	var gs []GroupRequest
 	for i, j := range groups {
+		mp := make(map[uint]user.User)
 		for k, o := range j.GroupUsers {
-			user, err := c.userService.GetById(o.UserId)
+			groupUser, err := c.userService.GetById(o.UserId)
 			if err == nil {
-				groups[i].GroupUsers[k].User = user
+				groups[i].GroupUsers[k].User = groupUser
+				mp[o.UserId] = groupUser
 			}
 		}
 		for k, o := range j.GroupMessages {
-			user, err := c.userService.GetById(o.MessageSender)
-			if err == nil {
-				groups[i].GroupMessages[k].SenderUser = user
+
+			u, ok := mp[o.MessageSender]
+			if ok {
+				groups[i].GroupMessages[k].SenderUser.User = u
+			} else {
+				groupUser, err := c.userService.GetById(o.MessageSender)
+				if err == nil {
+					groups[i].GroupMessages[k].SenderUser.User = groupUser
+				}
 			}
 		}
 		gs = append(gs, ToGroupRequest(groups[i]))
@@ -73,17 +81,22 @@ func (c *Controller) FidGroup(g *gin.Context) {
 		api_helper.HandleError(g, err)
 		return
 	}
+	mp := make(map[uint]user.User)
 	for k, o := range group.GroupUsers {
 		user, err := c.userService.GetById(o.UserId)
 		if err == nil {
+			mp[o.UserId] = user
 			group.GroupUsers[k].User = user
 		}
 	}
 	for k, o := range group.GroupMessages {
-		user, err := c.userService.GetById(o.MessageSender)
-		if err == nil {
-			group.GroupMessages[k].SenderUser = user
+		u, ok := mp[o.SenderUser.UserId]
+		if ok {
+			group.GroupMessages[k].SenderUser.User = u
+		} else {
+			group.GroupMessages[k].SenderUser.User, _ = c.userService.GetById(o.MessageSender)
 		}
+
 	}
 	g.JSON(http.StatusOK, ToGroupRequest(*group))
 }
@@ -266,11 +279,15 @@ func (c *Controller) SendMessage(ws *websocket.Conn, mp map[string]interface{}, 
 	}
 	for _, i := range messages {
 		response := ToResponseGroupMessage(i)
+		if se, err := c.s.GetGroupUser(i.GroupId, i.MessageSender); err == nil {
+			response.SenderUser = ToResponseGroupUser(*se)
+		}
+
 		user, err := c.userService.GetById(response.MessageSender)
 		if err == nil {
-			response.SenderUser.Username = user.Username
-			response.SenderUser.Account = user.Account
-			response.SenderUser.Img = user.Img
+			response.SenderUser.User.Username = user.Username
+			response.SenderUser.User.Account = user.Account
+			response.SenderUser.User.Img = user.Img
 		}
 		wsServer.Broadcast <- wsServer.NewW(i.MessageOwner, response, mp["event"].(string))
 	}

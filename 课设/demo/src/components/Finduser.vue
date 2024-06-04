@@ -38,7 +38,7 @@ const open = () => {
   })
     .then(({ value }) => {
       
-      service.post('',{
+      service.post('http://localhost:8080/userApplication',{
         'userOwner':JSON.parse(localStorage.getItem('user')).id-0,
         'class':0,
         'target':res.userId-0,
@@ -50,6 +50,7 @@ const open = () => {
           message: "发送成功！",
         })
       }).catch(err=>{
+        console.error(err)
         ElMessage({
           type: 'error',
           message: err.response.data.errorMessage,

@@ -50,7 +50,7 @@ func (r *MessageRepository) DeleteAllin(id uint) error {
 
 // 撤回消息
 func (r *MessageRepository) Revocation(key uint) error {
-	tx := r.db.Unscoped().Where("MessageKey=?", key).Delete(&GroupMessage{})
+	tx := r.db.Model(&GroupMessage{}).Where("MessageKey=?", key).Update("IsDeleted", true).Update("Message", "")
 	return tx.Error
 }
 

@@ -47,7 +47,7 @@
 </template>
 <script setup>
 import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
-import { ElNotification,ElScrollbar } from 'element-plus'
+import { ElNotification,ElScrollbar,ElMessageBox } from 'element-plus'
 import service from '../axios-instance'
 let friendlist=reactive([])
 let id = ref(JSON.parse(localStorage.getItem("user")).userId);

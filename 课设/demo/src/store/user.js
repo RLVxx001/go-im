@@ -167,6 +167,18 @@ export const useWsStore = defineStore('ws', {
         // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
         return messagesToRead
       },  
+      async readGroupRevocations() {  
+        // 复制当前的消息数组，以便返回给调用者  
+        console.log(this.Groupmessages)
+        const messagesToRead = this.Grouprevocations.slice();  
+    
+        // 清空数组和重置计数器  
+        this.Grouprevocationcount -= messagesToRead.length; 
+        this.Grouprevocations.splice(0,messagesToRead.length)  
+        
+        // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
+        return messagesToRead
+      },  
       async readGroupUsers() {  
         // 复制当前的消息数组，以便返回给调用者  
         console.log(this.Frientusers)

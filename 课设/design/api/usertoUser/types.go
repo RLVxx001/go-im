@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// 创建用户请求结构体n9
+// 创建用户请求结构体
 type UserRequest struct {
 	UserOwner    uint          `json:"userOwner"`  //所属用户
 	UserTarget   uint          `json:"userTarget"` //接受用户id

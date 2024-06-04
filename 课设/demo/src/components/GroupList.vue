@@ -16,7 +16,7 @@
         <div class="Message" >
           <div>
             <div v-if="index!=-1" style="margin-left:20px;line-height:20px">{{ groups[index].groupName?groups[index].groupName:'' }}</div>
-            <button style="float:right;margin-right:20px;margin-top:-10px;background-color:rgb(105, 105, 105);border:0px;">···</button>
+            <button style="float:right;margin-right:20px;margin-top:-10px;background-color:rgb(105, 105, 105);border:0px;" @click="drawer1=true">···</button>
           </div>
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1">
@@ -24,18 +24,33 @@
               <div ref="innerRef">
                 <p v-for="(message,i) in groups[index].groupMessages" 
                 :key="i" 
-                 :class="getMessageClass(message.messageOwner==message.messageSender)">
-                  <div v-if="message.messageOwner==message.messageSender" style="display: flex;">
+                 :class="getMessageClass(message.messageOwner==message.messageSender,message.isDeleted)">
+                 <div v-if="message.isDeleted" style="display: flex;">
+                  {{ message.messageOwner==message.messageSender?'您已撤回一条消息':message.senderUser.text+'已撤回一条消息' }}
+                  <div v-if="message.standby" class="mb-4">
+                    <el-button
+                      type="danger"
+                      text
+                      @click="checkstandby(message.standby)"
+                    >
+                     重新编辑
+                    </el-button>
+                  </div>
+                  <div @click="messagedelete(index,message.id,i)">
+                    <img src='http://localhost:8080/static/images/close.png'/>
+                  </div>
+                 </div>
+                 <div v-else-if="message.messageOwner==message.messageSender" style="display: flex;">
                       <div style="width:300px;height:1px"></div>
-                    <div class="bubble" style="margin-right:10px;">
+                    <div class="bubble">
                       <div class="message">
                         <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
                           <div style="text-align: right; margin: 0;">
                             <el-button size="small" text @click="message.visible = false">取消</el-button>
-                            <el-button size="small" type="primary" @click="che">
+                            <el-button size="small" type="primary" @click="revocation(index,message.id,i)">
                               撤回
                             </el-button>
-                            <el-button size="small" type="primary" @click="shan">
+                            <el-button size="small" type="primary" @click="messagedelete(index,message.id,i)">
                               删除
                             </el-button>
                           </div>
@@ -46,22 +61,21 @@
                       </div>
                     </div>
                     <div class="avatar">
-                      <img :src="message.senderUser.img" class="avatar-image" style="margin-right:20px" />
+                      {{ message.senderUser.text }}
+                      <img :src="message.senderUser.user.img" class="avatar-image" style="margin-right:20px" @click="checknwgroupuser(message.senderUser)"/>
                     </div>
                   </div>
                   <div v-else  style="display: flex;">
                     <div class="avatar">
-                      <img :src="message.senderUser.img" class="avatar-image" style="margin-left:20px"/>
+                      <img :src="message.senderUser.user.img" class="avatar-image" style="margin-left:20px" @click="checknwgroupuser(message.senderUser)"/>
+                      {{ message.senderUser.text }}
                     </div>
-                    <div class="bubble" style="margin-left:10px">
+                    <div class="bubble">
                       <div class="message">
                         <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
                           <div style="text-align: right; margin: 0;">
                             <el-button size="small" text @click="message.visible = false">取消</el-button>
-                            <el-button size="small" type="primary" @click="che">
-                              撤回
-                            </el-button>
-                            <el-button size="small" type="primary" @click="shan">
+                            <el-button size="small" type="primary" @click="messagedelete(index,message.id,i)">
                               删除
                             </el-button>
                           </div>
@@ -87,6 +101,77 @@
       </div>
     </div>
   </div>
+  <div v-if="index!=-1">
+    {{ drawer1 }}
+    <el-drawer v-model="drawer1" direction="rtl">
+      <template #header>
+        <h4><img :src="groups[index].img" width="100px"/> {{ groups[index].groupName }} </h4>
+      </template>
+      <template #default>
+        <div>群号：{{ groups[index].groupId }}</div>
+        <div>群名：{{ groups[index].groupName }}</div>
+        <div>群公告：{{ groups[index].groupInform }}</div>
+        <!-- <div>我的群备注：{{ usertoUsers[index].remarks }}</div> -->
+        <div style="display: flex;">
+          <div v-for="(item,i) in groups[index].groupUsers" :key="i" >
+            <img :src="item.user.img" @click="checknwgroupuser(item)" style="width: 50px;"/>{{ item.text }}
+          </div>
+        </div>
+        <div>其他：</div>
+      </template>
+      <template #footer>
+        <div style="flex: auto">
+          <el-button @click="drawer1 = false">取消</el-button>
+          <el-button type="primary" @click="confirmClick">保存</el-button>
+        </div>
+      </template>
+    </el-drawer>
+    <el-drawer v-model="drawer2" direction="ltr" v-if="nwgroupuser.userId==user.userId">
+      <template #header>
+        <h4><img :src="nwgroupuser.user.img" style="width: 100px;"/> {{ nwgroupuser.text }} </h4>
+      </template>
+      <template #default>
+        <div>账号：{{ nwgroupuser.user.username }}</div>
+        <div>账号名：{{ nwgroupuser.user.account }}</div>
+        <div>群备注：可更改</div>
+        <div>权限：
+          <span v-if="nwgroupuser.isAdmin==0">群用户</span>
+          <span v-if="nwgroupuser.isAdmin==1">群管理</span>
+          <span v-if="nwgroupuser.isAdmin==2">群主</span>
+        </div>
+        <div>其他：</div>
+      </template>
+      <template #footer>
+        <div style="flex: auto">
+          <el-button @click="drawer2 = false">取消</el-button>
+          <el-button type="primary" @click="confirmClick">保存</el-button>
+        </div>
+      </template>
+    </el-drawer>
+    <el-drawer v-model="drawer2" direction="ltr" v-if="nwgroupuser.userId!=user.userId">
+      <template #header>
+        <h4><img :src="nwgroupuser.user.img" style="width: 100px;"/> {{ nwgroupuser.text }} </h4>
+      </template>
+      <template #default>
+        <div>账号：{{ nwgroupuser.user.username }}</div>
+        <div>账号名：{{ nwgroupuser.user.account }}</div>
+        <div>群备注：不更改</div>
+        <div>权限：
+          <span v-if="nwgroupuser.isAdmin==0">群用户</span>
+          <span v-if="nwgroupuser.isAdmin==1">群管理</span>
+          <span v-if="nwgroupuser.isAdmin==2">群主</span>
+        </div>
+        <div>其他：</div>
+      </template>
+      <template #footer>
+        <div style="flex: auto">
+          <el-button @click="drawer2 = false">取消</el-button>
+          <el-button type="primary" @click="confirmClick">保存</el-button>
+        </div>
+      </template>
+    </el-drawer>
+  </div>
+  
 </template>
 <script lang="ts" setup>
 import ImageViewer from "@luohc92/vue3-image-viewer";
@@ -97,9 +182,31 @@ import service from '../axios-instance'
 import { useWsStore } from '../store/user';
 import { da } from "element-plus/es/locale";
 const wsStore=useWsStore()
+var user = reactive(JSON.parse(localStorage.getItem('user')))
 const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
+let nwgroupuser=reactive({
+  user:{},
+  groupId: 4,
+  id: 0,
+  isAdmin:0,
+  isGag: false,
+  text:'',
+  userId:0,
+})
+let drawer1=ref(false)
+let drawer2=ref(false)
+function checknwgroupuser(item){
+  nwgroupuser.user=item.user
+  nwgroupuser.groupId=item.groupId
+  nwgroupuser.id=item.id
+  nwgroupuser.isAdmin=item.isAdmin
+  nwgroupuser.isGag=item.isGag
+  nwgroupuser.text=item.text
+  nwgroupuser.userId=item.userId
 
+  drawer2.value=true
+}
 var groupuser = reactive([{
   "username":"xxx",
   "img":"#"
@@ -113,6 +220,30 @@ function send(){
             token:localStorage.getItem('token')
         })
   message.value=''
+}
+function messagedelete(i,id,j){
+  groups[i].groupMessages[j].visible=false
+  service.post('http://localhost:8080/group/deleteMessage',{
+    'id': id-0,
+  }).then(res=>{
+    groups[i].groupMessages.splice(j,1)
+  }).catch(err=>{
+    console.error(err)
+    ElNotification({
+        title: 'Error',
+        message: err.response.data.errorMessage,
+        type: 'error',
+      })
+  })
+}
+function revocation(i,id,j){
+  groups[i].groupMessages[j].visible=false
+  $Ws && $Ws({
+            id: id-0,
+            event:'/group/revocationMessage',
+            token:localStorage.getItem('token')
+        })
+  
 }
 //消息监听
 watch(  
@@ -146,8 +277,6 @@ watch(
       if(wsStore.Groupusercount){
         wsStore.readGroupUsers().then(res=>{
           console.log(res)
-          let p=false
-          
           res.forEach(element => {
             service.post('http://localhost:8080/group/fidGroup',{
               'id':element.target
@@ -184,10 +313,57 @@ watch(
     // 可选：配置watch选项，如立即执行、深度监听等  
     { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
 );
+//新增撤回监听
+watch(  
+    () => wsStore.Grouprevocationcount,  
+    (newUserInfo, prevUserInfo) => {  
+      if(wsStore.Grouprevocationcount){
+        wsStore.readGroupRevocations().then(res=>{
+          console.log(res)
+          res.forEach(element => {
+            for(let i=0;i<groups.length;i++){
+              if(groups[i].id==element.groupId){
+                let l=0,r=groups[i].groupMessages.length-1
+                while(l<=r){
+                  let mid=(l+r)/2
+                  if((l+r)%2!=0)
+                  {
+                    mid=(l+r-1)/2
+                  }
+                  if(groups[i].groupMessages[mid].messageKey>element.messageKey){
+                    r=mid-1
+                  }
+                  else if(groups[i].groupMessages[mid].messageKey<element.messageKey){
+                    l=mid+1
+                  }
+                  else
+                  {
+                    if(groups[i].groupMessages[mid].messageOwner==groups[i].groupMessages[mid].messageSender){
+                      groups[i].groupMessages[mid].standby=groups[i].groupMessages[mid].message
+                    }
+                    groups[i].groupMessages[mid].message=''
+                    groups[i].groupMessages[mid].isDeleted=true
+                    break
+                  }
 
+                }
+              }
+            }
+          });
+        }).catch(err=>{
+          console.error(err)
+        })
+      }
+    },  
+    // 可选：配置watch选项，如立即执行、深度监听等  
+    { immediate: true, deep: false } // 注意：对于基本类型，通常不需要深度监听（deep: false）  
+);
 
 //消息框样式动态选择
-const getMessageClass = (isSent) => {
+const getMessageClass = (isSent,isDeleted) => {
+  if(isDeleted){
+    return 'message-container-centre'
+  }
   return isSent ? 'message-container-right' : 'message-container-left';
 };
 
@@ -196,13 +372,16 @@ var groups=reactive([{groupName:''}])
 
 const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
-let index=ref(0)
+let index=ref(-1)
 function goindex(val){
   console.log(val)
   index.value=val
   gobottom()
 }
 function gobottom(){//抵达最底部
+  if(index.value==-1){
+    return
+  }
   nextTick(() => {  
     scrollbarRef.value!.setScrollTop(20000)
   })
@@ -230,11 +409,12 @@ function getgroups(){
       })
    })
 }
-
+function checkstandby(st){
+  message.value+=st
+}
 onMounted(() => {
   wsStore.event=1
   getgroups()
-  goindex(0)
 })
 </script>
 <style scoped>
@@ -276,6 +456,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+}
+.message-container-centre{
+  float: left;
+  margin-left: 40%;
 }
 .message-container-right {
   float:right;
