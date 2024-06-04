@@ -129,8 +129,9 @@ func ToFindTrendsResps(trend []space.SpaceTrends) []FindTrendResponse {
 }
 
 type CreateCommentRequest struct {
-	Comment space.Comment `json:"comment"`
-	UserId  uint          `json:"userId"`
+	Detail  string `json:"detail"`
+	UserId  uint   `json:"userId"`
+	TrendId uint   `json:"trendId"`
 }
 
 type CreateCommentResponse struct {

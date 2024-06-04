@@ -11,7 +11,10 @@
       <div style="margin-top:10px;display:flex">居住地：<div style="margin-left:24px;background-color:rgb(105, 105, 105);border:0px">{{res.city}}</div></div>
     </div>
     <div>
-      <button plain @click="open" style="margin-top:10px;margin-left:300px;width:110px;height:40px;font-size:20px;line-height:40px;border-radius:10px">添加好友</button>
+      <div style="display:flex">
+        <button plain @click="open" style="margin-top:10px;margin-left:250px;width:110px;height:40px;font-size:20px;line-height:40px;border-radius:10px">添加好友</button>
+        <button plain @click="toSpace" style="margin-top:10px;margin-left:30px;width:110px;height:40px;font-size:20px;line-height:40px;border-radius:10px">访问空间</button>
+      </div>
     </div>
   </div>
 </template>
@@ -64,6 +67,7 @@ const open = () => {
       })
     })
 }
+
 var user = reactive({})
     var a = ref(localStorage.getItem("account"))
 var res = reactive({})
@@ -85,6 +89,11 @@ onMounted(()=>{
     router.push('/person')
   })
 })
+
+function toSpace(){
+  localStorage.setItem("toId",res.userId)
+  router.push("/toSpace")
+}
 </script>
 
 <style>

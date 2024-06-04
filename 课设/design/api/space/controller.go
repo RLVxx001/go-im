@@ -95,21 +95,17 @@ func (r *Controller) FindTrend(g *gin.Context) {
 func (r *Controller) CreateComment(g *gin.Context) {
 	var req CreateCommentRequest
 	err := g.ShouldBind(&req)
+	fmt.Printf("%v\n", req)
 	if err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}
-	err = r.spaceService.CreateComment(req.Comment)
+	err = r.spaceService.CreateComment(req.UserId, req.Detail, req.TrendId)
 	if err != nil {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}
-	err = r.spaceService.AddComment(req.Comment)
-	if err != nil {
-		api_helper.HandleError(g, api_helper.ErrInvalidBody)
-		return
-	}
-	g.JSON(200, CreateCommentRequest{Comment: req.Comment})
+	g.JSON(200, req)
 }
 
 func (r *Controller) DeleteTrends(g *gin.Context) {

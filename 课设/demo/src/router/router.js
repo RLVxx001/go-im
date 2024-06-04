@@ -12,7 +12,7 @@ import Detail from "../components/Detail.vue"
 import GroupList from "../components/GroupList.vue"
 import Finduser from "../components/Finduser.vue"
 import Publish from "../components/Publish.vue"
-
+import ToSpace from "../components/ToSpace.vue"
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -91,6 +91,10 @@ const router = createRouter({
     {
       path: "/publish",
       component:Publish
+    },
+    {
+      path: "/toSpace",
+      component:ToSpace,
     }
   ]
 })

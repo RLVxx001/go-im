@@ -1,6 +1,8 @@
 package space
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type CommentRepository struct {
 	db *gorm.DB
@@ -12,8 +14,12 @@ func NewCommentRepository(db *gorm.DB) *CommentRepository {
 	}
 }
 
-func (r *CommentRepository) Create(comment Comment) error {
-	return r.db.Create(&comment).Error
+func (r *CommentRepository) Create(comment Comment) Comment {
+	//var tmp Comment
+	r.db.Create(&comment)
+	//r.db.Where("ID")
+	//fmt.Printf("%v\n", comment)
+	return comment
 }
 
 func (r *CommentRepository) Migration() {

@@ -1,6 +1,9 @@
 package space
 
-import "fmt"
+import (
+	"fmt"
+	"gorm.io/gorm"
+)
 
 type Service struct {
 	space   SpaceRepository
@@ -86,8 +89,20 @@ func (r *Service) FindComments(trendId uint) ([]Comment, error) {
 	return comments, err
 }
 
-func (r *Service) CreateComment(comment Comment) error {
-	err := r.comment.Create(comment)
+func (r *Service) CreateComment(userId uint, detail string, trendId uint) error {
+	comment := r.comment.Create(Comment{
+		Model:         gorm.Model{},
+		UserId:        userId,
+		Praise:        1,
+		Content:       detail,
+		TrendsId:      trendId,
+		ToUserId:      userId,
+		SpaceTrendsId: trendId,
+	})
+	fmt.Printf("%v\n", comment)
+	trend, err := r.trend.Find(comment.TrendsId)
+	trend.Comments = append(trend.Comments, comment)
+	err = r.trend.Update(trend)
 	if err != nil {
 		print(err)
 	}

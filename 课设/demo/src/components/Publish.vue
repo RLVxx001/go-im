@@ -32,6 +32,8 @@
 import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
+
+import { useRouter } from 'vue-router' 
 let rcd=reactive()
 let id = ref(localStorage.getItem("id"));
 let praise = reactive(0)
@@ -48,10 +50,14 @@ function publish(){
     ],
     "spaceId":localStorage.getItem("id")-0+4
   })
+  .then(res=>{
+    alert("发表成功")
+    router.push('/person')
+  })
 }
 </script>
 <style>
 .to22{
   color:rgb(111, 111, 111);
 }
-</style>
+</style>5

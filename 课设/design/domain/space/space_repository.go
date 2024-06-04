@@ -40,6 +40,7 @@ func (r *SpaceRepository) Find(userid uint) (Space, error) {
 	r.db.Where("UserId=?", userid).Find(&space.SpaceTrends)
 	for i := 0; i < len(space.SpaceTrends); i++ {
 		r.db.Where("ID=?", userid).First(&space.SpaceTrends[i].User)
+		r.db.Where("TrendsId=?", space.SpaceTrends[i].ID).Find(&space.SpaceTrends[i].Comments)
 	}
 	if err != nil {
 		print(err)
