@@ -3,6 +3,7 @@ package space
 import (
 	"design/domain/space"
 	"design/domain/user"
+	"time"
 )
 
 type CreateTrendRequest struct {
@@ -13,17 +14,22 @@ type CreateTrendRequest struct {
 	SpaceId  uint      `json:"spaceId"`
 }
 type CreateSpaceResp struct {
-	UserId uint
+	UserId uint `json:"userId"`
 }
 
 type Comment struct {
-	UserId   uint      //评论用户id
-	User     user.User `gorm:"-"`
-	Praise   uint
-	Content  string //内容
-	TrendsId uint   //空间动态表id
-	ToUserId uint   //0
+	UserId   uint      `json:"userId"` //评论用户id
+	User     user.User `json:"user" gorm:"-"`
+	Praise   uint      `json:"praise"`
+	Detail   string    `json:"detail"`   //内容
+	TrendsId uint      `json:"trendsId"` //空间动态表id
+	ToUserId uint      `json:"toUserId"` //0
 }
+
+type FindCommentRequest struct {
+	TrendId uint `json:"trendId"`
+}
+
 type User struct {
 	Username string `gorm:"type:varchar(30)"`  //用户名
 	Img      string `gorm:"type:varchar(500)"` //头像地址
@@ -33,7 +39,7 @@ func ToSpaceComment(comment Comment) space.Comment {
 	return space.Comment{
 		UserId:   comment.UserId,
 		Praise:   comment.Praise,
-		Content:  comment.Content,
+		Content:  comment.Detail,
 		TrendsId: comment.TrendsId,
 		ToUserId: comment.ToUserId,
 	}
@@ -61,17 +67,23 @@ type CreateTrendResponse struct {
 	SpaceId uint `json:"spaceId"`
 }
 
-type FindTrendRequest struct {
+type FindTrendsRequest struct {
 	UserId uint `json:"userId"`
 }
 
 type FindTrendResponse struct {
-	UserId   uint
-	User     user.User `gorm:"-"`
-	Detail   string
-	Praise   uint
+	UserId   uint      `json:"userId"`
+	User     user.User `json:"user"  gorm:"-"`
+	Detail   string    `json:"detail"`
+	TrendId  uint      `json:"trendId"`
+	Tim      time.Time `json:"tim"`
+	Praise   uint      `json:"praise"`
 	Comments []Comment `json:"comments"` //评论[](不计入表)
-	SpaceId  uint      //空间表id
+	SpaceId  uint      `json:"spaceId"`
+}
+
+type FindTrendRequest struct {
+	TrendId uint `json:"trendId"`
 }
 
 func ToComment(comment space.Comment) Comment {
@@ -79,7 +91,7 @@ func ToComment(comment space.Comment) Comment {
 		UserId:   comment.UserId,
 		User:     comment.User,
 		Praise:   comment.Praise,
-		Content:  comment.Content,
+		Detail:   comment.Content,
 		TrendsId: comment.TrendsId,
 		ToUserId: comment.ToUserId,
 	}
@@ -94,15 +106,26 @@ func ToComments(comment []space.Comment) []Comment {
 	return comments
 }
 
-func ToFindTrendResp(trends space.SpaceTrends) FindTrendResponse {
+func ToFindTrendsResp(trends space.SpaceTrends) FindTrendResponse {
 	return FindTrendResponse{
 		UserId:   trends.UserId,
 		User:     trends.User,
 		Detail:   trends.Detail,
 		Praise:   trends.Praise,
+		Tim:      trends.CreatedAt,
+		TrendId:  trends.ID,
 		Comments: ToComments(trends.Comments),
 		SpaceId:  trends.SpaceId,
 	}
+}
+
+func ToFindTrendsResps(trend []space.SpaceTrends) []FindTrendResponse {
+	var trends []FindTrendResponse
+	for i := 0; i < len(trend); i++ {
+		tmp := trend[i]
+		trends = append(trends, ToFindTrendsResp(tmp))
+	}
+	return trends
 }
 
 type CreateCommentRequest struct {

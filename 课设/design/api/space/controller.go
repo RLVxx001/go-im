@@ -35,6 +35,17 @@ func (r *Controller) CreateSpace(g *gin.Context) {
 	}
 }
 
+func (r *Controller) FindComment(g *gin.Context) {
+	var req FindCommentRequest
+	g.ShouldBind(&req)
+	comments, err := r.spaceService.FindComments(req.TrendId)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	g.JSON(200, ToComments(comments))
+}
+
 func (r *Controller) CreateTrend(g *gin.Context) {
 	var req CreateTrendRequest
 	err := g.ShouldBind(&req)
@@ -45,7 +56,7 @@ func (r *Controller) CreateTrend(g *gin.Context) {
 	}
 	trend := ToSpaceTrend(req)
 
-	err = r.spaceService.CreateTrends(&trend)
+	err = r.spaceService.CreateTrends(trend)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return
@@ -56,20 +67,28 @@ func (r *Controller) CreateTrend(g *gin.Context) {
 		})
 }
 
-func (r *Controller) FindTrend(g *gin.Context) {
-	var req FindTrendRequest
-	err := g.ShouldBind(&req)
-	if err != nil {
-		api_helper.HandleError(g, api_helper.ErrInvalidBody)
-		return
-	}
-	var Trends []space.SpaceTrends
-	Trends, err = r.spaceService.FindTrends(req.UserId)
+func (r *Controller) FindTrends(g *gin.Context) {
+	var req FindTrendsRequest
+	g.ShouldBind(&req)
+	userId := req.UserId
+	Trends, err := r.spaceService.FindTrends(userId)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
-	g.JSON(200, Trends)
+	g.JSON(200, ToFindTrendsResps(Trends))
+
+}
+
+func (r *Controller) FindTrend(g *gin.Context) {
+	var req FindTrendRequest
+	g.ShouldBind(&req)
+	trend, err := r.spaceService.FindTrend(req.TrendId)
+	if err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	g.JSON(200, ToFindTrendsResp(trend))
 
 }
 

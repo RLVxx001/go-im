@@ -1,5 +1,7 @@
 package space
 
+import "fmt"
+
 type Service struct {
 	space   SpaceRepository
 	trend   TrendsRepository
@@ -19,8 +21,12 @@ func NewService(r SpaceRepository, t TrendsRepository, c CommentRepository) *Ser
 }
 
 func (s *Service) CreateSpace(userId uint) error {
-	var user uint
-	err := s.space.Create(user)
+	//var user uint
+	_, err := s.space.Find(userId)
+	if err == nil {
+		return nil
+	}
+	err = s.space.Create(userId)
 	if err != nil {
 		print(err)
 	}
@@ -36,11 +42,22 @@ func (r *Service) FindSpace(userid uint) (Space, error) {
 	return space, nil
 }
 
+func (r *Service) FindTrend(trendId uint) (SpaceTrends, error) {
+	trend, err := r.trend.Find(trendId)
+	comments, err := r.comment.Find(trendId)
+	if err != nil {
+		print(err)
+	}
+	trend.Comments = comments
+	return trend, err
+}
+
 func (r *Service) FindTrends(userid uint) ([]SpaceTrends, error) {
 	space, err := r.space.Find(userid)
 	if err != nil {
 		print(err)
 	}
+	fmt.Printf("%v", space.SpaceTrends)
 	return space.SpaceTrends, err
 }
 
@@ -52,12 +69,21 @@ func (r *Service) DeleteTrends(trend SpaceTrends) error {
 	return err
 }
 
-func (r *Service) CreateTrends(trend *SpaceTrends) error {
+func (r *Service) CreateTrends(trend SpaceTrends) error {
 	err := r.trend.Create(trend)
+	space, err := r.space.Find(trend.UserId)
+	space.SpaceTrends = append(space.SpaceTrends, trend)
+	fmt.Printf("%v", space)
+	r.space.Update(space)
 	if err != nil {
 		print(err)
 	}
 	return err
+}
+
+func (r *Service) FindComments(trendId uint) ([]Comment, error) {
+	comments, err := r.comment.Find(trendId)
+	return comments, err
 }
 
 func (r *Service) CreateComment(comment Comment) error {

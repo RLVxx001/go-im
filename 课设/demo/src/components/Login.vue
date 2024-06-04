@@ -45,6 +45,7 @@ import axios from 'axios';
 import bus from "../EventBus/eventbus"; // 请注意确保你的 eventbus 正确工作并支持你想要的功能  
 import { useRouter } from 'vue-router' 
 import { useUserStore } from '../store/user';
+import service from '../axios-instance';
 const userStore=useUserStore()
 const router = useRouter()  
 
@@ -67,8 +68,11 @@ function sub() {
     localStorage.setItem('token',response.data.token)
     localStorage.setItem("name",username.value);
     localStorage.setItem("password",passwd.value );
-    localStorage.setItem('id',response.data.id)
+    localStorage.setItem('id',response.data.userId)
     localStorage.setItem('user',JSON.stringify(response.data))
+    service.post("http://localhost:8080/space/spaceadd",{
+      "UserId":response.data.userId,
+    })
     userStore.token=response.data.token
     userStore.username=response.data.username
     ElNotification({

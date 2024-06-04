@@ -26,3 +26,12 @@ func (r *CommentRepository) Migration() {
 func (r *CommentRepository) Delete(commentId uint) error {
 	return r.db.Unscoped().Where("ID=?", commentId).Delete(&Comment{}).Error
 }
+
+func (r *CommentRepository) Find(trendId uint) ([]Comment, error) {
+	var comments []Comment
+	err := r.db.Where("TrendsId=?", trendId).Find(&comments).Error
+	for i := 0; i < len(comments); i++ {
+		r.db.Where("ID=?", comments[i].UserId).First(&comments[i].User)
+	}
+	return comments, err
+}

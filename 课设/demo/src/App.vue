@@ -37,5 +37,8 @@ provide('color', 'red');
 </template>
 
 <style>
-
+.sdsd{
+  color:rgb(209, 209, 207);
+  box-shadow:-2px 2px 2px rgba(0, 0, 0, 0.15)
+}
 </style>

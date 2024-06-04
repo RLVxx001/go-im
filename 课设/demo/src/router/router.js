@@ -11,6 +11,7 @@ import Newfriend from "../components/Newfriend.vue"
 import Detail from "../components/Detail.vue"
 import GroupList from "../components/GroupList.vue"
 import Finduser from "../components/Finduser.vue"
+import Publish from "../components/Publish.vue"
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -86,6 +87,10 @@ const router = createRouter({
       path: "/finduser",
       component:Finduser,
       meta: { requiresAuth: true }
+    },
+    {
+      path: "/publish",
+      component:Publish
     }
   ]
 })

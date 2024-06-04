@@ -23,7 +23,7 @@ func (r *TrendsRepository) Migration() {
 }
 
 // create
-func (r *TrendsRepository) Create(trends *SpaceTrends) error {
+func (r *TrendsRepository) Create(trends SpaceTrends) error {
 	return r.db.Create(&trends).Error
 }
 
@@ -34,6 +34,7 @@ func (r *TrendsRepository) Delete(trendid uint) error {
 func (r *TrendsRepository) Find(trendId uint) (SpaceTrends, error) {
 	var trend SpaceTrends
 	err := r.db.Where("ID=?", trendId).First(&trend).Error
+	err = r.db.Where("ID=?", trend.UserId).First(&trend.User).Error
 	return trend, err
 }
 

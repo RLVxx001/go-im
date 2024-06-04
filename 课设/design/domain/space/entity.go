@@ -9,7 +9,7 @@ import (
 type Space struct {
 	gorm.Model
 	UserId      uint          //用户id
-	EnterPermit bool          //是否设置禁入
+	EnterPermit bool          //是否设置禁入0
 	SpaceTrends []SpaceTrends `gorm:"foreignKey:SpaceId"` //空间动态[](不计入表)
 }
 

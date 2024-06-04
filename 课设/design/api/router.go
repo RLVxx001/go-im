@@ -83,7 +83,10 @@ func RegisterSpaceHandlers(r *gin.Engine, dbs Databases) {
 	spaceController := spaceApi.NewSpaceController(spaceService, AppConfig)
 	spaceGroup := r.Group("/space")
 	spaceGroup.POST("/spaceadd", spaceController.CreateSpace)
-	spaceGroup.POST("/fidTrends", spaceController.FindTrend)
+	spaceGroup.POST("/fidTrends", spaceController.FindTrends)
+	spaceGroup.POST("/fidTrend", spaceController.FindTrend)
+	spaceGroup.POST("/fidComment", spaceController.FindComment)
+
 	spaceGroup.POST("/addTrends", spaceController.CreateTrend)
 	spaceGroup.POST("/addComment", spaceController.CreateComment)
 }
