@@ -107,7 +107,7 @@ func (c *Controller) CreateGroup(ws *websocket.Conn, mp map[string]interface{}, 
 	fmt.Println("验证成功：userid:", userid)
 
 	var req GroupRequest
-	err := webSocketDecoded.DecodedMap(mp, req)
+	err := webSocketDecoded.DecodedMap(mp, &req)
 	fmt.Printf("req: %v\n", req)
 	if err != nil {
 		err := api_helper.WsError(ws, api_helper.ErrInvalidBody, "auth")
@@ -131,7 +131,7 @@ func (c *Controller) CreateGroup(ws *websocket.Conn, mp map[string]interface{}, 
 			continue
 		}
 		if _, err := c.userService.GetById(j.UserId); err == nil {
-			groupUsers = append(groupUsers, group.GroupUser{UserId: j.UserId})
+			groupUsers = append(groupUsers, group.GroupUser{UserId: j.UserId, IsAdmin: 1}) //其余创始人为管理
 			p[j.UserId] = true
 		}
 	}
@@ -146,7 +146,7 @@ func (c *Controller) CreateGroup(ws *websocket.Conn, mp map[string]interface{}, 
 		return
 	}
 	for _, i := range group.GroupUsers {
-		wsServer.Broadcast <- wsServer.NewW(i.UserId, i, mp["event"].(string))
+		wsServer.Broadcast <- wsServer.NewW(i.UserId, group, mp["event"].(string))
 	}
 }
 
@@ -364,5 +364,17 @@ func (c *Controller) DeletesMessage(g *gin.Context) {
 		api_helper.HandleError(g, err)
 		return
 	}
+	g.JSON(http.StatusOK, nil)
+}
+
+// 已读群消息
+func (c *Controller) ReadMessage(g *gin.Context) {
+	var req GroupRequest
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	userId := api_helper.GetUserId(g)
+	c.s.ReadMessage(req.Id, userId)
 	g.JSON(http.StatusOK, nil)
 }

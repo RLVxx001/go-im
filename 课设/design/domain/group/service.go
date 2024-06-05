@@ -1,6 +1,7 @@
 package group
 
 import (
+	"log"
 	"sort"
 )
 
@@ -350,4 +351,12 @@ func (s *Service) DeletesMessage(groupId, userid uint) error {
 		return ErrNotDelete
 	}
 	return nil
+}
+
+// 已读群消息
+func (s *Service) ReadMessage(id, userId uint) {
+	err := s.messageRepository.ReadMessage(id, userId)
+	if err != nil {
+		log.Print(err)
+	}
 }

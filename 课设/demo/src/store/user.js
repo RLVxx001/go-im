@@ -128,9 +128,20 @@ export const useWsStore = defineStore('ws', {
             }
         }
         console.log("进入paina的消息："+message)
-
-
       },  
+      
+      async readFrientUsers(){
+        // 复制当前的消息数组，以便返回给调用者  
+        console.log(this.Frientusers)
+        const messagesToRead = this.Frientusers.slice();  
+    
+        // 清空数组和重置计数器  
+        this.Frientusercount -= messagesToRead.length; 
+        this.Frientusers.splice(0,messagesToRead.length)  
+        
+        // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
+        return messagesToRead
+      },
       async readFrientRevocations() {  
         // 复制当前的消息数组，以便返回给调用者  
         console.log(this.Frientrevocations)
@@ -191,5 +202,6 @@ export const useWsStore = defineStore('ws', {
         // 返回一个 Promise，该 Promise 解析为被读取的消息数组  
         return messagesToRead
       }, 
+
     },  
   });

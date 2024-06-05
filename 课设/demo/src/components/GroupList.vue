@@ -6,6 +6,9 @@
         <el-scrollbar style="height:550px;width:200px">
           <p v-for="(item,index) in groups" 
           :key="index" style="margin-top:10px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:12px" class="friend">
+            <div class="unread-indicator">  
+              <div class="unread-count" v-if="item.count"> {{ item.count }}</div>  
+            </div>
             <img :src="item.img" style="margin-right:20px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
             {{ item?item.groupName:'' }}
           </p>
@@ -102,7 +105,6 @@
     </div>
   </div>
   <div v-if="index!=-1">
-    {{ drawer1 }}
     <el-drawer v-model="drawer1" direction="rtl">
       <template #header>
         <h4><img :src="groups[index].img" width="100px"/> {{ groups[index].groupName }} </h4>
@@ -256,8 +258,28 @@ watch(
             for(let i=0;i<groups.length;i++)
             {
               if(groups[i].id==element.groupId){
+                if(!groups[i].groupMessages)
+                {
+                  groups[i].groupMessages=[]
+                }
                 groups[i].groupMessages.push(element)
-                gobottom()
+                let st=JSON.stringify(groups[i])
+                let datas=JSON.parse(st)
+                if(index.value==i){
+                  index.value=0
+                  readmessage(element.id)
+                  datas.count=0
+                }
+                else if(index.value!=-1&&index.value<i)
+                {
+                  index.value++
+                  datas.count++
+                }
+                groups.splice(i,1)
+                groups.unshift(datas)
+                
+                  gobottom()
+                
                 break;
               }
             }
@@ -276,22 +298,24 @@ watch(
     (newUserInfo, prevUserInfo) => {  
       if(wsStore.Groupusercount){
         wsStore.readGroupUsers().then(res=>{
-          console.log(res)
           res.forEach(element => {
+            console.log(element)
+            let groupId=(element.target?element.target:element.ID)
+            console.log(groupId)
             service.post('http://localhost:8080/group/fidGroup',{
-              'id':element.target
+              'id':groupId-0
             })
             .then(res=>{
               let data=res.data
               console.log(data)
               for(let i=0;i<groups.length;i++)
               {
-                if(groups[i].id==element.target)
+                if(groups[i].id==groupId)
                 {
                   groups.splice(i,1)
                   if(index.value==i)
                   {
-                    goindex(0)
+                    index.value=0
                   }
                   else if(index.value<i&&index.value!=-1)
                   {
@@ -301,6 +325,7 @@ watch(
                 }
               }
               groups.unshift(data)
+              getcount(0)
             }).catch(err=>{
               console.error(err)
             })
@@ -373,9 +398,28 @@ var groups=reactive([{groupName:''}])
 const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let index=ref(-1)
+function readmessage(val){
+  service.post('http://localhost:8080/group/read',{'id':val})
+  .then(res=>{
+
+  }).catch(err=>{
+    console.error(err)
+  })
+  
+}
 function goindex(val){
-  console.log(val)
+  let nwval=index.value
+  if(nwval!=-1&&!groups[nwval].groupMessages[groups[nwval].groupMessages.length-1].isRead){
+    readmessage(groups[nwval].id)
+    groups[nwval].groupMessages[groups[nwval].groupMessages.length-1].isRead=true
+    getcount(nwval)
+  }
   index.value=val
+  if(val!=-1&&!groups[val].groupMessages[groups[val].groupMessages.length-1].isRead){
+    readmessage(groups[val].id)
+    groups[val].groupMessages[groups[val].groupMessages.length-1].isRead=true
+    getcount(val)
+  }
   gobottom()
 }
 function gobottom(){//抵达最底部
@@ -392,8 +436,11 @@ function getgroups(){
    .then(res=>{
     console.log(res.data)
     groups.pop()
+    let i=0
     res.data.forEach(element => {
       groups.push(element)
+      getcount(i)
+      i++
     });
     gobottom()
    }).catch(err=>{
@@ -416,6 +463,20 @@ onMounted(() => {
   wsStore.event=1
   getgroups()
 })
+function getcount(i){
+  let count=0
+  if(!groups[i].groupMessages)
+  {
+    return
+  }
+  for(let j=groups[i].groupMessages.length-1;j>=0;j--){
+    if(groups[i].groupMessages[j].isRead){
+      break
+    }
+    count++
+  }
+  groups[i].count=count
+}
 </script>
 <style scoped>
 .scrollbar-demo-item {
@@ -484,7 +545,12 @@ onMounted(() => {
   border-top-right-radius: 18px;
   background-color: #82838372;
 }
-
+.friend{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 200px;
+}
 .friend:hover{
   background-color:#cdcdcda2;
 }
@@ -530,4 +596,25 @@ onMounted(() => {
   border-bottom-left-radius: 17px;
   font-size: 12px;
 }
+.unread-indicator {  
+  /* 红点的样式 */  
+  position: relative;  
+  display: inline-block;  
+  margin-left: 10px;
+  /* 其他样式... */  
+}  
+  
+.unread-count {  
+  /* 数字的样式 */  
+  position: absolute;  
+  background-color: red;
+  border-radius:100%;
+  width: 20px;
+  height: 20px;
+  top: -30px; /* 假设你想要将数字放在红点的上方 */  
+  right: -15px; /* 假设你想要将数字放在红点的右侧 */  
+  text-align: center;
+  line-height: 20px;
+  /* 其他样式... */  
+} 
 </style>

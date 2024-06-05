@@ -287,6 +287,7 @@ func (c *Controller) Fids(g *gin.Context) {
 		}
 		response.ToUser.Username = j.ToUser.Username
 		response.ToUser.Account = j.ToUser.Account
+		response.ToUser.UserId = j.ToUser.ID
 		response.ToUser.Img = j.ToUser.Img
 		userResponses = append(userResponses, response)
 	}
@@ -312,6 +313,7 @@ func (c *Controller) Fid(g *gin.Context) {
 	if err == nil {
 		response.ToUser.Username = user.Username
 		response.ToUser.Account = user.Account
+		response.ToUser.UserId = user.ID
 		response.ToUser.Img = user.Img
 	}
 	g.JSON(http.StatusOK, response)

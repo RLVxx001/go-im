@@ -25,6 +25,7 @@ type UserMessage struct {
 	User         uint      `json:"user"`         //消息消费者id
 	UserOwner    uint      `json:"userOwner"`    //消息发送者id
 	IsDeleted    bool      `json:"isDeleted"`    //是否被删除
+	IsRead       bool      `json:"isRead"`       //是否被读
 	CreatedAt    time.Time `json:"createdAt"`
 }
 
@@ -75,6 +76,7 @@ func ToUserMessage(us []usertoUser.UserMessage) []UserMessage {
 			CreatedAt:    j.CreatedAt,
 			UserOwner:    j.UserOwner,
 			IsDeleted:    j.IsDeleted,
+			IsRead:       j.IsRead,
 		}
 
 	}
@@ -88,6 +90,7 @@ func ToMessage(us []UserMessage) []usertoUser.UserMessage {
 			Message:      j.Message,
 			UsertoUserId: j.UsertoUserId,
 			Key:          j.Key,
+			IsRead:       j.IsRead,
 		}
 
 	}
