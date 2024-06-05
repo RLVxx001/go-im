@@ -8,10 +8,10 @@
           <div style="width:750px;height:auto;min-height:70px;background-color:rgb(189, 184, 184);margin-left:30px;margin-top:10px;border-radius:10px">
             <div style="height:50px;display:flex">
               <img :src="tmp.userResponse.img?tmp.userResponse.img:tmp.groupResponse.img" style="margin-left:10px;height:50px;width:50px;border-radius:50%;border:1px double"/>
-              <div style="font-size:23px;margin-left:10px">
+              <div style="font-size:18px;margin-left:10px">
                 {{ tmp.userResponse?tmp.userResponse.account:tmp.groupResponse.groupName }}
               </div>
-              <div style="font-size:23px;margin-left:10px">
+              <div style="font-size:18px;margin-left:10px">
                 <span v-if="tmp.class==0">{{ tmp.userOwner==id?'请求添加对方为好友':tmp.remarks }}</span>
                 <span v-if="tmp.class==1">{{ tmp.userOwner==id?'请求加入群聊':'申请加入'+tmp.groupResponse.groupName }}</span>
                 <span v-if="tmp.class==2">{{ tmp.target==id?tmp.userResponse.account+'邀请你加入':'邀请 '+tmp.target+' 加入' }}</span>
@@ -22,9 +22,11 @@
               <div v-if="tmp.stats==0" style="background-color:rgb(223, 219, 219);border:1px double;text-align:center;line-height:30px;margin-top:-30px;width:100px;height:30px;margin-left:300px">
 
                 <div v-if="new Date(tmp.failureTime)>Date.now()">
-                  <div v-if="(tmp.class==1&&tmp.userOwner!=id)||(tmp.class!=1&&tmp.target==id)">
-                    <button @click="checkN(index)">不同意</button>
-                    <button @click="checkY(index)">同意</button>
+                  <div v-if="(tmp.class==1&&tmp.userOwner!=id)||(tmp.class!=1&&tmp.target==id)" style="width:300px">
+                    <div style="display:flex">
+                      <button @click="checkN(index)"  style="height:30px;width:80px">不同意</button>
+                      <button @click="checkY(index)" style="height:30px;width:80px;">同意</button>
+                    </div>
                   </div>
                   <div v-else>
                      等待验证 
@@ -38,7 +40,7 @@
               <div v-if="tmp.stats==2" style="text-align:center;line-height:30px;margin-top:-30px;width:100px;height:30px;margin-left:300px">已同意</div>
               <!-- <div :v-if="tmp.is_agr==1" style="margin-top:-30px;width:100px;height:30px;margin-left:300px">已通过</div> -->
             </div>
-            <div style="margin-left:100px;font-size:15px">留言：{{tmp.msg}}</div>
+            <div style="margin-left:100px;font-size:15px">留言：{{tmp.text}}</div>
           </div>
         </div>
       </div>    

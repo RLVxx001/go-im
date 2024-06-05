@@ -2,16 +2,16 @@
   <div style="">
     <hr>
     <div style="display:flex;width:800px;height:30px;margin-bottom:-10px;margin-top:-10px;margin-left:70px">
-      <router-link to="publish" style="text-decoration: none;">
+      <router-link to="/toSpace" style="text-decoration: none;">
         <div class="to1" style="margin-top:-7px">发表</div>
       </router-link>
-      <router-link to="/message" style="text-decoration: none;">
-        <div class="to1" style="margin-top:-7px">留言板</div>
+      <router-link to="/toMessage" style="text-decoration: none;">
+        <div class="to1" style="margin-top:-7px">留言</div>
       </router-link>
       <router-link to="" style="text-decoration: none;">
         <div class="to1" style="margin-top:-7px">与我相关</div>
       </router-link>
-      <router-link to="" style="text-decoration: none;">
+      <router-link to="/toPhotoGraph" style="text-decoration: none;">
         <div class="to1" style="margin-top:-7px">相册</div>
       </router-link>
       <router-link to="" style="text-decoration: none;">
@@ -37,7 +37,7 @@
             accept="image/*"
             multiple
             >
-            <el-button type="text" style="font-size:50px">+</el-button>
+            <el-button type="text" style="font-size:50px"></el-button>
             <template #tip>
                 <div class="el-upload__tip" style="color:rgba(220, 228, 253, 0.942);word-break:break-all;width:120px">最多上传100张图片,且单张图片大小不能超过10MB</div>
             </template>
@@ -59,14 +59,6 @@ let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
 onMounted(()=>{
   getimglist()
-  service.post("http://localhost:8080/space/fidMessage",{
-    "spaceId":localStorage.getItem("id")-0+4
-  }) 
-  .then(res=>{
-    rcd.push(res.data)
-    console.log(rcd)
-  })
-  console.log(rcd)
 })
 function Detail(e){
   localStorage.setItem("ToId",e-0)
@@ -162,7 +154,11 @@ function handleImgChange(file, fileList){
     noneBtnImg.value = fileList.length >= limitCountImg.value;
 }
 function getimglist(){
-  service.get('http://localhost:8080/userImg/getByUser')
+  service.post('http://localhost:8080/userImg/getByFriend',{
+    "userId":localStorage.getItem("toId")-0,
+    "id":localStorage.getItem("id")-0,
+    "url":"#"
+  })
   .then(response => {
       if(!response.data){
         return

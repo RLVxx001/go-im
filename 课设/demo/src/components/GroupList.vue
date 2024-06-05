@@ -47,15 +47,17 @@
                       <div style="width:300px;height:1px"></div>
                     <div class="bubble">
                       <div class="message">
-                        <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
+                        <el-popover :visible="message.visible?message.visible:false" placement="top" :width="185">
                           <div style="text-align: right; margin: 0;">
-                            <el-button size="small" text @click="message.visible = false">取消</el-button>
+                            <div style="display:flex">
+                            <el-button size="small" type="primary" style="background-color:rgb(207, 230, 244)" text @click="message.visible = false">取消</el-button>
                             <el-button size="small" type="primary" @click="revocation(index,message.id,i)">
                               撤回
                             </el-button>
                             <el-button size="small" type="primary" @click="messagedelete(index,message.id,i)">
                               删除
                             </el-button>
+                            </div>
                           </div>
                           <template #reference>
                             <el-button @click="message.visible = true">{{ message.message }}</el-button>
@@ -77,7 +79,7 @@
                       <div class="message">
                         <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
                           <div style="text-align: right; margin: 0;">
-                            <el-button size="small" text @click="message.visible = false">取消</el-button>
+                            <el-button size="small" type="primary" style="background-color:rgb(207, 230, 244)" text @click="message.visible = false">取消</el-button>
                             <el-button size="small" type="primary" @click="messagedelete(index,message.id,i)">
                               删除
                             </el-button>
@@ -98,7 +100,8 @@
         </div>
         <div style="width:1px; background-color: black;"></div>
         <div class="Chat">
-          <textarea style="width:607px;height:100px;margin-top:30px;background-color:rgb(141, 141, 141);border:0px" v-model="message"></textarea>
+          <div style="height:10px;width:1px"></div>
+          <textarea style="width:590px;height:120px;background-color:rgb(141, 141, 141);border:1px double black;margin-left:10px" v-model="message"></textarea>
           <button style="color:rgba(220, 228, 253, 0.942);background-color:#82838372;width:60px;height:30px;margin-left:500px" @click="send">发送</button>
         </div>
       </div>
@@ -132,6 +135,7 @@
           </div>
         </div>
         <div>其他：</div>
+        <el-button @click="toSpace(nwgroupuser.userId)" type="primary" style="background-color:rgb(207, 230, 244);margin-top:20px;margin-left:10px" text >访问空间</el-button>
       </template>
       <template #footer>
         <div style="flex: auto">
@@ -154,6 +158,7 @@
           <span v-if="nwgroupuser.isAdmin==2">群主</span>
         </div>
         <div>其他：</div>
+        <el-button @click="toSpace(nwgroupuser.userId)" type="primary" style="background-color:rgb(207, 230, 244);margin-top:20px;margin-left:10px" text >访问空间</el-button>
       </template>
       <template #footer>
         <div style="flex: auto">
@@ -176,6 +181,7 @@
           <span v-if="nwgroupuser.isAdmin==2">群主</span>
         </div>
         <div>其他：</div>
+         <el-button @click="toSpace(nwgroupuser.userId)" type="primary" style="background-color:rgb(207, 230, 244);margin-top:20px;margin-left:10px" text >访问空间</el-button>
       </template>
       <template #footer>
         <div style="flex: auto">
@@ -194,9 +200,11 @@ import { ref, onMounted ,h,reactive,nextTick,inject,watch } from 'vue';
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 import axios from "axios";
+import { useRouter } from 'vue-router' 
 import { useWsStore } from '../store/user';
 import { da } from "element-plus/es/locale";
 const wsStore=useWsStore()
+ const router = useRouter()
 var user = reactive(JSON.parse(localStorage.getItem('user')))
 const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
@@ -209,6 +217,12 @@ let nwgroupuser=reactive({
   text:'',
   userId:0,
 })
+function toSpace(e)
+{
+  localStorage.setItem("toId",e)
+  router.push("/toSpace")
+  console.log(e)
+}
 let drawer1=ref(false)
 let drawer2=ref(false)
 function checknwgroupuser(item){

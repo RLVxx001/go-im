@@ -11,7 +11,7 @@
       <router-link to="" style="text-decoration: none;">
         <div class="to1" style="margin-top:-7px">与我相关</div>
       </router-link>
-      <router-link to="" style="text-decoration: none;">
+      <router-link to="/photoGraph" style="text-decoration: none;">
         <div class="to1" style="margin-top:-7px">相册</div>
       </router-link>
       <router-link to="" style="text-decoration: none;">

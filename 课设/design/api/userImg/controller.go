@@ -69,7 +69,7 @@ func (c *Controller) GetByFriend(g *gin.Context) {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}
-	imgs, err := c.s.GetByUser(req.Id)
+	imgs, err := c.s.GetByUser(req.UserId)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return

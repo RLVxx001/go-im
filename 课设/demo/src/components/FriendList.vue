@@ -23,12 +23,13 @@
         </div>
         <el-scrollbar style="height:550px;width:200px">
           <p v-for="(item,index) in usertoUsers" 
-          :key="index" style="margin-top:3px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:12px" class="friend">
-              <div class="unread-indicator">  
+          :key="index" style="margin-top:-0px;line-height:60px;width:200px;height:60px;background-color:rgb(189, 184, 184);color:black;border-radius:10px" class="friend">
+              <div class="unread-indicator" style="margin-top:0px">  
                 <div class="unread-count" v-if="item.count"> {{ item.count }}</div>  
               </div>
             <img :src="item.ToUser.img" style="margin-top:7px; margin-left:10px;width:50px;height:50px;border-radius:50% ;border:rgb(104, 103, 103)" @click="goindex(index)"/>
             {{ item.remarks }}
+            <div style="box-shadow:-2px 2px 2px rgba(0, 0, 0, 0.15);height:2px;width:200px"></div>
           </p>
         </el-scrollbar>
       </div>
@@ -66,15 +67,17 @@
                       <div style="width:300px;height:1px"></div>
                     <div class="bubble">
                         <div class="message">
-                          <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
+                          <el-popover :visible="message.visible?message.visible:false" placement="top" :width="185">
                             <div style="text-align: right; margin: 0;">
-                              <el-button size="small" text @click="message.visible = false">取消</el-button>
+                              <div style="display:flex">
+                              <el-button size="small" type="primary" style="background-color:rgb(207, 230, 244)" text @click="message.visible = false">取消</el-button>
                               <el-button size="small" type="primary" @click="revocation(index,message.key,i)">
                                 撤回
                               </el-button>
                               <el-button size="small" type="primary" @click="messagedelete(index,message.key,i)">
                                 删除
                               </el-button>
+                              </div>
                             </div>
                             <template #reference>
                               <el-button @click="message.visible = true">{{ message.message }}</el-button>
@@ -95,7 +98,7 @@
                       <div class="message">
                         <el-popover :visible="message.visible?message.visible:false" placement="top" :width="160">
                           <div style="text-align: right; margin: 0;">
-                            <el-button size="small" text @click="message.visible = false">取消</el-button>
+                            <el-button size="small" type="primary" style="background-color:rgb(207, 230, 244)" text @click="message.visible = false">取消</el-button>
                             <el-button size="small" type="primary" @click="messagedelete(index,message.key,i)">
                               删除
                             </el-button>
@@ -116,7 +119,13 @@
         </div>
         <div style="width:1px; background-color: black;"></div>
         <div class="Chat">
-          <textarea style="width:607px;height:120px;margin-top:30px;background-color:rgb(141, 141, 141);border:0px" v-model="message"></textarea>
+          <!-- <div style="display:flex">
+          <li class="emojiList" v-for="(item) in emojis" :key="index" @click="handleEmoji(item)">
+          {{item}}
+          </li>
+          </div> -->
+          <div style="height:10px;width:1px"></div>
+          <textarea style="width:590px;height:120px;background-color:rgb(141, 141, 141);border:1px double black;margin-left:10px" v-model="message"></textarea>
           <button style="color:rgba(220, 228, 253, 0.942);background-color:#82838372;width:60px;height:30px;margin-left:500px" @click="send">发送</button>
         </div>
       </div>
@@ -132,6 +141,7 @@
       备注：<input v-model="remarks">
 
       <div>其他：</div>
+      <el-button @click="toSpace(usertoUsers[index].ToUser.userId )" type="primary" style="background-color:rgb(207, 230, 244);margin-top:20px;margin-left:10px" text >访问空间</el-button>
     </template>
     <template #footer>
       <div style="flex: auto">
@@ -204,9 +214,11 @@ import '@luohc92/vue3-image-viewer/dist/style.css';
 import { ref, onMounted ,h,reactive,nextTick,inject,watch } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
+import { useRouter } from 'vue-router' 
 import { useWsStore } from '../store/user';
 import axios from "axios";
 const wsStore=useWsStore()
+ const router = useRouter()
 const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
 let drawer1=ref(false)
@@ -215,6 +227,15 @@ let drawer3=ref(false)
 let remarks=ref('')
 let groupId=ref('')
 let groupName=ref('')
+const emojis = [
+  '😀', '😄', '😅', '🤣', '😂', '😉', '😊', '😍', '😘', '😜',
+  '😝', '😏', '😒', '🙄', '😔', '😴', '😷', '🤮', '🥵', '😎',
+  '😮', '😰', '😭', '😱', '😩', '😡', '💀', '👽', '🤓', '🥳',
+  '😺', '😹', '😻', '🤚', '💩', '👍', '👎', '👏', '🙏', '💪'
+];
+
+// emojis = emojis.map(emoji => ({text: emoji}))
+
 function confirmClick(){
 
   service.post('http://localhost:8080/usertoUser/update',{
@@ -248,6 +269,12 @@ function httpRequest(option){
       console.log(err)
     })
 
+}
+
+function toSpace(e)
+{
+  localStorage.setItem("toId",e)
+  router.push("/toSpace")
 }
 
 function beforeImageUpload(rawFile){
