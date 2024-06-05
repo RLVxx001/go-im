@@ -4,15 +4,14 @@ import (
 	"design/config"
 	"design/domain/user"
 	"design/utils/api_helper"
+	"design/utils/img"
 	jwtHelper "design/utils/jwt"
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -167,62 +166,22 @@ func (c *Controller) Update(g *gin.Context) {
 
 // 上传头像
 func (c *Controller) Upload(g *gin.Context) {
-
 	if _, err := c.userService.GetById(api_helper.GetUserId(g)); err != nil {
 		api_helper.HandleErrorToken(g, err)
 		return
 	}
-	uid := g.Request.PostFormValue("uid")
-	if uid == "" {
-		api_helper.HandleError(g, errors.New("uid is null"))
-		return
-	}
-	file, header, err := g.Request.FormFile("file")
+	filepath, err := img.Create(g)
 	if err != nil {
-		api_helper.HandleError(g, errors.New("Failed to retrieve file"))
+		api_helper.HandleError(g, err)
 		return
 	}
-
-	ext := filepath.Ext(header.Filename) //获取文件后缀
-	if ext != ".jpg" && ext != ".webp" && ext != ".png" {
-		api_helper.HandleError(g, errors.New("文件格式不符合"))
-		return
-	}
-
-	header.Filename = fmt.Sprintf("%v%s", uid, ext)
-
-	// 指定上传目录，比如 "uploads"
-	uploadDir := "./public/images"
-
-	// 确保上传目录存在
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
-		api_helper.HandleError(g, errors.New("Failed to create upload directory"))
-		return
-	}
-
-	// 构建文件的完整路径
-	filePath := filepath.Join(uploadDir, header.Filename)
-
-	// 创建文件用于写入
-	outFile, err := os.Create(filePath)
-	if err != nil {
-		api_helper.HandleError(g, errors.New("Failed to create file"))
-		return
-	}
-	defer outFile.Close()
-
-	// 复制文件内容
-	if _, err := io.Copy(outFile, file); err != nil {
-		api_helper.HandleError(g, errors.New("Failed to copy file"))
-		return
-	}
-	if err := c.userService.UpdateImg(filePath, api_helper.GetUserId(g)); err != nil {
+	if err := c.userService.UpdateImg(filepath, api_helper.GetUserId(g)); err != nil {
 		api_helper.HandleError(g, errors.New("头像更换失败"))
 		return
 	}
 	// 上传成功
 	g.JSON(
 		http.StatusOK, LoginResponse{
-			Img: filePath,
+			Img: filepath,
 		})
 }
