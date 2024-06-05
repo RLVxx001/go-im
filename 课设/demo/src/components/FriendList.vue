@@ -488,13 +488,13 @@ function readmessage(val){
 }
 function goindex(val){
   let nwval=index.value
-  if(nwval!=-1&&!usertoUsers[nwval].userMessages[usertoUsers[nwval].userMessages.length-1].isRead){
+  if(nwval!=-1&&usertoUsers[nwval].userMessages&&!usertoUsers[nwval].userMessages[usertoUsers[nwval].userMessages.length-1].isRead){
     readmessage(usertoUsers[nwval].userTarget)
     usertoUsers[nwval].userMessages[usertoUsers[nwval].userMessages.length-1].isRead=true
     getcount(nwval)
   }
   index.value=val
-  if(val!=-1&&!usertoUsers[val].userMessages[usertoUsers[val].userMessages.length-1].isRead){
+  if(val!=-1&&usertoUsers[nwval].userMessages&&!usertoUsers[val].userMessages[usertoUsers[val].userMessages.length-1].isRead){
     readmessage(usertoUsers[val].userTarget)
     usertoUsers[val].userMessages[usertoUsers[val].userMessages.length-1].isRead=true
     getcount(val)

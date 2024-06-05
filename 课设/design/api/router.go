@@ -184,6 +184,7 @@ func RegisterGroupHandlers(r *gin.Engine, dbs Databases) {
 	Group.POST("/deleteMessage", controller.DeleteMessage)
 	Group.POST("/deletesMessage", controller.DeletesMessage)
 	Group.POST("/read", controller.ReadMessage)
+	Group.POST("/updateImg", controller.UpdateImg)
 }
 
 // 注册自定义路由

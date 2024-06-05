@@ -5,7 +5,10 @@ import (
 	"design/domain/group"
 	"design/domain/user"
 	"design/utils/api_helper"
+	"design/utils/img"
+	"design/utils/pagination"
 	"design/utils/webSocketDecoded"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -377,4 +380,27 @@ func (c *Controller) ReadMessage(g *gin.Context) {
 	userId := api_helper.GetUserId(g)
 	c.s.ReadMessage(req.Id, userId)
 	g.JSON(http.StatusOK, nil)
+}
+
+// 更新群头像
+func (c *Controller) UpdateImg(g *gin.Context) {
+	filepath, err := img.Create(g)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	id := pagination.ParseInt(g.Request.PostFormValue("id"), 0)
+	if id == 0 {
+		api_helper.HandleError(g, errors.New("头像更换失败"))
+		return
+	}
+	if err := c.s.UpdateImg(filepath, uint(id), api_helper.GetUserId(g)); err != nil {
+		api_helper.HandleError(g, errors.New("头像更换失败"))
+		return
+	}
+	// 上传成功
+	g.JSON(
+		http.StatusOK, GroupRequest{
+			Img: filepath,
+		})
 }

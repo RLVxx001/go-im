@@ -107,7 +107,19 @@
   <div v-if="index!=-1">
     <el-drawer v-model="drawer1" direction="rtl">
       <template #header>
-        <h4><img :src="groups[index].img" width="100px"/> {{ groups[index].groupName }} </h4>
+        <div style="display: flex;">
+          <div style="font-size: 20px;margin-right: 50px;">头像: </div> 
+          <el-upload
+            class="avatar-uploader"
+            :show-file-list="false"
+            :http-request="httpRequest"
+            :before-upload="beforeImageUpload"
+          >
+            <img v-if="groups[index].img" :src="groups[index].img" style="height:100px;width:100px;border-radius:50%"   />
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+          </el-upload>
+          <div style="font-size: 20px;margin-right: 50px;">{{ groups[index].groupName }} </div> 
+        </div>
       </template>
       <template #default>
         <div>群号：{{ groups[index].groupId }}</div>
@@ -181,6 +193,7 @@ import '@luohc92/vue3-image-viewer/dist/style.css';
 import { ref, onMounted ,h,reactive,nextTick,inject,watch } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
+import axios from "axios";
 import { useWsStore } from '../store/user';
 import { da } from "element-plus/es/locale";
 const wsStore=useWsStore()
@@ -209,10 +222,37 @@ function checknwgroupuser(item){
 
   drawer2.value=true
 }
-var groupuser = reactive([{
-  "username":"xxx",
-  "img":"#"
-}])
+const uploadUrl=ref('http://localhost:8080/group/updateImg')
+const imageUrl = ref('')
+function httpRequest(option){
+  let dataForm = new FormData();
+  dataForm.append('file',option.file)
+  dataForm.append('uid',option.file.uid)
+  dataForm.append('id',groups[index.value].id)
+  axios({
+        method: 'POST',
+        url: uploadUrl.value,
+        data: dataForm,
+//设置请求参数的规则
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization":localStorage.getItem('token')
+        }
+    }).then(response => {
+        groups[index.value].img=response.data.img
+        console.log(response.data)
+    }).catch(err=>{
+      console.log(err)
+    })
+
+}
+function beforeImageUpload(rawFile){
+    if(rawFile.size / 1024 / 1024 > 10){
+        ElMessage.error("单张图片大小不能超过10MB!");
+        return false;
+    }
+    return true;
+}
 
 function send(){
   $Ws && $Ws({
@@ -409,13 +449,13 @@ function readmessage(val){
 }
 function goindex(val){
   let nwval=index.value
-  if(nwval!=-1&&!groups[nwval].groupMessages[groups[nwval].groupMessages.length-1].isRead){
+  if(nwval!=-1&&groups[nwval].groupMessages&&!groups[nwval].groupMessages[groups[nwval].groupMessages.length-1].isRead){
     readmessage(groups[nwval].id)
     groups[nwval].groupMessages[groups[nwval].groupMessages.length-1].isRead=true
     getcount(nwval)
   }
   index.value=val
-  if(val!=-1&&!groups[val].groupMessages[groups[val].groupMessages.length-1].isRead){
+  if(val!=-1&&groups[nwval].groupMessages&&!groups[val].groupMessages[groups[val].groupMessages.length-1].isRead){
     readmessage(groups[val].id)
     groups[val].groupMessages[groups[val].groupMessages.length-1].isRead=true
     getcount(val)

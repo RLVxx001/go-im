@@ -360,3 +360,16 @@ func (s *Service) ReadMessage(id, userId uint) {
 		log.Print(err)
 	}
 }
+
+// 更换群头像
+func (s *Service) UpdateImg(img string, id, userId uint) error {
+	user, err := s.userRepository.GetGroupUser(id, userId)
+	if err != nil || user.IsAdmin == 0 {
+		return ErrNotUpdate
+	}
+	err = s.r.UpdateImg(img, id)
+	if err != nil {
+		return ErrUpdate
+	}
+	return nil
+}

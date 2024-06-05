@@ -68,3 +68,8 @@ func (r *Repository) Fids(u uint) ([]Group, error) {
 func (r *Repository) Delete(id uint) error {
 	return r.db.Unscoped().Where("ID=?", id).Delete(&Group{}).Error
 }
+
+// 更新群头像
+func (r *Repository) UpdateImg(img string, id uint) error {
+	return r.db.Model(&Group{}).Where("ID=?", id).Update("Img", img).Error
+}
