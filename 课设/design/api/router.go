@@ -5,6 +5,7 @@ import (
 	spaceApi "design/api/space"
 	userApi "design/api/user"
 	userApplicationApi "design/api/userApplication"
+	userImgApi "design/api/userImg"
 	usertoUserApi "design/api/usertoUser"
 	"design/api/ws"
 	"design/config"
@@ -12,6 +13,7 @@ import (
 	"design/domain/space"
 	"design/domain/user"
 	"design/domain/userApplication"
+	"design/domain/userImg"
 	"design/domain/usertoUser"
 	"design/utils/database_handler"
 	"fmt"
@@ -32,6 +34,7 @@ type Databases struct {
 	spaceRepository             *space.SpaceRepository
 	trendsRepository            *space.TrendsRepository
 	commentRepository           *space.CommentRepository
+	userImgRepository           *userImg.Repository
 }
 
 // 配置文件全局对象
@@ -62,6 +65,7 @@ func CreateDBs() *Databases {
 		spaceRepository:             space.NewSpaceRepository(db),
 		trendsRepository:            space.NewTrendsRepository(db),
 		commentRepository:           space.NewCommentRepository(db),
+		userImgRepository:           userImg.NewRepository(db),
 	}
 }
 
@@ -74,6 +78,7 @@ func RegisterHandlers(r *gin.Engine) {
 	RegisterUserApplicationHandlers(r, dbs)
 	RegisterGroupHandlers(r, dbs)
 	RegisterSpaceHandlers(r, dbs)
+	RegisterUserImgHandlers(r, dbs)
 	r.GET("/ws", ws.Ws) //注册ws
 }
 
@@ -102,6 +107,16 @@ func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
 	userGroup.POST("/upload", userController.Upload)
 	userGroup.POST("/update", userController.Update)
 	userGroup.POST("/fidUser", userController.FidUser)
+}
+
+// 注册用户相册控制器
+func RegisterUserImgHandlers(r *gin.Engine, dbs Databases) {
+	service := userImg.NewService(*dbs.userImgRepository)
+	controller := userImgApi.NewUserController(service)
+	userImgGroup := r.Group("/userImg")
+	userImgGroup.POST("/upload", controller.Create)
+	userImgGroup.POST("/delete", controller.Delete)
+	userImgGroup.GET("/getByUser", controller.GetByUser)
 }
 
 // 注册用户-用户控制器
