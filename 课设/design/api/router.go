@@ -98,6 +98,8 @@ func RegisterSpaceHandlers(r *gin.Engine, dbs Databases) {
 	spaceGroup.POST("/addComment", spaceController.CreateComment)
 	spaceGroup.POST("/addMessage", spaceController.CreateMessage)
 	spaceGroup.POST("/fidMessage", spaceController.FindMessage)
+
+	spaceGroup.POST("/delMessage", spaceController.DelMessage)
 	//spaceGroup.POST("delMessage",spaceController.)
 }
 

@@ -57,7 +57,7 @@ let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
 onMounted(()=>{
   service.post("http://localhost:8080/space/fidMessage",{
-    "spaceId":localStorage.getItem("toId")-0+4
+    "userId":localStorage.getItem("toId")-0
   }) 
   .then(res=>{
     rcd.push(res.data)

@@ -44,7 +44,6 @@ onMounted(()=>{
 })
 function publish(){
   service.post("http://localhost:8080/space/addMessage",{
-    "spaceId":localStorage.getItem("toId")-0+4,
     "detail":rcd,
     "userId":localStorage.getItem("id")-0,
   })

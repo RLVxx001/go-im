@@ -34,6 +34,7 @@
               <!-- <router-link to="/detail" @click="Detail(tmp.trendId)">
                 <button style="margin-top:-40px;width:100px;height:30px;margin-left:200px">查看详情</button>
               </router-link> -->
+              <button style="margin-top:-40px;width:100px;height:30px;margin-left:200px" @click="del(tmp.Id)">删除留言</button>
               </div>
             
             <div style="box-shadow:-2px 2px 2px rgba(0, 0, 0, 0.15);height:2px;width:750px"></div>
@@ -53,11 +54,13 @@
 import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
+import { useRouter } from 'vue-router';
 let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
+ const router = useRouter()
 onMounted(()=>{
   service.post("http://localhost:8080/space/fidMessage",{
-    "spaceId":localStorage.getItem("id")-0+4
+    "userId":localStorage.getItem("id")-0
   }) 
   .then(res=>{
     rcd.push(res.data)
@@ -65,9 +68,21 @@ onMounted(()=>{
   })
   console.log(rcd)
 })
-function Detail(e){
-  localStorage.setItem("ToId",e-0)
-
+function del(e){
+  service.post("http://localhost:8080/space/delMessage",{
+    "messageId":e
+  })
+  .then(res=>{
+    rcd=[]
+    service.post("http://localhost:8080/space/fidMessage",{
+    "userId":localStorage.getItem("id")-0
+    }) 
+    .then(res=>{
+      rcd.push(res.data)
+      console.log(rcd)
+    })
+    router.push("/message")
+  })
 }
 </script>
 <style>

@@ -27,14 +27,14 @@ func (r *Controller) FindMessage(g *gin.Context) {
 	if err != nil {
 		print(err)
 	}
-	messages := r.spaceService.FindMessage(req.SpaceId)
+	messages := r.spaceService.FindMessage(req.UserId)
 	g.JSON(200, ToFindMessageResps(messages))
 }
 
 func (r *Controller) CreateMessage(g *gin.Context) {
 	var req CreateMessageRequest
 	g.ShouldBind(&req)
-	r.spaceService.CreateMessage(req.SpaceId, req.UserId, req.Detail)
+	r.spaceService.CreateMessage(req.UserId, req.Detail)
 	g.JSON(200, req)
 
 }
@@ -62,6 +62,19 @@ func (r *Controller) FindComment(g *gin.Context) {
 		return
 	}
 	g.JSON(200, ToComments(comments))
+}
+
+func (r *Controller) DelMessage(g *gin.Context) {
+	var req DelMessageRequest
+	err := g.ShouldBind(&req)
+	if err != nil {
+		print(err)
+	}
+	err = r.spaceService.DeleteMessage(req.MessageId)
+	if err != nil {
+		print(err)
+	}
+	g.JSON(200, req)
 }
 
 func (r *Controller) CreateTrend(g *gin.Context) {

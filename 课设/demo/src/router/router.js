@@ -17,6 +17,7 @@ import Message from "../components/Message.vue"
 import NewMessage from "../components/NewMessage.vue"
 import ToMessage from "../components/ToMessage.vue"
 import ToNewMessage from "../components/ToNewMessage.vue"
+import PhotoGraph from "../components/PhotoGraph.vue"
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -115,6 +116,10 @@ const router = createRouter({
     {
       path: "/toNewMessage",
       component: ToNewMessage,
+    },
+    {
+      path: "/photoGraph",
+      component: PhotoGraph
     }
   ]
 })

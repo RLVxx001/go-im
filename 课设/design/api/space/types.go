@@ -44,20 +44,22 @@ type FindMessageResp struct {
 	Tim     time.Time `json:"tim"`
 }
 
+type DelMessageRequest struct {
+	MessageId uint `json:"messageId"`
+}
+
 type CreateMessageRequest struct {
-	SpaceId uint   `json:"spaceId"`
-	UserId  uint   `json:"userId"`
-	Detail  string `json:"detail"`
+	UserId uint   `json:"userId"`
+	Detail string `json:"detail"`
 }
 
 func ToFindMessageResp(message space.Message) FindMessageResp {
 	return FindMessageResp{
-		ID:      message.ID,
-		User:    message.User,
-		SpaceId: message.SpaceId,
-		UserId:  message.UserId,
-		Tim:     message.CreatedAt,
-		Detail:  message.Detail,
+		ID:     message.ID,
+		User:   message.User,
+		UserId: message.UserId,
+		Tim:    message.CreatedAt,
+		Detail: message.Detail,
 	}
 }
 
@@ -70,7 +72,7 @@ func ToFindMessageResps(message []space.Message) []FindMessageResp {
 }
 
 type FindMessageRequest struct {
-	SpaceId uint `json:"spaceId"`
+	UserId uint `json:"userId"`
 }
 
 func ToSpaceComment(comment Comment) space.Comment {

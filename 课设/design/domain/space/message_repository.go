@@ -39,6 +39,12 @@ func (r *MessageRepository) Finds(spaceId uint) []Message {
 	return message
 }
 
+func (r *MessageRepository) FindSpace(userId uint) Space {
+	var space Space
+	r.db.Where("UserId=?", userId).First(&space)
+	return space
+}
+
 func (r *MessageRepository) FindUser(userId uint) user.User {
 	var user user.User
 	r.db.Where("ID=?", userId).First(&user)

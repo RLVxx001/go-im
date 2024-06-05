@@ -26,9 +26,14 @@ func NewService(r SpaceRepository, t TrendsRepository, c CommentRepository, m Me
 	}
 }
 
-func (s *Service) CreateMessage(spaceId uint, userId uint, detail string) Message {
+func (s *Service) DeleteMessage(messageId uint) error {
+	return s.message.Delete(messageId)
+}
+
+func (s *Service) CreateMessage(userId uint, detail string) Message {
 	var message Message
-	message.SpaceId = spaceId
+	space := s.message.FindSpace(userId)
+	message.SpaceId = space.ID
 	message.UserId = userId
 	message.Detail = detail
 	err := s.message.Create(message)
@@ -38,9 +43,10 @@ func (s *Service) CreateMessage(spaceId uint, userId uint, detail string) Messag
 	return message
 }
 
-func (s *Service) FindMessage(spaceId uint) []Message {
+func (s *Service) FindMessage(userId uint) []Message {
 	var messages []Message
-	messages = s.message.Finds(spaceId)
+	space := s.message.FindSpace(userId)
+	messages = s.message.Finds(space.ID)
 	for i := 0; i < len(messages); i++ {
 		messages[i].User = s.message.FindUser(messages[i].UserId)
 	}
