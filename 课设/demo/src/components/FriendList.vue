@@ -35,7 +35,11 @@
       <div style="border:1px;height:600px;width:1px;float:left"></div>
       <div>
         <div class="Message" >
-          {{ index==-1?'':usertoUsers[index].remarks }}
+          <div>
+            <div v-if="index!=-1" style="margin-left:20px;line-height:20px">{{ usertoUsers[index].remarks }}</div>
+            <button v-if="index!=-1" style="float:right;margin-right:20px;margin-top:-10px;background-color:rgb(105, 105, 105);border:0px;" @click="drawer1 = true,remarks=usertoUsers[index].remarks">···</button>
+          </div>
+          
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1 && usertoUsers.length!=0">
             <el-scrollbar style="width:607px;height:345px;margin-top:-10px" ref="scrollbarRef" always>
@@ -85,7 +89,7 @@
                   </div>
                   <div v-else  style="display: flex;">
                     <div class="avatar">
-                      <img :src="usertoUsers[index].ToUser.img" class="avatar-image" style="margin-left:20px" @click="drawer1 = true"/>
+                      <img :src="usertoUsers[index].ToUser.img" class="avatar-image" style="margin-left:20px" @click="drawer1 = true,remarks=usertoUsers[index].remarks"/>
                     </div>
                     <div class="bubble">
                       <div class="message">
@@ -125,7 +129,8 @@
     <template #default>
       <div>账号：{{ usertoUsers[index].ToUser.username }}</div>
       <div>账号名：{{ usertoUsers[index].ToUser.account }}</div>
-      <div>备注：{{ usertoUsers[index].remarks }}</div>
+      备注：<input v-model="remarks">
+
       <div>其他：</div>
     </template>
     <template #footer>
@@ -153,7 +158,18 @@
   </el-drawer>
   <el-drawer v-model="drawer3" direction="ltr">
     <template #header>
-      <h4>头像  </h4>
+      <div style="display: flex;">
+        <div style="font-size: 20px;margin-right: 50px;">头像: </div> 
+        <el-upload
+          class="avatar-uploader"
+          :show-file-list="false"
+          :http-request="httpRequest"
+          :before-upload="beforeImageUpload"
+        >
+          <img v-if="imageUrl" :src="imageUrl" style="height:100px;width:100px;border-radius:50%"   />
+          <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+        </el-upload>
+      </div>
     </template>
     <template #default>
       群号：<input v-model="groupId"><br/><br/>
@@ -189,14 +205,58 @@ import { ref, onMounted ,h,reactive,nextTick,inject,watch } from 'vue';
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 import { useWsStore } from '../store/user';
+import axios from "axios";
 const wsStore=useWsStore()
 const $Ws: ((data) => string) | undefined = inject('$Ws')
 let message=ref('')
 let drawer1=ref(false)
 let drawer2=ref(false)
 let drawer3=ref(false)
+let remarks=ref('')
 let groupId=ref('')
 let groupName=ref('')
+function confirmClick(){
+
+  service.post('http://localhost:8080/usertoUser/update',{
+    'userTarget':usertoUsers[index.value].userTarget-0,
+    'remarks':remarks.value,
+  }).then(res=>{
+    usertoUsers[index.value].remarks=remarks.value
+  }).catch(err=>{
+    console.error(err)
+  })
+}
+const uploadUrl=ref('http://localhost:8080/userImg/create')
+const imageUrl = ref('')
+function httpRequest(option){
+  let dataForm = new FormData();
+  dataForm.append('file',option.file)
+  dataForm.append('uid',option.file.uid)
+  axios({
+        method: 'POST',
+        url: uploadUrl.value,
+        data: dataForm,
+//设置请求参数的规则
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization":localStorage.getItem('token')
+        }
+    }).then(response => {
+        imageUrl.value=response.data.url
+        console.log(response.data)
+    }).catch(err=>{
+      console.log(err)
+    })
+
+}
+
+function beforeImageUpload(rawFile){
+    if(rawFile.size / 1024 / 1024 > 10){
+        ElMessage.error("单张图片大小不能超过10MB!");
+        return false;
+    }
+    return true;
+}
 function creategroup(){
   let groupUsers=[]
   for(let i=0;i<usertoUsers.length;i++){
@@ -209,6 +269,7 @@ function creategroup(){
     groupId: groupId.value,
     groupName:groupName.value,
     groupUsers:groupUsers,
+    img:imageUrl.value,
     event:'/group/createGroup',
     token:localStorage.getItem('token')
     })
@@ -652,5 +713,9 @@ function getcount(i){
   display: flex;
   align-items: center;
 }
-
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

@@ -1,9 +1,16 @@
 <template>
-  <div>
+  <div v-if="user">
     <ul style="color:rgb(207, 234, 244);margin-left:150px;margin-top:80px;font-size:25px">
       <div style="display:flex;">
-        <img :src="user.img" style="height:100px;width:100px;border-radius:50%"  />
-        <input type="file" style="margin-left:40px;margin-top:60px;font-size:15px" />
+        <el-upload
+          class="avatar-uploader"
+          :show-file-list="false"
+          :http-request="httpRequest"
+          :before-upload="beforeImageUpload"
+        >
+        <img v-if="user.img" :src="user.img" style="height:100px;width:100px;border-radius:50%"  />
+          <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+        </el-upload>
       </div>
       <li style="margin-top:20px">账号：<input style="margin-left:50px;background-color:rgb(105, 105, 105);border:0px" type="text" v-model="user.username"/></li>
       <li style="margin-top:10px">用户名：<input style="margin-left:26px;background-color:rgb(105, 105, 105);border:0px" type="text" v-model="user.account"/></li>
@@ -29,7 +36,7 @@ const wsStore=useWsStore()
 var user = reactive(JSON.parse(localStorage.getItem('user')))
 onMounted(()=>{
   wsStore.event=-1
-  
+  getuser()
   // service.post("http://localhost:8080/user/fidUser",{"username":localStorage.getItem("username")})
   // .then(tmp=>{
   //   user.username=tmp.data.username
@@ -41,6 +48,21 @@ onMounted(()=>{
   //   user.city=tmp.data.city
   // })
 })
+function getuser(){
+  service.get('http://localhost:8080/user/getUser')
+  .then(res=>{
+    localStorage.setItem('user',JSON.stringify(res.data))
+    user.username=res.data.username
+    user.account=res.data.account
+    user.userId=res.data.userId
+    user.email=res.data.email
+    user.img=res.data.img
+    user.signed=res.data.signed
+    user.birthday=res.data.birthday
+  }).catch(err=>{
+    console.error(err)
+  })
+}
 function save()
 {
   console.log(user)
@@ -64,7 +86,37 @@ function save()
     })
   })
 }
+const uploadUrl=ref('http://localhost:8080/user/upload')
+function httpRequest(option){
+  let dataForm = new FormData();
+  dataForm.append('file',option.file)
+  dataForm.append('uid',option.file.uid)
+  console.log('uid:',option.file.uid)
+  axios({
+        method: 'POST',
+        url: uploadUrl.value,
+        data: dataForm,
+//设置请求参数的规则
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization":localStorage.getItem('token')
+        }
+    }).then(response => {
+        console.log(response.data)
+        user.img=response.data.img
+    }).catch(err=>{
+      console.log(err)
+    })
 
+}
+
+function beforeImageUpload(rawFile){
+    if(rawFile.size / 1024 / 1024 > 10){
+        ElMessage.error("单张图片大小不能超过10MB!");
+        return false;
+    }
+    return true;
+}
 </script>
 <style>
 .disUoloadBtn .el-upload--picture-card{

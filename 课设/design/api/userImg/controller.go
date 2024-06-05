@@ -19,8 +19,8 @@ func NewUserController(service *userImg.Service) *Controller {
 	}
 }
 
-// 新建图片
-func (c *Controller) Create(g *gin.Context) {
+// 新建图片集
+func (c *Controller) Upload(g *gin.Context) {
 	filename, err := img.Create(g)
 	if err != nil {
 		api_helper.HandleError(g, err)
@@ -34,6 +34,17 @@ func (c *Controller) Create(g *gin.Context) {
 		return
 	}
 	g.JSON(http.StatusOK, ToImg(*newUserImg))
+}
+
+// 上传图片
+func (c *Controller) Create(g *gin.Context) {
+	filename, err := img.Create(g)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+
+	g.JSON(http.StatusOK, Img{Img: filename})
 }
 
 // 查找图片

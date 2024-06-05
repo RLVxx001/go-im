@@ -19,7 +19,7 @@
         <div class="Message" >
           <div>
             <div v-if="index!=-1" style="margin-left:20px;line-height:20px">{{ groups[index].groupName?groups[index].groupName:'' }}</div>
-            <button style="float:right;margin-right:20px;margin-top:-10px;background-color:rgb(105, 105, 105);border:0px;" @click="drawer1=true">···</button>
+            <button v-if="index!=-1" style="float:right;margin-right:20px;margin-top:-10px;background-color:rgb(105, 105, 105);border:0px;" @click="drawer1=true">···</button>
           </div>
           <hr>
           <div class="Top" style="width:auto" v-if="index!=-1">

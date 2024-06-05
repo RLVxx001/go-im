@@ -106,6 +106,17 @@ func (c *Controller) Login(g *gin.Context) {
 		http.StatusOK, ToLoginResponse(currentUser))
 }
 
+// 查询个人信息
+func (c *Controller) GetUser(g *gin.Context) {
+	userId := api_helper.GetUserId(g)
+	user, err := c.userService.GetById(userId)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	g.JSON(http.StatusOK, ToLoginResponse(user))
+}
+
 // 验证token
 func (c *Controller) VerifyToken(g *gin.Context) {
 	currentUser, err := c.userService.GetById(api_helper.GetUserId(g))

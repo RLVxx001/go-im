@@ -114,6 +114,7 @@ func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
 	userGroup.POST("/upload", userController.Upload)
 	userGroup.POST("/update", userController.Update)
 	userGroup.POST("/fidUser", userController.FidUser)
+	userGroup.GET("/getUser", userController.GetUser)
 }
 
 // 注册用户相册控制器
@@ -121,7 +122,8 @@ func RegisterUserImgHandlers(r *gin.Engine, dbs Databases) {
 	service := userImg.NewService(*dbs.userImgRepository)
 	controller := userImgApi.NewUserController(service)
 	userImgGroup := r.Group("/userImg")
-	userImgGroup.POST("/upload", controller.Create)
+	userImgGroup.POST("/upload", controller.Upload)
+	userImgGroup.POST("/create", controller.Create)
 	userImgGroup.POST("/delete", controller.Delete)
 	userImgGroup.GET("/getByUser", controller.GetByUser)
 	userImgGroup.POST("/getByFriend", controller.GetByFriend)
