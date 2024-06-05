@@ -122,6 +122,7 @@ func RegisterUserImgHandlers(r *gin.Engine, dbs Databases) {
 	userImgGroup.POST("/upload", controller.Create)
 	userImgGroup.POST("/delete", controller.Delete)
 	userImgGroup.GET("/getByUser", controller.GetByUser)
+	userImgGroup.POST("/getByFriend", controller.GetByFriend)
 }
 
 // 注册用户-用户控制器
