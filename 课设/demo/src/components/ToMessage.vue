@@ -5,7 +5,7 @@
       <router-link to="publish" style="text-decoration: none;">
         <div class="to1" style="margin-top:-7px">发表</div>
       </router-link>
-      <router-link to="/newMessage" style="text-decoration: none;">
+      <router-link to="/toNewMessage" style="text-decoration: none;">
         <div class="to1" style="margin-top:-7px">留言</div>
       </router-link>
       <router-link to="" style="text-decoration: none;">
@@ -57,13 +57,13 @@ let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
 onMounted(()=>{
   service.post("http://localhost:8080/space/fidMessage",{
-    "spaceId":localStorage.getItem("id")-0+4
+    "spaceId":localStorage.getItem("toId")-0+4
   }) 
   .then(res=>{
     rcd.push(res.data)
     console.log(rcd)
   })
-  console.log(rcd)
+    console.log(localStorage.getItem("toId")-0+4)
 })
 function Detail(e){
   localStorage.setItem("ToId",e-0)

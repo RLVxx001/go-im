@@ -2,17 +2,20 @@
   <div style="">
     <hr>
     <div style="display:flex;width:800px;height:30px;margin-bottom:-10px;margin-top:-10px;margin-left:70px">
-      <router-link to="/tospace" style="text-decoration: none;">
-        <div style="width:100px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">说说</div>
+      <router-link to="/toSpace" style="text-decoration: none;">
+        <div class="to1" style="margin-top:-7px">说说</div>
       </router-link>
-      <router-link to="/message" style="text-decoration: none;">
-        <div style="width:80px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">留言板</div>
-      </router-link>
-      <router-link to="" style="text-decoration: none;">
-        <div style="width:80px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">相册</div>
+      <router-link to="/toMessage" style="text-decoration: none;">
+        <div class="to1" style="margin-top:-7px">留言板</div>
       </router-link>
       <router-link to="" style="text-decoration: none;">
-        <div style="width:80px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">日志</div>
+        <div class="to1" style="margin-top:-7px">与我相关</div>
+      </router-link>
+      <router-link to="" style="text-decoration: none;">
+        <div class="to1" style="margin-top:-7px">相册</div>
+      </router-link>
+      <router-link to="" style="text-decoration: none;">
+        <div class="to1" style="margin-top:-7px">日志</div>
       </router-link>
     </div>
     <hr>

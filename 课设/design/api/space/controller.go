@@ -21,6 +21,24 @@ func NewSpaceController(service *space.Service, appConfig *config.Configuration)
 	}
 }
 
+func (r *Controller) FindMessage(g *gin.Context) {
+	var req FindMessageRequest
+	err := g.ShouldBind(&req)
+	if err != nil {
+		print(err)
+	}
+	messages := r.spaceService.FindMessage(req.SpaceId)
+	g.JSON(200, ToFindMessageResps(messages))
+}
+
+func (r *Controller) CreateMessage(g *gin.Context) {
+	var req CreateMessageRequest
+	g.ShouldBind(&req)
+	r.spaceService.CreateMessage(req.SpaceId, req.UserId, req.Detail)
+	g.JSON(200, req)
+
+}
+
 func (r *Controller) CreateSpace(g *gin.Context) {
 	var req CreateSpaceResp
 	err := g.ShouldBind(&req)

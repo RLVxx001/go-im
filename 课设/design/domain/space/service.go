@@ -9,18 +9,42 @@ type Service struct {
 	space   SpaceRepository
 	trend   TrendsRepository
 	comment CommentRepository
+	message MessageRepository
 }
 
-func NewService(r SpaceRepository, t TrendsRepository, c CommentRepository) *Service {
+func NewService(r SpaceRepository, t TrendsRepository, c CommentRepository, m MessageRepository) *Service {
 	r.Migration()
 	t.Migration()
 	c.Migration()
+	m.Migration()
 	//r.InsertSampleData()
 	return &Service{
 		space:   r,
 		trend:   t,
 		comment: c,
+		message: m,
 	}
+}
+
+func (s *Service) CreateMessage(spaceId uint, userId uint, detail string) Message {
+	var message Message
+	message.SpaceId = spaceId
+	message.UserId = userId
+	message.Detail = detail
+	err := s.message.Create(message)
+	if err != nil {
+		print(err)
+	}
+	return message
+}
+
+func (s *Service) FindMessage(spaceId uint) []Message {
+	var messages []Message
+	messages = s.message.Finds(spaceId)
+	for i := 0; i < len(messages); i++ {
+		messages[i].User = s.message.FindUser(messages[i].UserId)
+	}
+	return messages
 }
 
 func (s *Service) CreateSpace(userId uint) error {

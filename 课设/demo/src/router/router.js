@@ -14,6 +14,9 @@ import Finduser from "../components/Finduser.vue"
 import Publish from "../components/Publish.vue"
 import ToSpace from "../components/ToSpace.vue"
 import Message from "../components/Message.vue"
+import NewMessage from "../components/NewMessage.vue"
+import ToMessage from "../components/ToMessage.vue"
+import ToNewMessage from "../components/ToNewMessage.vue"
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -100,6 +103,18 @@ const router = createRouter({
     {
       path: "/message",
       component: Message,
+    },
+    {
+      path: "/newMessage",
+      component: NewMessage
+    },
+    {
+      path: "/toMessage",
+      component: ToMessage,
+    },
+    {
+      path: "/toNewMessage",
+      component: ToNewMessage,
     }
   ]
 })

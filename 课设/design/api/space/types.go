@@ -35,6 +35,44 @@ type User struct {
 	Img      string `gorm:"type:varchar(500)"` //头像地址
 }
 
+type FindMessageResp struct {
+	ID      uint      `json:"Id"`
+	User    user.User `json:"user" gorm:"-"`
+	SpaceId uint      `json:"spaceId"`
+	UserId  uint      `json:"userId"`
+	Detail  string    `json:"detail"`
+	Tim     time.Time `json:"tim"`
+}
+
+type CreateMessageRequest struct {
+	SpaceId uint   `json:"spaceId"`
+	UserId  uint   `json:"userId"`
+	Detail  string `json:"detail"`
+}
+
+func ToFindMessageResp(message space.Message) FindMessageResp {
+	return FindMessageResp{
+		ID:      message.ID,
+		User:    message.User,
+		SpaceId: message.SpaceId,
+		UserId:  message.UserId,
+		Tim:     message.CreatedAt,
+		Detail:  message.Detail,
+	}
+}
+
+func ToFindMessageResps(message []space.Message) []FindMessageResp {
+	var messages []FindMessageResp
+	for i := 0; i < len(message); i++ {
+		messages = append(messages, ToFindMessageResp(message[i]))
+	}
+	return messages
+}
+
+type FindMessageRequest struct {
+	SpaceId uint `json:"spaceId"`
+}
+
 func ToSpaceComment(comment Comment) space.Comment {
 	return space.Comment{
 		UserId:   comment.UserId,

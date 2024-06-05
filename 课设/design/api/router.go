@@ -35,6 +35,7 @@ type Databases struct {
 	trendsRepository            *space.TrendsRepository
 	commentRepository           *space.CommentRepository
 	userImgRepository           *userImg.Repository
+	messageRepository           *space.MessageRepository
 }
 
 // 配置文件全局对象
@@ -65,6 +66,7 @@ func CreateDBs() *Databases {
 		spaceRepository:             space.NewSpaceRepository(db),
 		trendsRepository:            space.NewTrendsRepository(db),
 		commentRepository:           space.NewCommentRepository(db),
+		messageRepository:           space.NewMessageRepository(db),
 		userImgRepository:           userImg.NewRepository(db),
 	}
 }
@@ -84,7 +86,7 @@ func RegisterHandlers(r *gin.Engine) {
 
 // 注册空间控制器
 func RegisterSpaceHandlers(r *gin.Engine, dbs Databases) {
-	spaceService := space.NewService(*dbs.spaceRepository, *dbs.trendsRepository, *dbs.commentRepository)
+	spaceService := space.NewService(*dbs.spaceRepository, *dbs.trendsRepository, *dbs.commentRepository, *dbs.messageRepository)
 	spaceController := spaceApi.NewSpaceController(spaceService, AppConfig)
 	spaceGroup := r.Group("/space")
 	spaceGroup.POST("/spaceadd", spaceController.CreateSpace)
@@ -94,6 +96,9 @@ func RegisterSpaceHandlers(r *gin.Engine, dbs Databases) {
 
 	spaceGroup.POST("/addTrends", spaceController.CreateTrend)
 	spaceGroup.POST("/addComment", spaceController.CreateComment)
+	spaceGroup.POST("/addMessage", spaceController.CreateMessage)
+	spaceGroup.POST("/fidMessage", spaceController.FindMessage)
+	//spaceGroup.POST("delMessage",spaceController.)
 }
 
 // 注册用户控制器

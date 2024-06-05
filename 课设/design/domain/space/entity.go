@@ -41,9 +41,10 @@ func NewSpaceTrends(spaceId uint, detail string) *SpaceTrends {
 
 type Message struct {
 	gorm.Model
-	User    user.User
-	SapceId uint
+	User    user.User `gorm:"-"`
+	SpaceId uint
 	UserId  uint
+	Detail  string
 }
 
 // Comment 评论表
