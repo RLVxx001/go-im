@@ -73,7 +73,7 @@ function del(e){
     "messageId":e
   })
   .then(res=>{
-    rcd=[]
+    rcd.splice(0,rcd.length)
     service.post("http://localhost:8080/space/fidMessage",{
     "userId":localStorage.getItem("id")-0
     }) 
