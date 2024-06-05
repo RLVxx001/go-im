@@ -51,6 +51,25 @@ func (c *Controller) GetByUser(g *gin.Context) {
 	g.JSON(http.StatusOK, responses)
 }
 
+// 查找好友图片
+func (c *Controller) GetByFriend(g *gin.Context) {
+	var req Img
+	if err := g.ShouldBind(&req); err != nil {
+		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		return
+	}
+	imgs, err := c.s.GetByUser(req.Id)
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
+	var responses []Img
+	for _, i := range imgs {
+		responses = append(responses, ToImg(i))
+	}
+	g.JSON(http.StatusOK, responses)
+}
+
 // 删除图片
 func (c *Controller) Delete(g *gin.Context) {
 	var req Img
