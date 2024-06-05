@@ -2,14 +2,11 @@
   <div style="">
     <hr>
     <div style="display:flex;width:800px;height:30px;margin-bottom:-10px;margin-top:-10px;margin-left:70px">
-      <router-link to="publish" style="text-decoration: none;">
-        <div style="width:100px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">发表</div>
+      <router-link to="/tospace" style="text-decoration: none;">
+        <div style="width:100px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">说说</div>
       </router-link>
-      <router-link to="" style="text-decoration: none;">
+      <router-link to="/message" style="text-decoration: none;">
         <div style="width:80px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">留言板</div>
-      </router-link>
-      <router-link to="" style="text-decoration: none;">
-        <div style="width:80px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">与我相关</div>
       </router-link>
       <router-link to="" style="text-decoration: none;">
         <div style="width:80px;height:50px;text-align:center;color:rgba(220, 228, 253, 0.942);font-size:20px;line-height:30px;margin-left:40px;">相册</div>
@@ -21,9 +18,10 @@
     <hr>
   <el-scrollbar style="width:800px;height:470px;margin-top:-20px" ref="scrollbarRef" always>
       <div ref="innerRef">
-        <div style="width:750px;height:auto;min-height:600px;background-color:rgb(189, 184, 184);margin-left:30px;margin-top:30px;border-radius:10px;border-top-right-radius:50px">
+        
          <!-- <div style="box-shadow:-2px 2px 2px rgba(0, 0, 0, 0.15);height:2px;width:700px"></div> -->
           <div v-for="(tmp) in rcd[0]" style="margin-top:10px">
+            <div style="width:750px;height:auto;min-height:200px;background-color:rgb(189, 184, 184);margin-left:30px;margin-top:30px;border-radius:10px;border-top-right-radius:50px">
             <div style="box-shadow:-2px 2px 2px rgba(0, 0, 0, 0.15);height:2px;width:750px"></div>
             <div style="height:50px;display:flex;margin-top:20px">
               <img :src="tmp.user.Img" style="margin-left:10px;height:50px;width:50px;border-radius:50%;border:1px double"/>

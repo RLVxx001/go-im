@@ -102,7 +102,7 @@ func (r *Controller) CreateComment(g *gin.Context) {
 	}
 	err = r.spaceService.CreateComment(req.UserId, req.Detail, req.TrendId)
 	if err != nil {
-		api_helper.HandleError(g, api_helper.ErrInvalidBody)
+		api_helper.HandleError(g, err)
 		return
 	}
 	g.JSON(200, req)

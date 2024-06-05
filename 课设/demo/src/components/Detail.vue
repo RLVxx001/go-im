@@ -78,7 +78,7 @@ function send(){
     "TrendId":rcd[0].trendId-0,
   })
   .then(res=>{  
-      rcd=[]
+      rcd.splice(0,rcd.length)
       service.post("http://localhost:8080/space/fidTrend",{
       "TrendId":localStorage.getItem("ToId")-0
     })
@@ -92,19 +92,6 @@ function send(){
     alert("评论已发表")
   })
   .catch(err=>{
-    rcd=[]
-      service.post("http://localhost:8080/space/fidTrend",{
-      "TrendId":localStorage.getItem("ToId")-0
-    })
-    .then(res=>{
-      rcd.push(res.data)
-      console.log(rcd[0])
-    })
-    .catch(err=>{
-      console.log(err)  
-    })
-    alert("评论已发表")
-    console.log(rcd)
     console.log(err)
   })
 }

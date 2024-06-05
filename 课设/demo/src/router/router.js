@@ -13,6 +13,7 @@ import GroupList from "../components/GroupList.vue"
 import Finduser from "../components/Finduser.vue"
 import Publish from "../components/Publish.vue"
 import ToSpace from "../components/ToSpace.vue"
+import Message from "../components/Message.vue"
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -85,16 +86,20 @@ const router = createRouter({
     },
     {
       path: "/finduser",
-      component:Finduser,
+      component: Finduser,
       meta: { requiresAuth: true }
     },
     {
       path: "/publish",
-      component:Publish
+      component: Publish
     },
     {
       path: "/toSpace",
-      component:ToSpace,
+      component: ToSpace,
+    },
+    {
+      path: "/message",
+      component: Message,
     }
   ]
 })
@@ -102,8 +107,8 @@ router.beforeEach((to, from) => {
   const token = localStorage.getItem('token')
   if (to.meta.requiresAuth && !token) {
     return {
-        path:'/login',
-        query:{redirect:to.fullPath}
+      path: '/login',
+      query: { redirect: to.fullPath }
     }
   }
 })

@@ -90,7 +90,7 @@ func (r *Service) FindComments(trendId uint) ([]Comment, error) {
 }
 
 func (r *Service) CreateComment(userId uint, detail string, trendId uint) error {
-	comment := r.comment.Create(Comment{
+	r.comment.Create(Comment{
 		Model:         gorm.Model{},
 		UserId:        userId,
 		Praise:        1,
@@ -99,14 +99,7 @@ func (r *Service) CreateComment(userId uint, detail string, trendId uint) error 
 		ToUserId:      userId,
 		SpaceTrendsId: trendId,
 	})
-	fmt.Printf("%v\n", comment)
-	trend, err := r.trend.Find(comment.TrendsId)
-	trend.Comments = append(trend.Comments, comment)
-	err = r.trend.Update(trend)
-	if err != nil {
-		print(err)
-	}
-	return err
+	return nil
 }
 
 func (r *Service) AddComment(comment Comment) error {
