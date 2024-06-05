@@ -143,7 +143,6 @@ func RegisterUsertoUserHandlers(r *gin.Engine, dbs Databases) {
 	Group.POST("/deleteUser", controller.DeleteUser)
 	Group.POST("/deleteMessage", controller.DeleteMessage)
 	Group.POST("/deleteMessages", controller.DeleteMessages)
-
 }
 
 // 注册用户申请表
@@ -179,6 +178,7 @@ func RegisterGroupHandlers(r *gin.Engine, dbs Databases) {
 	RevocationWs("/group/revocationMessage", controller.RevocationMessage)
 	Group.POST("/deleteMessage", controller.DeleteMessage)
 	Group.POST("/deletesMessage", controller.DeletesMessage)
+	Group.POST("/read", controller.ReadMessage)
 }
 
 // 注册自定义路由
