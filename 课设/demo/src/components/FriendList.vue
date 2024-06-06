@@ -54,7 +54,9 @@
                     <el-button
                       type="danger"
                       text
+                      class="xxyy"
                       @click="checkstandby(message.standby)"
+                      style="margin-top:-5px;"
                     >
                      重新编辑
                     </el-button>
@@ -521,7 +523,7 @@ function goindex(val){
     getcount(nwval)
   }
   index.value=val
-  if(val!=-1&&usertoUsers[nwval].userMessages&&!usertoUsers[val].userMessages[usertoUsers[val].userMessages.length-1].isRead){
+  if(val!=-1&&usertoUsers[val].userMessages&&!usertoUsers[val].userMessages[usertoUsers[val].userMessages.length-1].isRead){
     readmessage(usertoUsers[val].userTarget)
     usertoUsers[val].userMessages[usertoUsers[val].userMessages.length-1].isRead=true
     getcount(val)
@@ -603,6 +605,10 @@ function getcount(i){
 
 .avatar {
   margin-left: 10px; /* 修改这里将头像放在消息框的右边 */
+}
+
+.xxyy:hover{
+  background-color:rgb(105, 105, 105);
 }
  
 .avatar-image {

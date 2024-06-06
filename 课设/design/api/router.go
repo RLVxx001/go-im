@@ -115,6 +115,7 @@ func RegisterUserHandlers(r *gin.Engine, dbs Databases) {
 	userGroup.POST("/update", userController.Update)
 	userGroup.POST("/fidUser", userController.FidUser)
 	userGroup.GET("/getUser", userController.GetUser)
+	userGroup.GET("/createYz", userController.CreateYz)
 }
 
 // 注册用户相册控制器

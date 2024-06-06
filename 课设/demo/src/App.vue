@@ -8,10 +8,14 @@ import Demo from './components/Demo.vue';
 import bus from "./EventBus/eventbus"; // 确保这个 eventbus 适用于你的项目  
 import service from './axios-instance'
 import { useRouter } from 'vue-router' 
+import axios from 'axios';
 const router = useRouter()  
 // 在 <script setup> 中，组件默认是局部注册的，所以不需要在 components 对象中声明  
 onMounted(()=>{
-  
+  service.get('http://localhost:8080/user/createYz')
+  .then(res=>{
+    localStorage.setItem('yz',res.data.yz)
+  })
 })
 // 提供 color 属性  
 provide('color', 'red');

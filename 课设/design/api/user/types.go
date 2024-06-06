@@ -8,6 +8,7 @@ type CreateUserRequest struct {
 	Password  string `json:"password"`
 	Password2 string `json:"password2"`
 	Email     string `json:"email"`
+	Yz        string `json:"yz"`
 }
 
 // 创建用户响应
@@ -19,6 +20,7 @@ type CreateUserResponse struct {
 type LoginRequest struct {
 	Text     string `json:"username"` //可是邮箱也可也是账号
 	Password string `json:"password"`
+	Yz       string `json:"yz"`
 }
 
 // 登录响应

@@ -46,10 +46,8 @@ function publish(){
     "detail":rcd,
     "praise":praise,
     "comments":[{
-        "spaceId":localStorage.getItem("id")-0+4
     }
     ],
-    "spaceId":localStorage.getItem("id")-0+4
   })
   .then(res=>{
     alert("发表成功")

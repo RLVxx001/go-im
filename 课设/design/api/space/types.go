@@ -7,11 +7,9 @@ import (
 )
 
 type CreateTrendRequest struct {
-	UserId   uint      `json:"userId"`
-	Detail   string    `json:"detail"`
-	Praise   uint      `json:"praise"`
-	Comments []Comment `json:"comments" gorm:"foreignKey:SpaceTrendsId"` //评论[](不计入表)
-	SpaceId  uint      `json:"spaceId"`
+	UserId uint   `json:"userId"`
+	Detail string `json:"detail"`
+	Praise uint   `json:"praise"`
 }
 type CreateSpaceResp struct {
 	UserId uint `json:"userId"`
@@ -98,8 +96,8 @@ func ToSpaceTrend(trend CreateTrendRequest) space.SpaceTrends {
 		UserId:   trend.UserId,
 		Detail:   trend.Detail,
 		Praise:   trend.Praise,
-		Comments: ToSpaceComments(trend.Comments),
-		SpaceId:  trend.SpaceId,
+		Comments: []space.Comment{},
+		SpaceId:  0,
 	}
 }
 

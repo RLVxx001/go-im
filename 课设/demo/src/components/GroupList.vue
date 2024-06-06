@@ -469,7 +469,7 @@ function goindex(val){
     getcount(nwval)
   }
   index.value=val
-  if(val!=-1&&groups[nwval].groupMessages&&!groups[val].groupMessages[groups[val].groupMessages.length-1].isRead){
+  if(val!=-1&&groups[val].groupMessages&&!groups[val].groupMessages[groups[val].groupMessages.length-1].isRead){
     readmessage(groups[val].id)
     groups[val].groupMessages[groups[val].groupMessages.length-1].isRead=true
     getcount(val)

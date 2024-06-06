@@ -11,6 +11,16 @@
         <div class="form-group">
           <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">密码：</label>
           <input type="password" class="form-control" id="exampleInputPassword1" placeholder="密码" v-model="passwd">
+          
+        </div>
+        <div class="form-group" style="display: flex;">
+          <div>
+            <label for="exampleInputPassword1" style="color:rgba(220, 228, 253, 0.942);">验证码</label>
+            <input type="text" class="form-control" id="exampleInputPassword1" placeholder="验证码" v-model="yzm">
+          </div>
+          <div @click="checkyz" style="margin-top:28px;font-family:楷体;margin-left:30px;background-color:white;color:black;width:100px;height:30px;text-align: center;line-height: 30px;">
+        {{ yz }}
+          </div>
         </div>
         <!-- <div class="form-group">
           <label for="exampleInputFile" style="color:rgba(220, 228, 253, 0.942);">File input</label>
@@ -49,7 +59,15 @@ import service from '../axios-instance';
 const userStore=useUserStore()
 const router = useRouter()  
 
-
+const yz=ref(localStorage.getItem('yz'))
+const yzm=ref('')
+function checkyz(){
+  service.get('http://localhost:8080/user/createYz')
+  .then(res=>{
+    localStorage.setItem('yz',res.data.yz)
+    yz.value=res.data.yz
+  })
+}
 // 响应式状态  
 const username = ref('');  
 const passwd = ref('');  
@@ -60,7 +78,8 @@ function sub() {
   localStorage.setItem("username", username.value);  
   axios.post('http://localhost:8080/user/login', {  
     username: username.value,  
-    password: passwd.value  
+    password: passwd.value,
+    yz:  yzm.value
   })  
   .then(response => {  
     console.log("--------");  
@@ -83,6 +102,7 @@ function sub() {
     router.push('person')
   })  
   .catch(err => {  
+    checkyz()
     console.log("----1111----");  
     console.error(err.response.data);  
     // 注意：在 <script setup> 中，你可能需要自定义通知函数或使用其他库/插件来显示通知  

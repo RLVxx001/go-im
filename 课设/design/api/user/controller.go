@@ -6,6 +6,7 @@ import (
 	"design/utils/api_helper"
 	"design/utils/img"
 	jwtHelper "design/utils/jwt"
+	"design/utils/redisYz"
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
@@ -44,6 +45,7 @@ func (c *Controller) CreateUser(g *gin.Context) {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}
+
 	newUser := user.NewUser(req.Username, req.Email, req.Password, req.Password2, req.Email)
 	err := c.userService.Create(newUser)
 	if err != nil {
@@ -73,7 +75,11 @@ func (c *Controller) Login(g *gin.Context) {
 		api_helper.HandleError(g, api_helper.ErrInvalidBody)
 		return
 	}
-
+	code, _ := redisYz.GetVerificationCode()
+	if code != req.Yz {
+		api_helper.HandleError(g, errors.New("验证码错误"))
+		return
+	}
 	currentUser, err := c.userService.CheckUser(req.Text, req.Password)
 	if err != nil {
 		api_helper.HandleError(g, err)
@@ -195,4 +201,11 @@ func (c *Controller) Upload(g *gin.Context) {
 		http.StatusOK, LoginResponse{
 			Img: filepath,
 		})
+}
+
+// 获取验证码
+func (c *Controller) CreateYz(g *gin.Context) {
+	_ = redisYz.SetVerificationCode()
+	code, _ := redisYz.GetVerificationCode()
+	g.JSON(http.StatusOK, CreateUserRequest{Yz: code})
 }

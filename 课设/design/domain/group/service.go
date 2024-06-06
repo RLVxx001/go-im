@@ -273,11 +273,12 @@ func (s *Service) SendMessage(id, userid uint, message, img string) ([]GroupMess
 	}
 	var messages []GroupMessage
 	groupMessage := NewGroupMessage(userid, userid, id, message)
-	groupMessage.Img = img
+	groupMessage.IsRead = true
 	if s.messageRepository.Create(groupMessage) != nil {
 		return nil, ErrNotSend
 	}
 	groupMessage.MessageKey = groupMessage.ID
+	groupMessage.IsRead = true
 	if s.messageRepository.Update(groupMessage) != nil {
 		return nil, ErrNotSend
 	}

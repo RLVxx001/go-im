@@ -86,16 +86,15 @@ func (r *Controller) CreateTrend(g *gin.Context) {
 		return
 	}
 	trend := ToSpaceTrend(req)
-
+	space, err := r.spaceService.FindSpace(req.UserId)
+	trend.SpaceId = space.ID
 	err = r.spaceService.CreateTrends(trend)
 	if err != nil {
 		api_helper.HandleError(g, err)
 		return
 	}
 	g.JSON(
-		http.StatusCreated, CreateTrendResponse{
-			SpaceId: req.SpaceId,
-		})
+		http.StatusCreated, req)
 }
 
 func (r *Controller) FindTrends(g *gin.Context) {
