@@ -1,6 +1,7 @@
 package img
 
 import (
+	"design/config"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -48,5 +49,5 @@ func Create(g *gin.Context) (string, error) {
 	if _, err := io.Copy(outFile, file); err != nil {
 		return "", errors.New("Failed to copy file")
 	}
-	return "http://localhost:8080/static/images/" + header.Filename, nil
+	return "http://" + config.ServerName + ":8080/static/images/" + header.Filename, nil
 }

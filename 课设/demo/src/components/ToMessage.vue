@@ -50,13 +50,14 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick, isRef,inject } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
+const $MYGO = inject('$MYGO', '');
 let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
 onMounted(()=>{
-  service.post("http://localhost:8080/space/fidMessage",{
+  service.post($MYGO+'/space/fidMessage',{
     "userId":localStorage.getItem("toId")-0
   }) 
   .then(res=>{

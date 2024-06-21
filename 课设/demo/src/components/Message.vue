@@ -51,15 +51,16 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick, isRef,inject } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 import { useRouter } from 'vue-router';
+const $MYGO = inject('$MYGO', '');
 let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
  const router = useRouter()
 onMounted(()=>{
-  service.post("http://localhost:8080/space/fidMessage",{
+  service.post($MYGO+'/space/fidMessage',{
     "userId":localStorage.getItem("id")-0
   }) 
   .then(res=>{
@@ -69,12 +70,12 @@ onMounted(()=>{
   console.log(rcd)
 })
 function del(e){
-  service.post("http://localhost:8080/space/delMessage",{
+  service.post($MYGO+'/space/delMessage',{
     "messageId":e
   })
   .then(res=>{
     rcd.splice(0,rcd.length)
-    service.post("http://localhost:8080/space/fidMessage",{
+    service.post($MYGO+'/space/fidMessage',{
     "userId":localStorage.getItem("id")-0
     }) 
     .then(res=>{

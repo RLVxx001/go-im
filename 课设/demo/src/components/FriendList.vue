@@ -62,7 +62,7 @@
                     </el-button>
                   </div>
                   <div @click="messagedelete(index,message.key,i)">
-                    <img src='http://localhost:8080/static/images/close.png'/>
+                    <img :src="$MYGO + '/static/images/close.png'"/>
                   </div>
                  </div>
                  <div v-else-if="message.userOwner==usertoUsers[index].userOwner" style="display: flex;">
@@ -219,6 +219,7 @@ import service from '../axios-instance'
 import { useRouter } from 'vue-router' 
 import { useWsStore } from '../store/user';
 import axios from "axios";
+const $MYGO = inject('$MYGO', '');
 const wsStore=useWsStore()
  const router = useRouter()
 const $Ws: ((data) => string) | undefined = inject('$Ws')
@@ -240,7 +241,7 @@ const emojis = [
 
 function confirmClick(){
 
-  service.post('http://localhost:8080/usertoUser/update',{
+  service.post($MYGO+'/usertoUser/update',{
     'userTarget':usertoUsers[index.value].userTarget-0,
     'remarks':remarks.value,
   }).then(res=>{
@@ -249,7 +250,7 @@ function confirmClick(){
     console.error(err)
   })
 }
-const uploadUrl=ref('http://localhost:8080/userImg/create')
+const uploadUrl=ref($MYGO+'/userImg/create')
 const imageUrl = ref('')
 function httpRequest(option){
   let dataForm = new FormData();
@@ -316,7 +317,7 @@ function send(){
 function messagedelete(i,key,j){
   usertoUsers[i].userMessages[j].visible=false
   let userMessages=[{key:key-0}]
-  service.post('http://localhost:8080/usertoUser/deleteMessage',{
+  service.post($MYGO+'/usertoUser/deleteMessage',{
     'userTarget': usertoUsers[i].userTarget-0,
     'userMessages':userMessages,
   }).then(res=>{
@@ -419,7 +420,7 @@ watch(
                 }
               }
             }
-            service.post('http://localhost:8080/usertoUser/fid',{'userTarget':element.userTarget-0})
+            service.post($MYGO+'/usertoUser/fid',{'userTarget':element.userTarget-0})
             .then(res=>{
               console.log(res.data)
               element=res.data
@@ -507,7 +508,7 @@ const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let index=ref(-1)
 function readmessage(val){
-  service.post('http://localhost:8080/usertoUser/read',{'userTarget':val})
+  service.post($MYGO+'/usertoUser/read',{'userTarget':val})
   .then(res=>{
 
   }).catch(err=>{
@@ -542,7 +543,7 @@ function gobottom(){//抵达最底部
 }
 function getusers(){
   console.log('发送请求')
-   service.get('http://localhost:8080/usertoUser/fids')
+   service.get($MYGO+'/usertoUser/fids')
    .then(res=>{
     console.log(res.data)
     let i=0

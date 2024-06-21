@@ -47,16 +47,17 @@
 </template>
 <script setup>
 import axois from 'axios'
-import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick, isRef,inject } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 import { useRoute } from 'vue-router' 
+const $MYGO = inject('$MYGO', '');
 let route=useRoute()
 var index=0;
 var p=route.query.id;
 let trend=reactive()
 onMounted(()=>{
-  service.post("http://localhost:8080/space/fidTrend",{
+  service.post($MYGO+'/space/fidTrend',{
     "TrendId":localStorage.getItem("ToId")-0
   })
   .then(res=>{
@@ -72,14 +73,14 @@ let rcd=reactive([])
 let comment = reactive()
 let id = ref(localStorage.getItem("id"));
 function send(){
-  service.post("http://localhost:8080/space/addComment",{
+  service.post($MYGO+'/space/addComment',{
     "Detail":comment,
     "UserId":localStorage.getItem("id")-0,
     "TrendId":rcd[0].trendId-0,
   })
   .then(res=>{  
       rcd.splice(0,rcd.length)
-      service.post("http://localhost:8080/space/fidTrend",{
+      service.post($MYGO+'/space/fidTrend',{
       "TrendId":localStorage.getItem("ToId")-0
     })
     .then(res=>{

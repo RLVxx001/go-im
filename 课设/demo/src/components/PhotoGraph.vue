@@ -51,15 +51,16 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick, isRef,inject } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import service from '../axios-instance'
 import axios from "axios";
+const $MYGO = inject('$MYGO', '');
 let rcd=reactive([])
 let id = ref(localStorage.getItem("id"));
 onMounted(()=>{
   getimglist()
-  service.post("http://localhost:8080/space/fidMessage",{
+  service.post($MYGO+'/space/fidMessage',{
     "spaceId":localStorage.getItem("id")-0+4
   }) 
   .then(res=>{
@@ -81,7 +82,7 @@ let noneBtnImg=ref(false)
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
 const dataSet = reactive({})
-const uploadUrl=ref('http://localhost:8080/userImg/upload')
+const uploadUrl=ref($MYGO+'/userImg/upload')
 const addform=reactive({image:''})
 function httpRequest(option){
   let dataForm = new FormData();
@@ -113,7 +114,7 @@ function coverFileRemove(file, fileList) {
       {
         if(file.id==userImgList[i].id)
         {
-          service.post('http://localhost:8080/userImg/delete',{'id':userImgList[i].id-0})
+          service.post($MYGO+'/userImg/delete',{'id':userImgList[i].id-0})
           .then(response => {
             userImgList.splice(i,1)
           }).catch(err=>{
@@ -129,7 +130,7 @@ function coverFileRemove(file, fileList) {
       {
         if(file.uid==userImgList[i].uid)
         {
-          service.post('http://localhost:8080/userImg/delete',{id:userImgList[i].id-0})
+          service.post($MYGO+'/userImg/delete',{id:userImgList[i].id-0})
           .then(response => {
             userImgList.splice(i,1)
           }).catch(err=>{
@@ -162,7 +163,7 @@ function handleImgChange(file, fileList){
     noneBtnImg.value = fileList.length >= limitCountImg.value;
 }
 function getimglist(){
-  service.get('http://localhost:8080/userImg/getByUser')
+  service.get($MYGO+'/userImg/getByUser')
   .then(response => {
       if(!response.data){
         return

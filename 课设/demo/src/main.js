@@ -6,15 +6,16 @@ import scroll from 'vue-seamless-scroll'
 import ElementPlus from 'element-plus'  
 import 'element-plus/dist/index.css'
 import { createPinia } from 'pinia'
-import { TEST_SYMBOL } from './symbol'
+import { MYGO } from './symbol'
 import {ElNotification} from 'element-plus'  
 import { useWsStore } from './store/user';
 
+let mygo='back-end'
 
 let Ws = ref(null); 
 
-console.log("开启socket链接-----"+'ws://')
-Ws.value = new WebSocket('ws://' + 'localhost:8080' + '/ws');  
+console.log("开启socket链接-----"+'ws://')//'ws://' + mygo +':18080' + '/ws'
+Ws.value = new WebSocket('ws://10.200.7.84:60080/ws');  
 // messageWs.value.onopen = (event) => {  
 //   // 当 WebSocket 连接打开时，发送认证消息  
 //   authenticate(messageWs);  
@@ -47,8 +48,10 @@ app.use(createPinia())
 // app.provide(TEST_SYMBOL, send)
 // 使用自定义字符串方式
 app.provide('$Ws', send)
+app.provide('$MYGO', mygo)
 app.mount('#app')
 const wsStore=useWsStore()
+
 Ws.value.onmessage = (event) => {  
     // 处理从服务器接收到的消息  
     const msg = JSON.parse(event.data);

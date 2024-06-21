@@ -48,13 +48,14 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick, isRef,inject } from 'vue'; 
 import { ElNotification,ElScrollbar,ElMessageBox } from 'element-plus'
 import service from '../axios-instance'
+const $MYGO = inject('$MYGO', '');
 let friendlist=reactive([])
 let id = ref(JSON.parse(localStorage.getItem("user")).userId);
 function getlist(){
-  service.get('http://localhost:8080/userApplication/fids')
+  service.get($MYGO+'/userApplication/fids')
   .then(res=>{
     res.data.forEach(element => {
       friendlist.push(element)
@@ -78,7 +79,7 @@ function checkY(index){
       body.stats=2
       body.remarks=value
       console.log(body)
-      service.post('http://localhost:8080/userApplication',body)
+      service.post($MYGO+'/userApplication',body)
       .then(res=>{
         friendlist[index].stats=2
       }).catch(err=>{

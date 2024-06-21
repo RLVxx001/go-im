@@ -2,8 +2,10 @@ package redisYz
 
 import (
 	"context"
+	"design/config"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -14,11 +16,16 @@ var client *redis.Client
 
 // 初始化Redis客户端（同原代码）
 func init() {
+	configuration, err := config.GetAllConfigValues("./config/config.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
 	client = redis.NewClient(&redis.Options{
-		Addr:     "192.168.11.15:6380",
+		Addr:     configuration.RedisName + ":6379",
 		Password: "123456", // no password set
 		DB:       0,        // use default DB
 	})
+
 }
 
 // 生成6位随机验证码

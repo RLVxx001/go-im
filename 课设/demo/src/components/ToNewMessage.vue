@@ -29,13 +29,14 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick, isRef,inject } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import service from '../axios-instance'
 import { useRouter } from 'vue-router' 
 import { useUserStore } from '../store/user';
+const $MYGO = inject('$MYGO', '');
 let rcd=reactive()
 let id = ref(localStorage.getItem("id"));
  const router = useRouter()
@@ -43,7 +44,7 @@ let praise = reactive(0)
 onMounted(()=>{
 })
 function publish(){
-  service.post("http://localhost:8080/space/addMessage",{
+  service.post($MYGO+'/space/addMessage',{
     "detail":rcd,
     "userId":localStorage.getItem("id")-0,
   })

@@ -20,13 +20,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted ,h,reactive,nextTick, isRef } from 'vue'; 
+import { ref, onMounted ,h,reactive,nextTick, isRef,inject } from 'vue'; 
 import { ElNotification,ElScrollbar } from 'element-plus'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import service from '../axios-instance'
 import { useRouter } from 'vue-router' 
 import { useUserStore } from '../store/user';
+const $MYGO = inject('$MYGO', '');
 const userStore=useUserStore()
 const router = useRouter()  
 const msg = ref('12345678');
@@ -41,7 +42,7 @@ const open = () => {
   })
     .then(({ value }) => {
       
-      service.post('http://localhost:8080/userApplication',{
+      service.post($MYGO+'/userApplication',{
         'userOwner':JSON.parse(localStorage.getItem('user')).id-0,
         'class':0,
         'target':res.userId-0,
@@ -73,7 +74,7 @@ var user = reactive({})
 var res = reactive({})
 onMounted(()=>{
   console.log(a.value);
-  service.post("http://localhost:8080/user/fidUser",{"username":a.value})
+  service.post($MYGO+'/user/fidUser',{"username":a.value})
   .then(tmp=>{
     res.username=tmp.data.username
     res.account=tmp.data.account

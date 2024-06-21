@@ -26,18 +26,19 @@
   </div>
 </template>
 <script setup>
-import {ref,reactive,onMounted} from 'vue'
+import {ref,reactive,onMounted,inject} from 'vue'
 import { ElNotification } from 'element-plus'
 import service from '../axios-instance'
 import axios from "axios";
 import { useWsStore } from '../store/user';
+const $MYGO = inject('$MYGO', '');
 const wsStore=useWsStore()
 // const user=reactive(JSON.parse(localStorage.getItem('user')))
 var user = reactive(JSON.parse(localStorage.getItem('user')))
 onMounted(()=>{
   wsStore.event=-1
   getuser()
-  // service.post("http://localhost:8080/user/fidUser",{"username":localStorage.getItem("username")})
+  // service.post($MYGO+'/user/fidUser',{"username":localStorage.getItem("username")})
   // .then(tmp=>{
   //   user.username=tmp.data.username
   //   user.account=tmp.data.account
@@ -49,7 +50,7 @@ onMounted(()=>{
   // })
 })
 function getuser(){
-  service.get('http://localhost:8080/user/getUser')
+  service.get($MYGO+'/user/getUser')
   .then(res=>{
     localStorage.setItem('user',JSON.stringify(res.data))
     user.username=res.data.username
@@ -66,7 +67,7 @@ function getuser(){
 function save()
 {
   console.log(user)
-  service.post("http://localhost:8080/user/update",{
+  service.post($MYGO+'/user/update',{
     'account':user.account,
     'signed':user.signed,
     'birthday':user.birthday
@@ -86,7 +87,7 @@ function save()
     })
   })
 }
-const uploadUrl=ref('http://localhost:8080/user/upload')
+const uploadUrl=ref($MYGO+'/user/upload')
 function httpRequest(option){
   let dataForm = new FormData();
   dataForm.append('file',option.file)

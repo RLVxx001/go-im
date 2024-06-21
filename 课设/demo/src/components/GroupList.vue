@@ -40,7 +40,7 @@
                     </el-button>
                   </div>
                   <div @click="messagedelete(index,message.id,i)">
-                    <img src='http://localhost:8080/static/images/close.png'/>
+                    <img :src="$MYGO + '/static/images/close.png'"/>
                   </div>
                  </div>
                  <div v-else-if="message.messageOwner==message.messageSender" style="display: flex;">
@@ -203,10 +203,12 @@ import axios from "axios";
 import { useRouter } from 'vue-router' 
 import { useWsStore } from '../store/user';
 import { da } from "element-plus/es/locale";
+const $MYGO = inject('$MYGO', '');
 const wsStore=useWsStore()
  const router = useRouter()
 var user = reactive(JSON.parse(localStorage.getItem('user')))
 const $Ws: ((data) => string) | undefined = inject('$Ws')
+
 let message=ref('')
 let nwgroupuser=reactive({
   user:{},
@@ -236,7 +238,7 @@ function checknwgroupuser(item){
 
   drawer2.value=true
 }
-const uploadUrl=ref('http://localhost:8080/group/updateImg')
+const uploadUrl=ref($MYGO+'/group/updateImg')
 const imageUrl = ref('')
 function httpRequest(option){
   let dataForm = new FormData();
@@ -279,7 +281,7 @@ function send(){
 }
 function messagedelete(i,id,j){
   groups[i].groupMessages[j].visible=false
-  service.post('http://localhost:8080/group/deleteMessage',{
+  service.post($MYGO+'/group/deleteMessage',{
     'id': id-0,
   }).then(res=>{
     groups[i].groupMessages.splice(j,1)
@@ -356,7 +358,7 @@ watch(
             console.log(element)
             let groupId=(element.target?element.target:element.ID)
             console.log(groupId)
-            service.post('http://localhost:8080/group/fidGroup',{
+            service.post($MYGO+'/group/fidGroup',{
               'id':groupId-0
             })
             .then(res=>{
@@ -453,7 +455,7 @@ const innerRef = ref<HTMLDivElement>()
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let index=ref(-1)
 function readmessage(val){
-  service.post('http://localhost:8080/group/read',{'id':val})
+  service.post($MYGO+'/group/read',{'id':val})
   .then(res=>{
 
   }).catch(err=>{
@@ -486,7 +488,7 @@ function gobottom(){//抵达最底部
 }
 function getgroups(){
   console.log('发送请求')
-   service.get('http://localhost:8080/group/fidGroups')
+   service.get($MYGO+'/group/fidGroups')
    .then(res=>{
     console.log(res.data)
     groups.pop()

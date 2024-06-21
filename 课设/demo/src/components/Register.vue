@@ -37,7 +37,7 @@
 </template>
 
 <script setup>  
-import { ref} from 'vue';  
+import { ref,inject} from 'vue';  
 import TopBar from './TopBar.vue';  
 import SideBar from './SideBar.vue';  
 import Demo from './Demo.vue';  
@@ -45,7 +45,7 @@ import Login from './Login.vue';
 import axios from 'axios';  
 import { ElNotification } from 'element-plus'
 import { useRouter } from 'vue-router' 
-
+const $MYGO = inject('$MYGO', '');
 const router = useRouter()
   
 // 响应式数据  
@@ -74,7 +74,7 @@ function check(){
 
 function submit() {  
   
-    axios.post('http://localhost:8080/user/register', {  
+    axios.post($MYGO+'/user/register', {  
       username: username.value,  
       password: passwd.value,  
       password2: passwdes.value,  

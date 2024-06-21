@@ -7,6 +7,7 @@ import (
 
 var cfgReader *configReader
 var SecretKey string
+var ServerName string
 
 type (
 	Token struct {
@@ -20,6 +21,8 @@ type (
 	Configuration struct {
 		DatabaseSettings
 		JwtSettings
+		ServerName string
+		RedisName  string
 	}
 	// 数据库配置
 	DatabaseSettings struct {
@@ -53,7 +56,7 @@ func GetAllConfigValues(configFile string) (configuration *Configuration, err er
 		fmt.Printf("解析配置文件到结构体失败 : %s", err)
 		return nil, err
 	}
-
+	ServerName = configuration.ServerName
 	return configuration, err
 }
 

@@ -47,7 +47,7 @@
 
 <script lang="ts" setup>  
 import { ElNotification } from 'element-plus'
-import { ref, onMounted ,h} from 'vue';  
+import { ref, onMounted ,h,inject} from 'vue';  
 import { defineExpose } from 'vue'; // 如果你需要在模板外的地方访问组件内部变量或方法，可以使用 defineExpose  
 import SideBar from './SideBar.vue';  
 import Demo from './Demo.vue';  
@@ -56,13 +56,14 @@ import bus from "../EventBus/eventbus"; // 请注意确保你的 eventbus 正确
 import { useRouter } from 'vue-router' 
 import { useUserStore } from '../store/user';
 import service from '../axios-instance';
+const $MYGO = inject('$MYGO', '');
 const userStore=useUserStore()
 const router = useRouter()  
 
 const yz=ref(localStorage.getItem('yz'))
 const yzm=ref('')
 function checkyz(){
-  service.get('http://localhost:8080/user/createYz')
+  service.get($MYGO+'/user/createYz')
   .then(res=>{
     localStorage.setItem('yz',res.data.yz)
     yz.value=res.data.yz
@@ -76,7 +77,7 @@ const ckname = ref(false);
 // 方法  
 function sub() {  
   localStorage.setItem("username", username.value);  
-  axios.post('http://localhost:8080/user/login', {  
+  axios.post($MYGO+'/user/login', {  
     username: username.value,  
     password: passwd.value,
     yz:  yzm.value
@@ -89,7 +90,7 @@ function sub() {
     localStorage.setItem("password",passwd.value );
     localStorage.setItem('id',response.data.userId)
     localStorage.setItem('user',JSON.stringify(response.data))
-    service.post("http://localhost:8080/space/spaceadd",{
+    service.post($MYGO+'/space/spaceadd',{
       "UserId":response.data.userId,
     })
     userStore.token=response.data.token

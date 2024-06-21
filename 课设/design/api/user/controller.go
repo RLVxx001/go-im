@@ -76,7 +76,7 @@ func (c *Controller) Login(g *gin.Context) {
 		return
 	}
 	code, _ := redisYz.GetVerificationCode()
-	if code != req.Yz {
+	if code != req.Yz && config.ServerName != "localhost" {
 		api_helper.HandleError(g, errors.New("验证码错误"))
 		return
 	}
@@ -205,7 +205,11 @@ func (c *Controller) Upload(g *gin.Context) {
 
 // 获取验证码
 func (c *Controller) CreateYz(g *gin.Context) {
-	_ = redisYz.SetVerificationCode()
+	err := redisYz.SetVerificationCode()
+	if err != nil {
+		api_helper.HandleError(g, err)
+		return
+	}
 	code, _ := redisYz.GetVerificationCode()
 	g.JSON(http.StatusOK, CreateUserRequest{Yz: code})
 }
